@@ -6,14 +6,17 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - Date: 2026-11-02
 - Current phase: Phase 1 (MVP), in progress
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: Phase 1 tasks 3 and 4 (real built-in puzzle stock, app chess/storage integration, board and puzzle screen).
+- Last completed: Phase 1 tasks 3, 4 and 5 (real built-in puzzle stock, app chess/storage integration, board and puzzle screen), a settings screen with persisted piece styles (including licensed Cburnett artwork), and the placement-test onboarding flow.
 
 ## Verification
-- Ran `:domain:test :app:testDebugUnitTest :app:assembleDebug` with JDK 17.0.12, Gradle 8.14.3 and Android SDK 35.
-- **98 domain tests + 8 app tests passed; 0 failures, errors or skips.**
+- Ran `:domain:test :app:testDebugUnitTest :app:assembleDebug` with JDK 21.0.11, Gradle 8.14.3 and Android SDK 35.
+- **98 domain tests + 15 app tests passed; 0 failures, errors or skips.**
 - `:app:assembleDebug` produced a signed debug APK containing `assets/builtin_puzzles.csv`.
 - Room exported `app/schemas/com.chesslock.data.ChessLockDatabase/1.json` without a schema-location warning.
-- Not yet exercised on an emulator or physical device.
+- On the test device: the placement screen renders (progress, rating, side, board, lives), the first puzzle is near the
+  starting rating, and injecting `placement_completed=true` routes to the normal puzzle screen. The device's app data
+  was reset afterwards so the next launch starts the placement test. UI taps cannot be injected through adb on this
+  device, so completing the placement test and tapping the board must be checked manually.
 
 ## Environment notes
 - Dependencies resolve from Google Maven, Maven Central and JitPack (chesslib).
@@ -43,7 +46,7 @@ Resume file. Update after every meaningful step and before any likely credit cut
 2. [x] Domain logic + unit tests: ELO, reward, lives/penalties, hints, skip rules, budget + midnight reset.
 3. [x] Puzzles: `Puzzle` + Lichess CSV parser, `PuzzleProgress`, chesslib legal moves and mating alternatives, Room stock and solved tracking, DataStore player progress, and the generated 50-puzzle built-in asset.
 4. [x] Tap-to-move Compose board with legal targets, last-move highlighting, orientation and promotion picker; puzzle screen with lives, ELO, timer, rewards and both skip paths.
-5. [~] Placement test: DONE logic `PlacementTest` (staircase) + `PuzzleSelector` with tests. TODO: UI flow using the built-in set.
+5. [x] Placement test: `PlacementTest` staircase + adaptive `PuzzleSelector` with tests, plus the onboarding UI flow using the built-in stock.
 6. [ ] Blocking service, categories, block screen, boot receiver
 7. [ ] Onboarding + permissions + protection status
 8. [ ] Hints with AdMob test ads
@@ -55,6 +58,9 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - 2026-11-02: added Puzzle model, Lichess CSV parser, PuzzleProgress, 23 more tests (79 total), built-in set generator script (tested on synthetic data only).
 - 2026-11-02: added PlacementTest (staircase) and PuzzleSelector, 19 more tests (98 total), new AppConfig constants.
 - 2026-11-02: generated and validated the 50-puzzle Lichess asset; added bounded-memory generation, Room/DataStore, chesslib adapters, the Compose board and puzzle flow, sk/en resources, and 8 passing app tests. Full debug build verified.
+- 2026-11-02: added the settings screen (reachable from the puzzle top bar) with persisted piece styles: Classic, Outline and Letters, each previewed and applied live to the board. 4 new app tests (110 total); debug APK built and installed on the test device.
+- 2026-11-02: bundled Cburnett chess artwork as VectorDrawables (BSD-3-Clause, documented in `THIRD_PARTY_NOTICES.md`) and added it as a fourth selectable style; 3 new app tests (113 total). Verified on the device.
+- 2026-11-02: added the placement-test onboarding flow: shared board component, adaptive 10-puzzle run from the built-in stock with no rewards/ELO writes, 3 lives per puzzle, early finish on an empty stock, result screen, and `placement_completed` routing. Build and all 113 tests pass; device routing verified.
 
 ## Next step
-Implement the placement-test UI using the built-in set (task 5), then continue with blocking, onboarding/permissions and AdMob hints in the approved order. Puzzle rewards are currently calculated and displayed but are not yet credited to the blocking budget; connect them when the budget/blocking app layer is implemented. No Hint button is exposed before rewarded ads are implemented.
+Continue with Phase 1 task 6: the blocking service, categories, block screen and boot receiver, then onboarding/permissions and AdMob hints in the approved order. Puzzle rewards are currently calculated and displayed but are not yet credited to the blocking budget; connect them when the budget/blocking app layer is implemented. No Hint button is exposed before rewarded ads are implemented.

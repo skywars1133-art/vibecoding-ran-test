@@ -7,11 +7,31 @@ import com.github.bhlangonijr.chesslib.Side
 import com.github.bhlangonijr.chesslib.Square
 import com.github.bhlangonijr.chesslib.move.Move
 
+enum class ChessPieceType {
+    KING,
+    QUEEN,
+    ROOK,
+    BISHOP,
+    KNIGHT,
+    PAWN,
+}
+
 data class ChessPiece(
     val square: String,
-    val symbol: String,
+    val type: ChessPieceType,
     val isWhite: Boolean,
-)
+) {
+    /** Default (solid Unicode) glyph, kept for rendering and tests. */
+    val symbol: String
+        get() = when (type) {
+            ChessPieceType.KING -> "♚"
+            ChessPieceType.QUEEN -> "♛"
+            ChessPieceType.ROOK -> "♜"
+            ChessPieceType.BISHOP -> "♝"
+            ChessPieceType.KNIGHT -> "♞"
+            ChessPieceType.PAWN -> "♟"
+        }
+}
 
 /** Thread-confined chess position used by a puzzle ViewModel. */
 class ChessPosition(fen: String) {
@@ -24,7 +44,7 @@ class ChessPosition(fen: String) {
             if (piece == Piece.NONE) return@mapNotNull null
             ChessPiece(
                 square = square.toString().lowercase(),
-                symbol = piece.solidSymbol(),
+                type = piece.toPieceType(),
                 isWhite = piece.pieceSide == Side.WHITE,
             )
         }
@@ -44,12 +64,12 @@ class ChessPosition(fen: String) {
         board.legalMoves().firstOrNull { it.toString().equals(uci.trim(), ignoreCase = true) }
 }
 
-private fun Piece.solidSymbol(): String = when (pieceType) {
-    PieceType.KING -> "♚"
-    PieceType.QUEEN -> "♛"
-    PieceType.ROOK -> "♜"
-    PieceType.BISHOP -> "♝"
-    PieceType.KNIGHT -> "♞"
-    PieceType.PAWN -> "♟"
-    else -> ""
+private fun Piece.toPieceType(): ChessPieceType = when (pieceType) {
+    PieceType.KING -> ChessPieceType.KING
+    PieceType.QUEEN -> ChessPieceType.QUEEN
+    PieceType.ROOK -> ChessPieceType.ROOK
+    PieceType.BISHOP -> ChessPieceType.BISHOP
+    PieceType.KNIGHT -> ChessPieceType.KNIGHT
+    PieceType.PAWN -> ChessPieceType.PAWN
+    else -> error("Unsupported piece type $pieceType")
 }

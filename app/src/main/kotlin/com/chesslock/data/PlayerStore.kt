@@ -1,6 +1,7 @@
 package com.chesslock.data
 
 import android.content.Context
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -22,6 +23,7 @@ data class PlayerState(
     val elo: Int,
     val ratedPuzzlesPlayed: Int,
     val freeSkipsUsedToday: Int,
+    val placementCompleted: Boolean,
 )
 
 data class EloUpdate(
@@ -41,6 +43,7 @@ class PlayerStore @Inject constructor(
     private val ratedCountKey = intPreferencesKey("rated_puzzles_played")
     private val skipDateKey = stringPreferencesKey("free_skip_date")
     private val freeSkipsUsedKey = intPreferencesKey("free_skips_used")
+    private val placementCompletedKey = booleanPreferencesKey("placement_completed")
 
     val state: Flow<PlayerState> = context.playerDataStore.data.map { preferences ->
         PlayerState(
@@ -51,6 +54,7 @@ class PlayerStore @Inject constructor(
             } else {
                 0
             },
+            placementCompleted = preferences[placementCompletedKey] ?: false,
         )
     }
 
@@ -67,6 +71,14 @@ class PlayerStore @Inject constructor(
             preferences[ratedCountKey] = played + 1
         }
         return EloUpdate(oldElo = oldElo, newElo = newElo)
+    }
+
+    /** Stores the ELO found by the placement test and stops asking for it on launch. */
+    suspend fun completePlacement(elo: Int) {
+        context.playerDataStore.edit { preferences ->
+            preferences[eloKey] = elo.coerceIn(config.eloFloor, config.placementMaxRating)
+            preferences[placementCompletedKey] = true
+        }
     }
 
     suspend fun consumeFreeSkip() {

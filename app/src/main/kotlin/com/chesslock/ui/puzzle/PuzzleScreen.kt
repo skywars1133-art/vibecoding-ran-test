@@ -17,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -28,14 +29,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.chesslock.R
+import com.chesslock.ui.settings.SettingsViewModel
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PuzzleScreen(viewModel: PuzzleViewModel = hiltViewModel()) {
+fun PuzzleScreen(
+    onOpenSettings: () -> Unit,
+    viewModel: PuzzleViewModel = hiltViewModel(),
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsState()
+    val settings by settingsViewModel.settings.collectAsState()
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.puzzle_title)) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.puzzle_title)) },
+                actions = {
+                    TextButton(onClick = onOpenSettings) {
+                        Text(stringResource(R.string.settings_title))
+                    }
+                },
+            )
+        },
     ) { padding ->
         when {
             state.isLoading -> Box(
@@ -69,8 +85,14 @@ fun PuzzleScreen(viewModel: PuzzleViewModel = hiltViewModel()) {
                 )
                 Text(stringResource(R.string.solving_time, formatDuration(state.elapsedSeconds)))
                 ChessBoard(
-                    state = state,
+                    pieces = state.pieces,
+                    legalMoves = state.legalMoves,
+                    lastMove = state.lastMove,
+                    playerIsWhite = state.playerIsWhite,
+                    solved = state.solved,
                     onMove = viewModel::onMove,
+                    pieceStyle = settings.pieceStyle,
+                    resetKey = state.puzzleId,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Row(
@@ -103,25 +125,6 @@ fun PuzzleScreen(viewModel: PuzzleViewModel = hiltViewModel()) {
             }
         }
     }
-}
-
-@Composable
-private fun MoveStatusText(status: PuzzleMoveStatus) {
-    val message = when (status) {
-        PuzzleMoveStatus.NONE -> return
-        PuzzleMoveStatus.WRONG -> R.string.wrong_move
-        PuzzleMoveStatus.CORRECT -> R.string.correct_move
-        PuzzleMoveStatus.SOLVED -> R.string.puzzle_solved
-    }
-    Text(
-        text = stringResource(message),
-        color = if (status == PuzzleMoveStatus.WRONG) {
-            MaterialTheme.colorScheme.error
-        } else {
-            MaterialTheme.colorScheme.primary
-        },
-        style = MaterialTheme.typography.titleMedium,
-    )
 }
 
 @Composable

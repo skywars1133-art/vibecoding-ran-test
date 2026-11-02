@@ -25,4 +25,25 @@
     <string name="promotion_rook">Veža</string>
     <string name="promotion_bishop">Strelec</string>
     <string name="promotion_knight">Jazdec</string>
+    <string name="settings_title">Nastavenia</string>
+    <string name="back">Späť</string>
+    <string name="settings_board_section">Šachovnica</string>
+    <string name="piece_style_title">Vzhľad figúrok</string>
+    <string name="piece_style_description">Vyber si vzhľad figúrok na šachovnici.</string>
+    <string name="piece_style_classic">Klasické</string>
+    <string name="piece_style_outline">Obrysové</string>
+    <string name="piece_style_letters">Písmená</string>
+    <string name="piece_style_cburnett">Cburnett (kresba)</string>
+    <string name="piece_style_preview">Náhľad</string>
+    <string name="placement_title">Zaraďovací test</string>
+    <string name="placement_progress">Úloha %1$d z %2$d</string>
+    <string name="placement_failed">Došli životy — úloha zlyhala.</string>
+    <string name="placement_next">Pokračovať</string>
+    <string name="placement_see_result">Zobraziť výsledok</string>
+    <string name="placement_result_title">Tvoje počiatočné ELO</string>
+    <string name="placement_result_body">Ako počiatočné hodnotenie použijeme %1$d. Riešením úloh ho zvýšiš.</string>
+    <string name="placement_result_early">Lokálna zásoba úloh sa minula predčasne. Tvoje predbežné hodnotenie je %1$d.</string>
+    <string name="placement_start">Začať riešiť</string>
+    <string name="placement_saving">Ukladá sa…</string>
+    <string name="placement_save_error">Hodnotenie sa nepodarilo uložiť. Skús to znova.</string>
 </resources>

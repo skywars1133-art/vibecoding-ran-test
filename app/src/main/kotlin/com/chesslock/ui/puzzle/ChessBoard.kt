@@ -22,36 +22,46 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.chesslock.R
+import com.chesslock.chess.ChessPiece
+import com.chesslock.data.PieceStyle
 
+/**
+ * Interactive board shared by normal puzzle play and the placement test. It only knows the position
+ * and which moves are legal; all rules and persistence live in the caller.
+ */
 @Composable
 fun ChessBoard(
-    state: PuzzleUiState,
+    pieces: List<ChessPiece>,
+    legalMoves: List<String>,
+    lastMove: String?,
+    playerIsWhite: Boolean,
+    solved: Boolean,
     onMove: (String) -> Unit,
+    pieceStyle: PieceStyle = PieceStyle.DEFAULT,
+    resetKey: Any? = null,
     modifier: Modifier = Modifier,
 ) {
-    var selectedSquare by remember(state.puzzleId, state.lastMove, state.solved) {
+    var selectedSquare by remember(resetKey, lastMove, solved) {
         mutableStateOf<String?>(null)
     }
-    var promotionMoves by remember(state.puzzleId, state.lastMove, state.solved) {
+    var promotionMoves by remember(resetKey, lastMove, solved) {
         mutableStateOf<List<String>>(emptyList())
     }
-    val files = if (state.playerIsWhite) ('a'..'h').toList() else ('a'..'h').toList().reversed()
-    val ranks = if (state.playerIsWhite) (8 downTo 1).toList() else (1..8).toList()
+    val files = if (playerIsWhite) ('a'..'h').toList() else ('a'..'h').toList().reversed()
+    val ranks = if (playerIsWhite) (8 downTo 1).toList() else (1..8).toList()
 
     fun selectSquare(square: String) {
-        if (state.solved) return
+        if (solved) return
         val selected = selectedSquare
         if (selected == null) {
-            if (state.legalMoves.any { it.startsWith(square) }) selectedSquare = square
+            if (legalMoves.any { it.startsWith(square) }) selectedSquare = square
             return
         }
-        val candidates = state.legalMoves.filter {
+        val candidates = legalMoves.filter {
             it.startsWith(selected) && it.substring(2, 4) == square
         }
         when {
@@ -61,7 +71,7 @@ fun ChessBoard(
                 onMove(candidates.single())
             }
             square == selected -> selectedSquare = null
-            state.legalMoves.any { it.startsWith(square) } -> selectedSquare = square
+            legalMoves.any { it.startsWith(square) } -> selectedSquare = square
             else -> selectedSquare = null
         }
     }
@@ -73,8 +83,8 @@ fun ChessBoard(
                 Row(Modifier.weight(1f)) {
                     files.forEach { file ->
                         val square = "$file$rank"
-                        val piece = state.pieces.firstOrNull { it.square == square }
-                        val isLastMove = state.lastMove?.let {
+                        val piece = pieces.firstOrNull { it.square == square }
+                        val isLastMove = lastMove?.let {
                             square == it.substring(0, 2) || square == it.substring(2, 4)
                         } == true
                         val isDark = (file - 'a' + rank - 1) % 2 == 0
@@ -85,7 +95,7 @@ fun ChessBoard(
                             else -> Color(0xFFF0D9B5)
                         }
                         val selected = selectedSquare
-                        val isTarget = selected != null && state.legalMoves.any {
+                        val isTarget = selected != null && legalMoves.any {
                             it.startsWith(selected) && it.substring(2, 4) == square
                         }
                         Box(
@@ -100,17 +110,11 @@ fun ChessBoard(
                                 Box(Modifier.size(14.dp).background(Color(0x66000000), CircleShape))
                             }
                             if (piece != null) {
-                                Text(
-                                    text = piece.symbol,
-                                    color = if (piece.isWhite) Color.White else Color(0xFF171717),
+                                PieceGlyph(
+                                    type = piece.type,
+                                    isWhite = piece.isWhite,
+                                    style = pieceStyle,
                                     fontSize = pieceSize,
-                                    maxLines = 1,
-                                    style = TextStyle(
-                                        shadow = Shadow(
-                                            color = if (piece.isWhite) Color.Black else Color.White,
-                                            blurRadius = 2f,
-                                        ),
-                                    ),
                                 )
                             }
                         }

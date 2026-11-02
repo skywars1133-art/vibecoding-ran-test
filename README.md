@@ -44,8 +44,9 @@ Commit the resulting file after validating it.
   `reward`, `puzzle` (`Puzzle` + Lichess CSV parser, `PuzzleProgress` solution tracking, `PuzzleSession` lives/hints,
   `SkipPolicy`), `budget` (daily time budget, midnight reset).
 - `app/`: Android app (Compose, Material 3, Hilt). `di/ConfigModule` provides `AppConfig`; `data/` contains the Room
-  puzzle stock and DataStore player progress; `chess/` adapts chesslib for legal UCI moves and mating alternatives;
-  `ui/puzzle/` contains the tap-to-move board, promotion picker, timer, skip controls and puzzle ViewModel.
+  puzzle stock, DataStore player progress and the settings store; `chess/` adapts chesslib for legal UCI moves and
+  mating alternatives; `ui/puzzle/` contains the tap-to-move board, piece rendering, promotion picker, timer, skip
+  controls and puzzle ViewModel; `ui/settings/` contains the settings screen and its ViewModel.
 
 ## Decisions
 - **Domain module is plain Kotlin/JVM.** Rules are testable without an emulator and stay independent of Android.
@@ -67,16 +68,25 @@ Commit the resulting file after validating it.
 - **No invented puzzle data.** The built-in set is generated from the real dump by `scripts/build-builtin-puzzles.py`.
 - **Placement test is a staircase:** the target puzzle rating starts at the default ELO, goes up after a solve and
   down after a failure, with steps 300, 225, 169, ... shrinking to a 75 minimum. The estimate is the target the next
-  puzzle would have had (clamped to 400..2800). No hints or skips during placement; a skip counts as a failure.
+  puzzle would have had (clamped to 400..2800). No hints or skips are offered during placement.
+- **Placement test flow:** onboarding shows it until `placement_completed` is stored. It uses the built-in stock only,
+  keeps each puzzle unique within one run (repository `excludeIds`), grants no rewards, records no ELO changes and does
+  not mark puzzles solved. Losing all three lives records a failure immediately. If the stock runs out early the test
+  ends with the current estimate. Confirming the result stores the ELO and opens normal puzzle play.
 - **Next-puzzle choice:** desired rating = ELO + Gaussian offset (sigma 100), then a random pick among the 3 closest
   unsolved puzzles. Returns "no puzzle" only when the whole stock is solved.
 - **Starting ELO before the placement test:** 1000 (`AppConfig.eloStart`).
+- **Piece styles.** Settings (opened from the puzzle top bar) offers Classic (solid Unicode glyphs), Outline (hollow
+  Unicode glyphs with a contrast stroke), Letters (K/Q/R/B/N/P) and Cburnett (bundled SVG artwork by Colin M.L.
+  Burnett, BSD-3-Clause — see `THIRD_PARTY_NOTICES.md`). The choice is stored in the `settings` DataStore and applied
+  to the board immediately; switching does not reset the current puzzle. Tornelo's named sets (Chigorin, Blackburne,
+  etc.) are proprietary and are not bundled.
 - **Min SDK 26** (java.time without desugaring, notification channels).
 - **Dependency versions** in `gradle/libs.versions.toml` were picked as a compatible set (AGP 8.7.3, Kotlin 2.0.21,
   KSP 2.0.21-1.0.28, Hilt 2.52, Compose BOM 2024.10.01) but could not be resolved in the authoring sandbox. Bump them
   if Gradle complains.
-- **Status of the Android module:** the skeleton (Hilt app, theme, sk/en strings, config injection) is written but has
-  not been compiled yet; only `:domain` has been built and tested so far.
+- **Status of the Android module:** the app module compiles, its unit tests pass and the debug APK is installed and
+  launched on a test device. Remaining Phase 1 work is tracked in `CHECKPOINT.md`.
 
 ## Licenses
 | Item | License | Use |
@@ -87,4 +97,5 @@ Commit the resulting file after validating it.
 | Kotlin, KSP | Apache-2.0 | Language / build |
 | JUnit 4 | EPL-1.0 | Tests only (not shipped) |
 | chesslib | Apache-2.0 | Legal moves, FEN and checkmate detection |
-| System Unicode chess glyphs | No separate asset | Board pieces rendered as text; no bundled piece graphics |
+| Cburnett chess pieces | BSD-3-Clause (also GFDL/GPL) | Bundled board artwork (`res/drawable/cburnett_*.xml`); see `THIRD_PARTY_NOTICES.md` |
+| System Unicode chess glyphs | No separate asset | Classic/Outline/Letters styles rendered as text |

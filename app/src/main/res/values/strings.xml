@@ -25,4 +25,25 @@
     <string name="promotion_rook">Rook</string>
     <string name="promotion_bishop">Bishop</string>
     <string name="promotion_knight">Knight</string>
+    <string name="settings_title">Settings</string>
+    <string name="back">Back</string>
+    <string name="settings_board_section">Board</string>
+    <string name="piece_style_title">Piece style</string>
+    <string name="piece_style_description">Choose how the pieces look on the board.</string>
+    <string name="piece_style_classic">Classic</string>
+    <string name="piece_style_outline">Outline</string>
+    <string name="piece_style_letters">Letters</string>
+    <string name="piece_style_cburnett">Cburnett (artwork)</string>
+    <string name="piece_style_preview">Preview</string>
+    <string name="placement_title">Placement test</string>
+    <string name="placement_progress">Puzzle %1$d of %2$d</string>
+    <string name="placement_failed">No lives left — puzzle failed.</string>
+    <string name="placement_next">Continue</string>
+    <string name="placement_see_result">See result</string>
+    <string name="placement_result_title">Your starting ELO</string>
+    <string name="placement_result_body">We will use %1$d as your starting rating. Solve puzzles to raise it.</string>
+    <string name="placement_result_early">The offline puzzle stock ran out early. Your provisional rating is %1$d.</string>
+    <string name="placement_start">Start solving</string>
+    <string name="placement_saving">Saving…</string>
+    <string name="placement_save_error">Could not save your rating. Try again.</string>
 </resources>

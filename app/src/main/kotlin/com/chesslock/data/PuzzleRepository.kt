@@ -24,13 +24,20 @@ class PuzzleRepository @Inject constructor(
     private val importMutex = Mutex()
     private var builtInsImported = false
 
-    suspend fun nextPuzzle(targetRating: Int): Puzzle? = withContext(Dispatchers.IO) {
+    /**
+     * Picks an unsolved puzzle near [targetRating]. [excludeIds] lets the placement test keep every
+     * puzzle unique within one run without marking them solved (they stay available for normal play).
+     */
+    suspend fun nextPuzzle(
+        targetRating: Int,
+        excludeIds: Set<String> = emptySet(),
+    ): Puzzle? = withContext(Dispatchers.IO) {
         ensureBuiltInsImported()
         val candidates = dao.getAll().map { it.toDomain() }
         PuzzleSelector.pick(
             candidates = candidates,
             targetRating = targetRating,
-            solvedIds = dao.getSolvedIds().toSet(),
+            solvedIds = dao.getSolvedIds().toSet() + excludeIds,
             random = Random(),
             config = config,
         )
