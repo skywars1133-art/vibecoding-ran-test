@@ -8,7 +8,8 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - Plan: **approved by the user** (2026-11-02)
 - Last completed: Phase 2 — daily 150-puzzle packs from the Lichess dump via GitHub Actions, WorkManager sync
   (24 h + launch + "Download now"), Wi-Fi-only default, Room accumulation with solved-never-repeat, and the Settings
-  stock/download UI. Live release published and all flows verified on the tablet.
+  stock/download UI. Live release published and all flows verified on the tablet. Shareable test APK built and installed.
+- Deferred: Phase 3 (accounts + leaderboard), at the user's request.
 - Before Phase 2: Phase 1 was complete (MVP, language selection, Cburnett default, four licensed SVG piece sets).
 
 ## Verification
@@ -142,9 +143,15 @@ Resume file. Update after every meaningful step and before any likely credit cut
   the tablet and verified the band download, Room accumulation/dedupe, sync metadata, WorkManager scheduling, the
   Wi-Fi toggle's effect on the network constraint, Download now within 24 h, solved-flag preservation, the empty-stock
   screen, and the full Slovak section. Details in Verification.
+- 2026-11-02: **Built the shareable test APK** `dist/ChessLock-0.1.0-test.apk` (release, 10.7 MB, signed with the
+  standard debug key so it upgrades the existing debug install and keeps data; SHA-256
+  `1ACC7839F098B6833CE56FEE4E93627B532B8AFE8E2C424AED26825A8EEAA9C5`). Verified with `apksigner` (v2/v3), installed over
+  the debug build on `R9TX902F92W`, and confirmed the ELO (1088) and stock (192) survived. Accounts/leaderboard
+  (Phase 3) are deferred at the user's request; Phase 2 remains the current deliverable.
 
 ## Next step
-1. **Phase 2 is complete and verified. Stop for user feedback before starting Phase 3.**
+1. **Phase 2 is complete; a shareable test APK is ready at `dist/ChessLock-0.1.0-test.apk`.** Accounts and the
+   leaderboard are deferred — wait for user feedback before starting Phase 3.
 2. Optional pending Phase 1 device check: reconnect/unlock the old phone `CIYDDIMV5D5XNFUS`, launch the app once,
    reboot, unlock, and confirm `BlockingService` starts automatically. Also exercise the block-screen buttons and
    permission dialogs manually (adb input injection is blocked on that device).

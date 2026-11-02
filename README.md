@@ -47,6 +47,30 @@ scripts/test-domain.sh
 7. Hints use AdMob's official **test** ad IDs in this phase, so no real ad is shown or billed. Hints need a network and
    are disabled with an explanatory note while offline.
 
+### Shareable test APK
+
+`dist/ChessLock-0.1.0-test.apk` is a release build signed with the local Android debug key. It installs on API 26+
+devices with `adb install -r dist/ChessLock-0.1.0-test.apk` (or by tapping the file on the device after allowing
+installation from unknown sources). Because it uses the same key as the debug build, it upgrades an existing test
+install without deleting app data.
+
+Rebuild it with:
+
+```
+./gradlew :app:assembleRelease
+$ANDROID_HOME/build-tools/<version>/zipalign -f -p 4 \
+  app/build/outputs/apk/release/app-release-unsigned.apk \
+  app/build/outputs/apk/release/app-release-aligned.apk
+$ANDROID_HOME/build-tools/<version>/apksigner sign \
+  --ks ~/.android/debug.keystore --ks-key-alias androiddebugkey \
+  --ks-pass pass:android --key-pass pass:android \
+  --out dist/ChessLock-0.1.0-test.apk \
+  app/build/outputs/apk/release/app-release-aligned.apk
+```
+
+This is a **test key only** (anyone with the standard debug keystore could sign an update). Production signing material
+belongs to Phase 4; never commit a keystore. `dist/` is gitignored.
+
 ### Built-in puzzle set
 The committed `app/src/main/assets/builtin_puzzles.csv` contains 50 real Lichess puzzles (CC0). To regenerate it on a machine with internet:
 

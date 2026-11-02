@@ -8,6 +8,7 @@ local.properties
 captures/
 .externalNativeBuild/
 .cxx/
+dist/
 
 # Generated puzzle packs and the large Lichess source dump (built by the GitHub Action)
 puzzle-packs/
