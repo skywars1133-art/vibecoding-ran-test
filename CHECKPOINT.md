@@ -6,17 +6,20 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - Date: 2026-11-02
 - Current phase: Phase 1 (MVP), in progress
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: Phase 1 tasks 3, 4 and 5 (real built-in puzzle stock, app chess/storage integration, board and puzzle screen), a settings screen with persisted piece styles (including licensed Cburnett artwork), and the placement-test onboarding flow.
+- Last completed: Phase 1 tasks 6 and 7 — the blocking layer (categories, shared budget, foreground service, overlay block screen, warnings, boot receiver, settings controls) and the permissions onboarding / protection-status UI.
 
 ## Verification
 - Ran `:domain:test :app:testDebugUnitTest :app:assembleDebug` with JDK 21.0.11, Gradle 8.14.3 and Android SDK 35.
-- **98 domain tests + 15 app tests passed; 0 failures, errors or skips.**
-- `:app:assembleDebug` produced a signed debug APK containing `assets/builtin_puzzles.csv`.
-- Room exported `app/schemas/com.chesslock.data.ChessLockDatabase/1.json` without a schema-location warning.
-- On the test device: the placement screen renders (progress, rating, side, board, lives), the first puzzle is near the
-  starting rating, and injecting `placement_completed=true` routes to the normal puzzle screen. The device's app data
-  was reset afterwards so the next launch starts the placement test. UI taps cannot be injected through adb on this
-  device, so completing the placement test and tapping the board must be checked manually.
+- **109 domain tests + 20 app tests passed; 0 failures, errors or skips.**
+- `:app:assembleDebug` produced a signed debug APK.
+- On the test device (Android 15, `CIYDDIMV5D5XNFUS`):
+  - usage access and overlay appops granted; the foreground service runs with notification id 1001;
+  - opening Facebook with a normal budget charged usage (10 s recorded in `budget.preferences_pb`) and showed no block screen;
+  - seeding `used_seconds = 200000` produced the full-screen `TYPE_APPLICATION_OVERLAY` window titled "ChessLock block screen"; a `uiautomator` dump confirmed the text "Time's up", "You have used today's time for blocked apps.", "Solve a puzzle to earn more time.", the "Solve a puzzle" button and the "Go home" button;
+  - switching to the launcher removed the overlay, and restoring the budget let the blocked app open normally.
+- **Pending device check:** the phone rebooted into its secure lock screen and then dropped off USB, so the boot-receiver restart still needs a manual unlock/reconnect and one more reboot. Force-stopped apps intentionally do not receive boot broadcasts; the app must be launched normally before a reboot test.
+- The overlay is created on the main thread (a `LifecycleRegistry` crash from the first version was fixed).
+- UI input injection is blocked for adb on this device, so the buttons ("Solve a puzzle", "Go home") and the permission dialogs must be exercised manually.
 
 ## Environment notes
 - Dependencies resolve from Google Maven, Maven Central and JitPack (chesslib).
@@ -24,6 +27,9 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - The generator streams the large Lichess dump while retaining only the best candidates per rating band.
 - Pushing needs the Claude GitHub App installed on the repo owner (already done; push works).
 - Do NOT invent puzzle data.
+- `adb shell input` (taps/keyevents) is rejected with `INJECT_EVENTS`; use `am start`, `monkey`, `uiautomator dump`, `dumpsys` and logcat for verification.
+- `pm grant POST_NOTIFICATIONS` is rejected on this device; grant notification permission manually or through the app's onboarding/settings links.
+- A secure lock is active after reboot. `wm dismiss-keyguard` cannot bypass it; the device must be unlocked manually.
 
 ## Plan (approved)
 
@@ -47,8 +53,8 @@ Resume file. Update after every meaningful step and before any likely credit cut
 3. [x] Puzzles: `Puzzle` + Lichess CSV parser, `PuzzleProgress`, chesslib legal moves and mating alternatives, Room stock and solved tracking, DataStore player progress, and the generated 50-puzzle built-in asset.
 4. [x] Tap-to-move Compose board with legal targets, last-move highlighting, orientation and promotion picker; puzzle screen with lives, ELO, timer, rewards and both skip paths.
 5. [x] Placement test: `PlacementTest` staircase + adaptive `PuzzleSelector` with tests, plus the onboarding UI flow using the built-in stock.
-6. [ ] Blocking service, categories, block screen, boot receiver
-7. [ ] Onboarding + permissions + protection status
+6. [x] Blocking service, categories, block screen, boot receiver (device reboot re-check pending after unlock).
+7. [x] Onboarding + permissions + protection status.
 8. [ ] Hints with AdMob test ads
 9. [ ] README wrap-up for Phase 1, then STOP and wait for feedback
 
@@ -61,6 +67,10 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - 2026-11-02: added the settings screen (reachable from the puzzle top bar) with persisted piece styles: Classic, Outline and Letters, each previewed and applied live to the board. 4 new app tests (110 total); debug APK built and installed on the test device.
 - 2026-11-02: bundled Cburnett chess artwork as VectorDrawables (BSD-3-Clause, documented in `THIRD_PARTY_NOTICES.md`) and added it as a fourth selectable style; 3 new app tests (113 total). Verified on the device.
 - 2026-11-02: added the placement-test onboarding flow: shared board component, adaptive 10-puzzle run from the built-in stock with no rewards/ELO writes, 3 lives per puzzle, early finish on an empty stock, result screen, and `placement_completed` routing. Build and all 113 tests pass; device routing verified.
+- 2026-11-02: added the blocking layer: `BlockCategory`/`PlatformCategory`/`AppCategoryClassifier`/`BlockPolicy` with precedence tests, daily `BudgetStore`, `ForegroundAppDetector`, `AppInfoProvider`, foreground `BlockingService`, main-thread Compose `BlockOverlayController` and `BlockScreen`, 5/1-minute warnings, `BootReceiver`, settings controls for limit/cap/categories/permissions, and puzzle rewards credited to the budget. 14 new tests (127 total at that point); device overlay and budget behavior verified.
+- 2026-11-02: added the permissions onboarding (usage access, overlay, notifications) and a protection-status banner on the puzzle screen and in settings; the blocking service now exposes its running state and pauses counting / hides the overlay while the screen is off. The Compose-only additions keep the suite at 129 tests (109 domain + 20 app); full build verified. Device boot re-check pending unlock.
 
 ## Next step
-Continue with Phase 1 task 6: the blocking service, categories, block screen and boot receiver, then onboarding/permissions and AdMob hints in the approved order. Puzzle rewards are currently calculated and displayed but are not yet credited to the blocking budget; connect them when the budget/blocking app layer is implemented. No Hint button is exposed before rewarded ads are implemented.
+1. Reconnect/unlock the phone, launch the app once (clears Android's stopped flag), reboot, unlock, and confirm `BlockingService` starts automatically and the notification says protection is active.
+2. Manually tap through the block screen buttons and the permission dialogs on the device.
+3. Continue with Phase 1 task 8: hints with AdMob **test** ads (hint only after a completed rewarded ad, reward reduction, no ELO gain on a hint win, no life effect), then task 9 README wrap-up and STOP.

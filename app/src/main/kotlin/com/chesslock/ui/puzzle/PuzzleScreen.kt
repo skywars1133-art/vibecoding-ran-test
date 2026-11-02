@@ -20,15 +20,25 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.chesslock.R
+import com.chesslock.blocking.BlockingPermissions
+import com.chesslock.ui.blocking.ProtectionStatusBanner
 import com.chesslock.ui.settings.SettingsViewModel
 import java.util.Locale
 
@@ -36,11 +46,33 @@ import java.util.Locale
 @Composable
 fun PuzzleScreen(
     onOpenSettings: () -> Unit,
+    onFixProtection: () -> Unit,
     viewModel: PuzzleViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
     val settings by settingsViewModel.settings.collectAsState()
+    val protectionRunning by settingsViewModel.protectionRunning.collectAsState()
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var permissionEpoch by remember { mutableIntStateOf(0) }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) permissionEpoch++
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    val usageAccessGranted = remember(permissionEpoch) {
+        BlockingPermissions.hasUsageAccess(context)
+    }
+    val overlayGranted = remember(permissionEpoch) {
+        BlockingPermissions.canDrawOverlays(context)
+    }
+    val protectionActive = settings.blockingEnabled &&
+        usageAccessGranted &&
+        overlayGranted &&
+        protectionRunning
     Scaffold(
         topBar = {
             TopAppBar(
@@ -69,6 +101,12 @@ fun PuzzleScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
             ) {
+                ProtectionStatusBanner(
+                    blockingEnabled = settings.blockingEnabled,
+                    active = protectionActive,
+                    onOpenSettings = onOpenSettings,
+                    onFixProtection = onFixProtection,
+                )
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth(),

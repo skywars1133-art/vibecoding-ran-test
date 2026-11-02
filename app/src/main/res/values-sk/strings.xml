@@ -46,4 +46,59 @@
     <string name="placement_start">Začať riešiť</string>
     <string name="placement_saving">Ukladá sa…</string>
     <string name="placement_save_error">Hodnotenie sa nepodarilo uložiť. Skús to znova.</string>
+
+    <!-- App blocking -->
+    <string name="block_screen_title">Čas vypršal</string>
+    <string name="block_screen_body">Dnešný čas pre blokované aplikácie si už vyčerpal.</string>
+    <string name="block_screen_earn">Vyrieš úlohu a získaj ďalší čas.</string>
+    <string name="block_screen_solve">Vyriešiť úlohu</string>
+    <string name="block_screen_go_home">Domov</string>
+    <string name="blocking_channel_protection">Ochrana aplikácií</string>
+    <string name="blocking_channel_protection_description">Zobrazuje, že ChessLock sleduje denný časový rozpočet.</string>
+    <string name="blocking_channel_warnings">Upozornenia na čas</string>
+    <string name="blocking_channel_warnings_description">Upozorní, keď zostáva málo času pre blokované aplikácie.</string>
+    <string name="blocking_notification_active">Ochrana je aktívna · zostáva %1$s</string>
+    <string name="blocking_notification_starting">Ochrana sa spúšťa…</string>
+    <string name="blocking_notification_no_usage_access">Ochrana potrebuje prístup k používaniu aplikácií</string>
+    <string name="blocking_notification_no_overlay">Ochrana potrebuje povolenie zobrazovať sa nad inými aplikáciami</string>
+    <string name="blocking_notification_body">Ťukni a otvor ChessLock, kde si môžeš získať čas.</string>
+    <string name="blocking_warning_title">Čas sa kráti</string>
+    <string name="blocking_warning_body">Pre blokované aplikácie zostáva %1$s. Vyrieš úlohu a získaj viac.</string>
+    <string name="blocking_minutes">%1$d min</string>
+    <string name="settings_blocking_section">Blokovanie aplikácií</string>
+    <string name="settings_blocking_enabled">Blokovať rušivé aplikácie</string>
+    <string name="settings_blocking_description">Čas sa počíta len vtedy, keď je blokovaná aplikácia v popredí.</string>
+    <string name="settings_daily_limit">Denný limit</string>
+    <string name="settings_daily_cap">Denný strop (voliteľný)</string>
+    <string name="settings_daily_cap_off">Vypnuté</string>
+    <string name="settings_blocked_categories">Blokované kategórie</string>
+    <string name="settings_category_social">Sociálne siete</string>
+    <string name="settings_category_games">Hry</string>
+    <string name="settings_category_video">Video / streamovanie</string>
+    <string name="settings_category_communication">Komunikácia</string>
+    <string name="settings_category_shopping">Nakupovanie</string>
+    <string name="settings_category_other">Iné</string>
+    <string name="settings_minutes">%1$d min</string>
+    <string name="settings_permissions_section">Systémové povolenia</string>
+    <string name="settings_permission_usage_access">Prístup k používaniu aplikácií</string>
+    <string name="settings_permission_overlay">Zobrazovanie nad inými aplikáciami</string>
+    <string name="settings_permission_granted">Povolené</string>
+    <string name="settings_permission_missing">Nepovolené</string>
+    <string name="settings_open_permission">Otvoriť nastavenia</string>
+
+    <!-- Permissions onboarding and protection status -->
+    <string name="permissions_title">Chráň si pozornosť</string>
+    <string name="permissions_body">ChessLock potrebuje tieto systémové povolenia na blokovanie rušivých aplikácií. Nič neopúšťa tvoje zariadenie.</string>
+    <string name="permissions_usage_description">Zistí, ktorá aplikácia je v popredí, aby čas čerpali len blokované aplikácie.</string>
+    <string name="permissions_overlay_description">Zobrazí blokovaciu obrazovku nad blokovanou aplikáciou, keď vyprší čas.</string>
+    <string name="permissions_notifications">Upozornenia</string>
+    <string name="permissions_notifications_description">Zobrazuje stav ochrany a upozorní ťa pri 5 a 1 minúte.</string>
+    <string name="permissions_allow">Povoliť</string>
+    <string name="permissions_continue">Pokračovať</string>
+    <string name="permissions_active">Ochrana je aktívna.</string>
+    <string name="permissions_inactive">Ochrana zatiaľ nie je aktívna. Chýbajúce povolenia môžeš udeliť teraz alebo neskôr v nastaveniach.</string>
+    <string name="protection_active">Ochrana je aktívna</string>
+    <string name="protection_inactive">Ochrana nie je aktívna</string>
+    <string name="protection_disabled">Blokovanie aplikácií je vypnuté</string>
+    <string name="protection_fix">Nastaviť</string>
 </resources>

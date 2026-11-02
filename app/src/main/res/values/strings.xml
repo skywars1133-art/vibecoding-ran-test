@@ -46,4 +46,59 @@
     <string name="placement_start">Start solving</string>
     <string name="placement_saving">Saving…</string>
     <string name="placement_save_error">Could not save your rating. Try again.</string>
+
+    <!-- App blocking -->
+    <string name="block_screen_title">Time\'s up</string>
+    <string name="block_screen_body">You have used today\'s time for blocked apps.</string>
+    <string name="block_screen_earn">Solve a puzzle to earn more time.</string>
+    <string name="block_screen_solve">Solve a puzzle</string>
+    <string name="block_screen_go_home">Go home</string>
+    <string name="blocking_channel_protection">App protection</string>
+    <string name="blocking_channel_protection_description">Shows that ChessLock is watching the daily time budget.</string>
+    <string name="blocking_channel_warnings">Time warnings</string>
+    <string name="blocking_channel_warnings_description">Warns when little time is left for blocked apps.</string>
+    <string name="blocking_notification_active">Protection is active · %1$s left</string>
+    <string name="blocking_notification_starting">Protection is starting…</string>
+    <string name="blocking_notification_no_usage_access">Protection needs usage access</string>
+    <string name="blocking_notification_no_overlay">Protection needs display-over-other-apps access</string>
+    <string name="blocking_notification_body">Tap to open ChessLock and earn time.</string>
+    <string name="blocking_warning_title">Time is almost up</string>
+    <string name="blocking_warning_body">%1$s left for blocked apps. Solve a puzzle to earn more.</string>
+    <string name="blocking_minutes">%1$d min</string>
+    <string name="settings_blocking_section">App blocking</string>
+    <string name="settings_blocking_enabled">Block distracting apps</string>
+    <string name="settings_blocking_description">Counts time only while a blocked app is in the foreground.</string>
+    <string name="settings_daily_limit">Daily limit</string>
+    <string name="settings_daily_cap">Daily cap (optional)</string>
+    <string name="settings_daily_cap_off">Off</string>
+    <string name="settings_blocked_categories">Blocked categories</string>
+    <string name="settings_category_social">Social</string>
+    <string name="settings_category_games">Games</string>
+    <string name="settings_category_video">Video / streaming</string>
+    <string name="settings_category_communication">Communication</string>
+    <string name="settings_category_shopping">Shopping</string>
+    <string name="settings_category_other">Other</string>
+    <string name="settings_minutes">%1$d min</string>
+    <string name="settings_permissions_section">System permissions</string>
+    <string name="settings_permission_usage_access">Usage access</string>
+    <string name="settings_permission_overlay">Display over other apps</string>
+    <string name="settings_permission_granted">Granted</string>
+    <string name="settings_permission_missing">Not granted</string>
+    <string name="settings_open_permission">Open settings</string>
+
+    <!-- Permissions onboarding and protection status -->
+    <string name="permissions_title">Protect your focus</string>
+    <string name="permissions_body">ChessLock needs these system permissions to block distracting apps. Nothing leaves your device.</string>
+    <string name="permissions_usage_description">See which app is in the foreground so only blocked apps use your time.</string>
+    <string name="permissions_overlay_description">Show the block screen on top of a blocked app when time runs out.</string>
+    <string name="permissions_notifications">Notifications</string>
+    <string name="permissions_notifications_description">Show the ongoing protection status and warn you at 5 and 1 minutes.</string>
+    <string name="permissions_allow">Allow</string>
+    <string name="permissions_continue">Continue</string>
+    <string name="permissions_active">Protection is active.</string>
+    <string name="permissions_inactive">Protection is not active yet. You can grant the missing permissions now or later in Settings.</string>
+    <string name="protection_active">Protection is active</string>
+    <string name="protection_inactive">Protection is not active</string>
+    <string name="protection_disabled">App blocking is off</string>
+    <string name="protection_fix">Set up</string>
 </resources>

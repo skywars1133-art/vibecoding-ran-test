@@ -1,5 +1,7 @@
 package com.chesslock.domain.config
 
+import com.chesslock.domain.blocking.BlockCategory
+
 /** Extra minutes granted for puzzles rated at least [minRating]. */
 data class DifficultyBonus(val minRating: Int, val bonusMinutes: Int)
 
@@ -14,6 +16,32 @@ data class AppConfig(
     val dailyCapMinutes: Int? = null,
     /** Remaining-time thresholds (seconds) at which the user is warned: 5 min, 1 min. */
     val warnAtSeconds: List<Long> = listOf(300L, 60L),
+
+    // --- Blocking (SPEC 1) ---
+    val blockingEnabledByDefault: Boolean = true,
+    /** Social, games and video are blocked until the user changes the categories. */
+    val defaultBlockedCategories: Set<BlockCategory> = setOf(
+        BlockCategory.SOCIAL,
+        BlockCategory.GAMES,
+        BlockCategory.VIDEO,
+    ),
+    /** Foreground app polling while the blocking service runs. */
+    val blockingPollIntervalSeconds: Long = 2,
+    /** Usage lookback window for [`UsageStatsManager.queryEvents`]. */
+    val blockingUsageLookbackSeconds: Long = 60,
+    /**
+     * Upper bound for one usage step. After a process freeze or a slow poll, a huge elapsed time
+     * must not drain the whole budget at once.
+     */
+    val blockingMaxCatchUpSeconds: Long = 10,
+    /** Pending usage is written to storage this often instead of on every poll. */
+    val budgetFlushIntervalSeconds: Long = 15,
+    /** Daily limit choices offered in settings. */
+    val dailyLimitOptionsMinutes: List<Int> = listOf(15, 30, 45, 60, 90, 120),
+    /** Optional total-time cap choices offered in settings. */
+    val dailyCapOptionsMinutes: List<Int> = listOf(60, 120, 180, 240),
+    val blockingNotificationId: Int = 1001,
+    val blockingWarningNotificationId: Int = 1002,
 
     // --- Rewards (SPEC 3) ---
     val baseRewardMinutes: Int = 3,

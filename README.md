@@ -42,11 +42,15 @@ Commit the resulting file after validating it.
 ## Architecture
 - `domain/`: pure Kotlin/JVM, no Android imports. `config/AppConfig` (the ONE place for numeric constants), `elo`,
   `reward`, `puzzle` (`Puzzle` + Lichess CSV parser, `PuzzleProgress` solution tracking, `PuzzleSession` lives/hints,
-  `SkipPolicy`), `budget` (daily time budget, midnight reset).
+  `SkipPolicy`), `budget` (daily time budget, midnight reset), and `blocking` (`BlockCategory`, the curated
+  `AppCategoryClassifier`, `BlockRules`/`BlockPolicy`).
 - `app/`: Android app (Compose, Material 3, Hilt). `di/ConfigModule` provides `AppConfig`; `data/` contains the Room
-  puzzle stock, DataStore player progress and the settings store; `chess/` adapts chesslib for legal UCI moves and
-  mating alternatives; `ui/puzzle/` contains the tap-to-move board, piece rendering, promotion picker, timer, skip
-  controls and puzzle ViewModel; `ui/settings/` contains the settings screen and its ViewModel.
+  puzzle stock, DataStore player progress, the shared `BudgetStore` and the settings store; `chess/` adapts chesslib
+  for legal UCI moves and mating alternatives; `ui/puzzle/` contains the tap-to-move board, piece rendering,
+  promotion picker, timer, skip controls and puzzle ViewModel; `ui/settings/` contains the settings screen and its
+  ViewModel; `blocking/` contains the foreground service, usage detector, overlay controller, notifications, boot
+  receiver and permission helpers; `ui/blocking/` contains the block screen and protection-status banner;
+  `ui/onboarding/` contains the permissions onboarding.
 
 ## Decisions
 - **Domain module is plain Kotlin/JVM.** Rules are testable without an emulator and stay independent of Android.
@@ -81,12 +85,35 @@ Commit the resulting file after validating it.
   Burnett, BSD-3-Clause — see `THIRD_PARTY_NOTICES.md`). The choice is stored in the `settings` DataStore and applied
   to the board immediately; switching does not reset the current puzzle. Tornelo's named sets (Chigorin, Blackburne,
   etc.) are proprietary and are not bundled.
+- **Blocking is non-strict and permission-based.** A foreground service polls `UsageStatsManager` events (no
+  `AccessibilityService`) and charges the one shared daily budget only while a blocked package is in the foreground.
+  `TYPE_APPLICATION_OVERLAY` (granted through `SYSTEM_ALERT_WINDOW`) shows a full-screen Compose block screen when the
+  budget is empty. The service polls every 2 s, caps catch-up after a freeze at 10 s, flushes pending usage every 15 s,
+  and stops counting / hides the overlay while the screen is off.
+- **Blocking precedence:** ChessLock, the launcher, phone/emergency, Settings, SystemUI, the installer and the
+  permission controller are never blocked. An explicit "never block" override wins over an explicit "always block"
+  override, which wins over the selected category. Categories default to Social, Games and Video/streaming; the
+  daily limit defaults to 30 min and the optional total cap is off.
+- **Category source:** `ApplicationInfo.category` plus a curated map of popular packages, because many apps leave the
+  platform category unset and Android has no communication/shopping category values. `QUERY_ALL_PACKAGES` is declared
+  for reliable metadata reads and the future individual-apps picker; the Play policy declaration is release-prep work.
+- **Protection status is visible.** First run explains usage access, overlay and notification permissions and lets the
+  user continue without them; afterwards the puzzle screen and Settings show "Protection is not active" (or "App
+  blocking is off") with a shortcut to fix it. The status also reflects whether the blocking service is alive.
+- **Boot and process death:** `BootReceiver` starts the service after `BOOT_COMPLETED` and `MY_PACKAGE_REPLACED` when
+  blocking is enabled. Android deliberately skips boot broadcasts for apps that were force-stopped until the user
+  launches them again.
+- **Puzzle rewards feed the budget:** a solved puzzle's reward is written to `BudgetStore` immediately, so the block
+  screen disappears on the next poll without restarting the service.
 - **Min SDK 26** (java.time without desugaring, notification channels).
 - **Dependency versions** in `gradle/libs.versions.toml` were picked as a compatible set (AGP 8.7.3, Kotlin 2.0.21,
   KSP 2.0.21-1.0.28, Hilt 2.52, Compose BOM 2024.10.01) but could not be resolved in the authoring sandbox. Bump them
   if Gradle complains.
-- **Status of the Android module:** the app module compiles, its unit tests pass and the debug APK is installed and
-  launched on a test device. Remaining Phase 1 work is tracked in `CHECKPOINT.md`.
+- **Status of the Android module:** Phase 1 tasks 1–7 are implemented (puzzle stock, board/puzzle flow, placement test,
+  blocking service and overlay, permissions onboarding and protection status). The app compiles, its unit tests pass,
+  and the blocking overlay and budget have been verified on a physical Android 15 device. A final boot-receiver
+  re-check awaits a manual unlock after the test phone dropped off USB. Remaining Phase 1 work is hints with test ads
+  and the wrap-up, tracked in `CHECKPOINT.md`.
 
 ## Licenses
 | Item | License | Use |

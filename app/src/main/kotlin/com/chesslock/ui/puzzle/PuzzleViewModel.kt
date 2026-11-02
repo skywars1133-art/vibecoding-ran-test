@@ -7,6 +7,8 @@ import com.chesslock.chess.ChessPosition
 import com.chesslock.chess.ChesslibMateChecker
 import com.chesslock.data.PlayerStore
 import com.chesslock.data.PuzzleRepository
+import com.chesslock.data.BudgetStore
+import com.chesslock.data.SettingsStore
 import com.chesslock.domain.config.AppConfig
 import com.chesslock.domain.elo.EloResult
 import com.chesslock.domain.puzzle.MoveResult
@@ -22,6 +24,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -57,6 +60,8 @@ data class PuzzleUiState(
 class PuzzleViewModel @Inject constructor(
     private val repository: PuzzleRepository,
     private val playerStore: PlayerStore,
+    private val budgetStore: BudgetStore,
+    private val settingsStore: SettingsStore,
     private val config: AppConfig,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(PuzzleUiState(playerElo = config.eloStart))
@@ -209,6 +214,14 @@ class PuzzleViewModel @Inject constructor(
                         }
                         reward = outcome.rewardSeconds
                         repository.markSolved(currentProgress.puzzle.id)
+                        if (outcome.rewardSeconds > 0L) {
+                            val settings = settingsStore.settings.first()
+                            budgetStore.addEarned(
+                                seconds = outcome.rewardSeconds,
+                                limitSeconds = settings.dailyLimitSeconds,
+                                capSeconds = settings.dailyCapSeconds,
+                            )
+                        }
                     }
                     mutableState.value = mutableState.value.copy(
                         pieces = currentPosition.pieces,
