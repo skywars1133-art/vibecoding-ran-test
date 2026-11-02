@@ -7,6 +7,11 @@ on:
     # A little before the app's usual daily sync, so a new pack is ready when the app asks.
     - cron: "17 2 * * *"
   workflow_dispatch:
+  # Rebuild immediately when the pipeline or its defaults change (also makes the first run easy).
+  push:
+    paths:
+      - .github/workflows/puzzle-packs.yml
+      - scripts/build-puzzle-packs.py
 
 permissions:
   contents: write
