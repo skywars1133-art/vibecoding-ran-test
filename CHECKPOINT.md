@@ -4,11 +4,11 @@ Resume file. Update after every meaningful step and before any likely credit cut
 
 ## Status
 - Date: 2026-11-02
-- Current phase: Phase 2 (puzzle supply) — implemented; awaiting live release + device verification and user feedback
+- Current phase: Phase 2 (puzzle supply) — complete and device-verified; awaiting user feedback
 - Plan: **approved by the user** (2026-11-02)
 - Last completed: Phase 2 — daily 150-puzzle packs from the Lichess dump via GitHub Actions, WorkManager sync
   (24 h + launch + "Download now"), Wi-Fi-only default, Room accumulation with solved-never-repeat, and the Settings
-  stock/download UI.
+  stock/download UI. Live release published and all flows verified on the tablet.
 - Before Phase 2: Phase 1 was complete (MVP, language selection, Cburnett default, four licensed SVG piece sets).
 
 ## Verification
@@ -18,9 +18,31 @@ Resume file. Update after every meaningful step and before any likely credit cut
   rows, unique IDs, ratings inside every band window, sorted rows, and a different daily salt produces a different
   selection. EN/SK resources were checked programmatically: 132 keys in both files, no placeholder mismatches and no
   `R.string.*` references missing from the default resources.
-- Phase 2 pending live checks: the `puzzle-packs` GitHub Release has not been generated yet (no `gh` CLI locally), and
-  the WorkManager download/toggle/stock-empty flow has not been run on a device (tablet `R9TX902F92W` is currently
-  `unauthorized` in adb; re-authorize USB debugging to test).
+- Phase 2 live pipeline: pushed the workflow/script, Actions run `41524678991` succeeded on the first try and published
+  13 assets to https://github.com/skywars1133-art/vibecoding-ran-test/releases/tag/puzzle-packs. A validator downloaded
+  every asset (including one through a cache-busting `?v=` URL) and checked: exact Lichess header, 150 rows per file,
+  unique IDs within each file, ratings inside `center-300..center+300`, rating deviation <= 100, popularity >= 90,
+  plays >= 2000, 2-8 UCI plies and a 6-field FEN. Regenerated packs span each band, e.g. the 2200 pack now covers
+  1900..2498 instead of stopping at 2217.
+- Phase 2 on-device verification (Samsung tablet `R9TX902F92W`, SM-X210, Android 16):
+  - installed the new debug APK; the launch sync downloaded band 1000 for `ELO 1088` and logged
+    `Puzzle pack 1000: 150 puzzles, 149 new`;
+  - Room grew 50 -> 199 rows; solved stayed 7, unsolved 192; the one ID that overlaps the built-in set (`ahNzi`) was
+    ignored, proving de-duplication; sync metadata stored `last_band_center=1000`, `last_pack_size=150`,
+    `last_added_count=149`, a fresh `last_success_epoch_ms`, and cleared the old 404 error;
+  - WorkManager: periodic `12ad0e3d-…` ENQUEUED with a 86,400,000 ms interval and the one-time launch worker succeeded;
+  - Settings shows the stock (192), last download, band, Wi-Fi-only switch (on by default) and **Download now**;
+  - toggling Wi-Fi off wrote `wifi_only_downloads=False` and changed the JobScheduler network capability from
+    `NOT_METERED&INTERNET...` to `INTERNET...`; toggling it back restored both;
+  - **Download now** inside 24 h logged `Puzzle pack 1000: 150 puzzles, 0 new`, showed the "requested" note and
+    refreshed the last-download timestamp;
+  - solved-never-repeat: marked the overlapping `ahNzi` row solved in the DB, forced another download (0 new), and
+    confirmed `ahNzi` stayed solved and the total stayed 199;
+  - stock-exhausted screen: with every puzzle marked solved, the app showed "No unsolved puzzles are left in the offline
+    stock...", plus working **Open settings** and **Retry** buttons; the real 7-solved state was then restored;
+  - Slovak UI: "Sťahovanie úloh", "Nevyriešené úlohy v lokálnej zásobe: 192", "Posledné stiahnutie…", "Pásmo úloh:
+    1000", "Sťahovať iba cez Wi-Fi" and "Stiahnuť teraz" all render, and tapping **Stiahnuť teraz** shows
+    "Sťahovanie je naplánované...". The app was switched back to English afterwards.
 - Phase 1 verification history:
   - **110 domain tests + 31 app tests passed (141 total); 0 failures, errors or skips.**
   - `:app:assembleDebug` produced a signed debug APK.
@@ -53,7 +75,9 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - The generator streams the large Lichess dump while retaining only the best candidates per rating band.
 - Pushing needs the Claude GitHub App installed on the repo owner (already done; push works).
 - Do NOT invent puzzle data.
-- `adb shell input` (taps/keyevents) is rejected with `INJECT_EVENTS`; use `am start`, `monkey`, `uiautomator dump`, `dumpsys` and logcat for verification.
+- On the old phone `CIYDDIMV5D5XNFUS`, `adb shell input` (taps/keyevents) is rejected with `INJECT_EVENTS`; use
+  `am start`, `monkey`, `uiautomator dump`, `dumpsys` and logcat there. On the tablet `R9TX902F92W`, `adb shell input
+  tap/swipe` works and was used for the Phase 2 UI checks.
 - `pm grant POST_NOTIFICATIONS` is rejected on this device; grant notification permission manually or through the app's onboarding/settings links.
 - A secure lock is active after reboot. `wm dismiss-keyguard` cannot bypass it; the device must be unlocked manually.
 - This machine has no system Python/Node/`gh`. A portable interpreter for validating scripts is at
@@ -113,17 +137,14 @@ Resume file. Update after every meaningful step and before any likely credit cut
   `addPuzzles` with `INSERT IGNORE`; Settings stock/last-sync/error/Wi-Fi/Download-now UI; clearer empty-stock screen
   with Settings + Retry; English/Slovak strings; generator script and daily GitHub Action publishing to the fixed
   `puzzle-packs` release; README/notices/checkpoint updates. Build + 147 tests pass; generator validated on synthetic
-  data. Live release and on-device checks pending (see Verification).
+  data. Committed as `36808a0`, `a395d06` and `17807d1`.
+- 2026-11-02: **Phase 2 verified live.** Actions run `41524678991` published 13 validated packs; installed the APK on
+  the tablet and verified the band download, Room accumulation/dedupe, sync metadata, WorkManager scheduling, the
+  Wi-Fi toggle's effect on the network constraint, Download now within 24 h, solved-flag preservation, the empty-stock
+  screen, and the full Slovak section. Details in Verification.
 
 ## Next step
-1. **Phase 2 is implemented; live checks remain.**
-   - Trigger `.github/workflows/puzzle-packs.yml` (Actions UI or `workflow_dispatch`) and verify the `puzzle-packs`
-     release contains 13 `puzzles-*.csv` assets, each with 150 rows.
-   - Re-authorize the tablet (`adb devices` currently shows `unauthorized`), install the debug APK, and verify: the
-     launch/periodic sync downloads a band matching the current ELO, stock count rises, "Download now" forces a
-     download, the Wi-Fi-only switch changes the WorkManager constraint, the empty-stock message and buttons work, and
-     solved puzzles never return. Check both English and Slovak.
+1. **Phase 2 is complete and verified. Stop for user feedback before starting Phase 3.**
 2. Optional pending Phase 1 device check: reconnect/unlock the old phone `CIYDDIMV5D5XNFUS`, launch the app once,
    reboot, unlock, and confirm `BlockingService` starts automatically. Also exercise the block-screen buttons and
-   permission dialogs manually.
-3. Stop for user feedback after Phase 2 verification.
+   permission dialogs manually (adb input injection is blocked on that device).

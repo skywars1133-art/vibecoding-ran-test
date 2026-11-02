@@ -62,7 +62,8 @@ Commit the resulting file after validating it.
 ### Daily puzzle packs (Phase 2)
 The full Lichess dump is far too large to download in the app. The GitHub Action in
 `.github/workflows/puzzle-packs.yml` processes it once a day and publishes small rating-band CSVs as assets of the
-fixed **`puzzle-packs`** release:
+fixed **`puzzle-packs`** release
+(https://github.com/skywars1133-art/vibecoding-ran-test/releases/tag/puzzle-packs):
 
 - band centers are every 200 points from 400 to 2800 (13 files: `puzzles-400.csv` ... `puzzles-2800.csv`);
 - each file contains 150 puzzles from `center - 300` to `center + 300`, so it has easier and harder material around
