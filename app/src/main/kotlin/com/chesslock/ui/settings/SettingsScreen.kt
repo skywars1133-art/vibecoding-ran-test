@@ -19,6 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -36,10 +37,12 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
@@ -54,9 +57,14 @@ import com.chesslock.blocking.BlockingPermissions
 import com.chesslock.data.AppLanguage
 import com.chesslock.data.AppSettings
 import com.chesslock.data.PieceStyle
+import com.chesslock.data.PuzzleSyncState
 import com.chesslock.domain.blocking.BlockCategory
 import com.chesslock.ui.common.PermissionCard
 import com.chesslock.ui.puzzle.PieceStylePreview
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,9 +74,12 @@ fun SettingsScreen(
 ) {
     val settings by viewModel.settings.collectAsState()
     val protectionRunning by viewModel.protectionRunning.collectAsState()
+    val stockCount by viewModel.stockCount.collectAsState()
+    val syncState by viewModel.syncState.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var permissionEpoch by remember { mutableIntStateOf(0) }
+    var downloadRequested by remember { mutableStateOf(false) }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) permissionEpoch++
@@ -215,6 +226,20 @@ fun SettingsScreen(
                 onLimitChange = viewModel::setDailyLimitMinutes,
                 onCapChange = viewModel::setDailyCapMinutes,
                 onCategoryChange = viewModel::setCategoryBlocked,
+            )
+
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
+            PuzzleDownloadsSettings(
+                settings = settings,
+                stockCount = stockCount,
+                syncState = syncState,
+                packSize = viewModel.puzzlePackSize,
+                downloadRequested = downloadRequested,
+                onWifiOnlyChange = viewModel::setWifiOnlyDownloads,
+                onDownloadNow = {
+                    downloadRequested = true
+                    viewModel.downloadPuzzles()
+                },
             )
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
@@ -377,6 +402,97 @@ private fun BlockingSettings(
             )
         }
     }
+}
+
+@Composable
+private fun PuzzleDownloadsSettings(
+    settings: AppSettings,
+    stockCount: Int?,
+    syncState: PuzzleSyncState,
+    packSize: Int,
+    downloadRequested: Boolean,
+    onWifiOnlyChange: (Boolean) -> Unit,
+    onDownloadNow: () -> Unit,
+) {
+    Text(
+        text = stringResource(R.string.settings_puzzles_section),
+        style = MaterialTheme.typography.titleMedium,
+    )
+    Text(
+        text = stringResource(R.string.settings_puzzles_description, packSize),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Text(
+        text = if (stockCount == null) {
+            stringResource(R.string.settings_puzzles_stock_loading)
+        } else {
+            stringResource(R.string.settings_puzzles_stock, stockCount)
+        },
+        style = MaterialTheme.typography.bodyLarge,
+    )
+    Text(
+        text = lastSyncLabel(syncState.lastSuccessEpochMs),
+        style = MaterialTheme.typography.bodyMedium,
+    )
+    syncState.lastBandCenter?.let { band ->
+        Text(
+            text = stringResource(R.string.settings_puzzles_last_band, band),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+    if (syncState.lastError != null) {
+        Text(
+            text = stringResource(R.string.settings_puzzles_last_error),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error,
+        )
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.settings_puzzles_wifi_only),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Text(
+                text = stringResource(R.string.settings_puzzles_wifi_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(
+            checked = settings.wifiOnlyDownloads,
+            onCheckedChange = onWifiOnlyChange,
+        )
+    }
+
+    Button(onClick = onDownloadNow) {
+        Text(stringResource(R.string.settings_puzzles_download_now))
+    }
+    if (downloadRequested) {
+        Text(
+            text = stringResource(R.string.settings_puzzles_download_requested),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun lastSyncLabel(epochMs: Long): String {
+    if (epochMs <= 0L) return stringResource(R.string.settings_puzzles_never_synced)
+    val locales = LocalConfiguration.current.locales
+    val locale = if (locales.size() == 0) Locale.getDefault() else locales[0]
+    val formatter = remember(locale) { DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", locale) }
+    val formatted = Instant.ofEpochMilli(epochMs)
+        .atZone(ZoneId.systemDefault())
+        .format(formatter)
+    return stringResource(R.string.settings_puzzles_last_sync, formatted)
 }
 
 private fun openSettings(context: Context, intent: Intent) {

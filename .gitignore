@@ -9,6 +9,10 @@ captures/
 .externalNativeBuild/
 .cxx/
 
+# Generated puzzle packs and the large Lichess source dump (built by the GitHub Action)
+puzzle-packs/
+lichess_db_puzzle.csv.zst
+
 # Never commit production ad unit IDs or signing material (CLAUDE.md hard rule)
 keystore.properties
 *.jks

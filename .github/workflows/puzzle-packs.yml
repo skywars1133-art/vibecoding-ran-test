@@ -1,0 +1,64 @@
+name: Build puzzle packs
+
+# SPEC 2: the app is too small to download the full Lichess dump, so this job pre-processes it
+# into rating bands and publishes the CSVs as assets of the fixed `puzzle-packs` release.
+on:
+  schedule:
+    # A little before the app's usual daily sync, so a new pack is ready when the app asks.
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: puzzle-packs
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Install zstd
+        run: sudo apt-get update && sudo apt-get install -y zstd
+
+      - name: Download the Lichess puzzle dump (CC0)
+        run: |
+          curl --fail --location --retry 3 --retry-delay 5 \
+            --output lichess_db_puzzle.csv.zst \
+            https://database.lichess.org/lichess_db_puzzle.csv.zst
+
+      - name: Build rating-band packs
+        run: |
+          set -o pipefail
+          zstdcat lichess_db_puzzle.csv.zst \
+            | python3 scripts/build-puzzle-packs.py \
+                --output-dir puzzle-packs \
+                --day "$(date -u +%Y%m%d)" \
+                --require-full
+
+      - name: Validate the generated packs
+        run: |
+          for file in puzzle-packs/puzzles-*.csv; do
+            lines=$(wc -l < "$file")
+            if [ "$lines" -ne 151 ]; then
+              echo "::error::$file has $((lines - 1)) puzzles (plus header), expected 150"
+              exit 1
+            fi
+          done
+          echo "Validated $(ls puzzle-packs/puzzles-*.csv | wc -l) packs with 150 puzzles each."
+
+      - name: Publish assets to the puzzle-packs release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view puzzle-packs >/dev/null 2>&1; then
+            gh release create puzzle-packs \
+              --title "ChessLock puzzle packs" \
+              --notes "Daily rating-band puzzle packs generated from the Lichess CC0 puzzle database."
+          fi
+          gh release upload puzzle-packs puzzle-packs/*.csv --clobber

@@ -16,7 +16,8 @@
     <string name="correct_move">Správne — pokračuj.</string>
     <string name="puzzle_solved">Úloha vyriešená!</string>
     <string name="next_puzzle">Ďalšia úloha</string>
-    <string name="no_puzzles">V lokálnej zásobe nezostali žiadne nevyriešené úlohy.</string>
+    <string name="no_puzzles">V lokálnej zásobe nezostali žiadne nevyriešené úlohy. Pripoj sa na internet a stiahni si nový balík v Nastaveniach.</string>
+    <string name="no_puzzles_action">Otvoriť nastavenia</string>
     <string name="puzzle_load_error">Úlohu sa nepodarilo načítať.</string>
     <string name="retry">Skúsiť znova</string>
     <string name="promotion_title">Povýšenie pešiaka</string>
@@ -94,6 +95,20 @@
     <string name="settings_permission_granted">Povolené</string>
     <string name="settings_permission_missing">Nepovolené</string>
     <string name="settings_open_permission">Otvoriť nastavenia</string>
+
+    <!-- Puzzle downloads (SPEC 2, Phase 2) -->
+    <string name="settings_puzzles_section">Sťahovanie úloh</string>
+    <string name="settings_puzzles_description">Približne raz za deň ChessLock stiahne balík %1$d úloh podľa tvojej výkonnosti. Balíky zostávajú dostupné offline.</string>
+    <string name="settings_puzzles_stock">Nevyriešené úlohy v lokálnej zásobe: %1$d</string>
+    <string name="settings_puzzles_stock_loading">Nevyriešené úlohy v lokálnej zásobe: …</string>
+    <string name="settings_puzzles_last_sync">Posledné stiahnutie: %1$s</string>
+    <string name="settings_puzzles_never_synced">Posledné stiahnutie: nikdy</string>
+    <string name="settings_puzzles_last_band">Pásmo úloh: %1$d</string>
+    <string name="settings_puzzles_last_error">Posledné sťahovanie zlyhalo. ChessLock to skúsi znova automaticky.</string>
+    <string name="settings_puzzles_wifi_only">Sťahovať iba cez Wi-Fi</string>
+    <string name="settings_puzzles_wifi_description">Po vypnutí sa balíky úloh môžu sťahovať aj cez mobilné dáta.</string>
+    <string name="settings_puzzles_download_now">Stiahnuť teraz</string>
+    <string name="settings_puzzles_download_requested">Sťahovanie je naplánované. Spustí sa, keď bude dostupná povolená sieť.</string>
 
     <!-- Permissions onboarding and protection status -->
     <string name="permissions_title">Chráň si pozornosť</string>

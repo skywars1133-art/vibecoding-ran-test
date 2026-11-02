@@ -55,6 +55,8 @@ enum class AppBlockOverride {
 data class AppSettings(
     val pieceStyle: PieceStyle = PieceStyle.DEFAULT,
     val language: AppLanguage = AppLanguage.DEFAULT,
+    /** SPEC 2: download puzzle packs only on an unmetered network by default. */
+    val wifiOnlyDownloads: Boolean,
     val blockingEnabled: Boolean,
     val dailyLimitMinutes: Int,
     val dailyCapMinutes: Int?,
@@ -75,6 +77,7 @@ data class AppSettings(
 
     companion object {
         fun defaults(config: AppConfig): AppSettings = AppSettings(
+            wifiOnlyDownloads = config.wifiOnlyDownloadsByDefault,
             blockingEnabled = config.blockingEnabledByDefault,
             dailyLimitMinutes = config.defaultDailyLimitMinutes,
             dailyCapMinutes = config.dailyCapMinutes,

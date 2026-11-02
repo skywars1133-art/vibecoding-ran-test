@@ -20,6 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import com.chesslock.blocking.BlockingServiceController
 import com.chesslock.data.AppLanguage
+import com.chesslock.data.PuzzlePackScheduler
 import com.chesslock.data.SettingsStore
 import com.chesslock.ui.common.ProvideAppLanguage
 import com.chesslock.ui.onboarding.PermissionsScreen
@@ -36,11 +37,17 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
     @Inject lateinit var settingsStore: SettingsStore
     @Inject lateinit var blockingController: BlockingServiceController
+    @Inject lateinit var packScheduler: PuzzlePackScheduler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycleScope.launch {
-            if (settingsStore.settings.first().blockingEnabled) blockingController.start()
+            val settings = settingsStore.settings.first()
+            if (settings.blockingEnabled) blockingController.start()
+            // Keep the periodic request current and top up the stock once per launch (the worker
+            // itself skips when the last successful pack is less than 24 hours old).
+            packScheduler.ensureScheduled()
+            packScheduler.requestImmediateSync(force = false)
         }
         setContent {
             val mainViewModel: MainViewModel = hiltViewModel()

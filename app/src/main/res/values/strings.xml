@@ -16,7 +16,8 @@
     <string name="correct_move">Correct — keep going.</string>
     <string name="puzzle_solved">Puzzle solved!</string>
     <string name="next_puzzle">Next puzzle</string>
-    <string name="no_puzzles">No unsolved puzzles are left in the offline stock.</string>
+    <string name="no_puzzles">No unsolved puzzles are left in the offline stock. Connect to the internet and download a fresh pack in Settings.</string>
+    <string name="no_puzzles_action">Open settings</string>
     <string name="puzzle_load_error">The puzzle could not be loaded.</string>
     <string name="retry">Retry</string>
     <string name="promotion_title">Pawn promotion</string>
@@ -94,6 +95,20 @@
     <string name="settings_permission_granted">Granted</string>
     <string name="settings_permission_missing">Not granted</string>
     <string name="settings_open_permission">Open settings</string>
+
+    <!-- Puzzle downloads (SPEC 2, Phase 2) -->
+    <string name="settings_puzzles_section">Puzzle downloads</string>
+    <string name="settings_puzzles_description">About once a day, ChessLock downloads a pack of %1$d puzzles matched to your rating. Packs stay available offline.</string>
+    <string name="settings_puzzles_stock">Unsolved puzzles in the offline stock: %1$d</string>
+    <string name="settings_puzzles_stock_loading">Unsolved puzzles in the offline stock: …</string>
+    <string name="settings_puzzles_last_sync">Last download: %1$s</string>
+    <string name="settings_puzzles_never_synced">Last download: never</string>
+    <string name="settings_puzzles_last_band">Puzzle band: %1$d</string>
+    <string name="settings_puzzles_last_error">The last download failed. ChessLock will retry automatically.</string>
+    <string name="settings_puzzles_wifi_only">Download over Wi-Fi only</string>
+    <string name="settings_puzzles_wifi_description">When off, puzzle packs can also download over mobile data.</string>
+    <string name="settings_puzzles_download_now">Download now</string>
+    <string name="settings_puzzles_download_requested">Download requested. It starts when the allowed network is available.</string>
 
     <!-- Permissions onboarding and protection status -->
     <string name="permissions_title">Protect your focus</string>

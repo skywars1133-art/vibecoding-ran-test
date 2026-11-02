@@ -132,7 +132,12 @@ fun PuzzleScreen(
                 modifier = Modifier.fillMaxSize().padding(padding),
             ) { CircularProgressIndicator() }
 
-            state.stockEmpty || state.loadError -> MessageScreen(state, padding, viewModel::loadPuzzle)
+            state.stockEmpty || state.loadError -> MessageScreen(
+                state = state,
+                padding = padding,
+                onRetry = viewModel::loadPuzzle,
+                onOpenSettings = onOpenSettings,
+            )
             else -> Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -281,6 +286,7 @@ private fun MessageScreen(
     state: PuzzleUiState,
     padding: androidx.compose.foundation.layout.PaddingValues,
     onRetry: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -288,8 +294,11 @@ private fun MessageScreen(
         modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
     ) {
         Text(stringResource(if (state.stockEmpty) R.string.no_puzzles else R.string.puzzle_load_error))
-        if (!state.stockEmpty) {
-            Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(16.dp))
+        if (state.stockEmpty) {
+            Button(onClick = onOpenSettings) { Text(stringResource(R.string.no_puzzles_action)) }
+            TextButton(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+        } else {
             Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
         }
     }

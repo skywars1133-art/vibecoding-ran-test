@@ -17,6 +17,7 @@ class AppSettingsTest {
         assertEquals(config.defaultDailyLimitMinutes, settings.dailyLimitMinutes)
         assertEquals(config.dailyCapMinutes, settings.dailyCapMinutes)
         assertEquals(config.defaultBlockedCategories, settings.blockedCategories)
+        assertEquals(config.wifiOnlyDownloadsByDefault, settings.wifiOnlyDownloads)
         assertEquals(emptySet<String>(), settings.alwaysBlockedPackages)
         assertEquals(emptySet<String>(), settings.neverBlockedPackages)
     }

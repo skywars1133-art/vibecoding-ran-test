@@ -95,7 +95,42 @@ data class AppConfig(
     val selectionSigma: Int = 100,
     /** Pick randomly among this many unsolved puzzles closest to the desired rating. */
     val selectionPoolSize: Int = 3,
+
+    // --- Daily puzzle packs (SPEC 2, Phase 2) ---
+    /** WorkManager asks for a fresh pack this often. */
+    val puzzlePackRefreshHours: Long = 24,
+    /** SPEC 2: each daily download contains this many puzzles. */
+    val puzzlePackSize: Int = 150,
+    /** Rating-band centers are spaced this far apart (400, 600, ... 2800). */
+    val puzzlePackBandWidth: Int = 200,
+    /** A pack covers the nearest band center +/- this many rating points. */
+    val puzzlePackSpread: Int = 300,
+    val puzzlePackMinRating: Int = 400,
+    val puzzlePackMaxRating: Int = 2800,
+    /**
+     * Fixed GitHub Release that hosts the generated CSV packs. The pipeline is
+     * `.github/workflows/puzzle-packs.yml`; the app appends `puzzles-<center>.csv`.
+     */
+    val puzzlePackBaseUrl: String =
+        "https://github.com/skywars1133-art/vibecoding-ran-test/releases/download/puzzle-packs/",
+    val puzzlePackConnectTimeoutMs: Int = 15_000,
+    val puzzlePackReadTimeoutMs: Int = 30_000,
+    /** Retries after a failed download, before waiting for the next daily run. */
+    val puzzlePackMaxAttempts: Int = 3,
+    val puzzlePackRetryBackoffMinutes: Long = 10,
+    /** Stored sync-error text is truncated to this many characters. */
+    val puzzlePackErrorMaxLength: Int = 300,
+    /** SPEC 2: Wi-Fi only by default; the user can allow mobile data in Settings. */
+    val wifiOnlyDownloadsByDefault: Boolean = true,
 ) {
+    val puzzlePackRefreshIntervalMs: Long get() = puzzlePackRefreshHours * 60L * 60L * 1000L
+
+    /** Centers of all generated packs: 400, 600, ... 2800 with the default config. */
+    fun puzzlePackBandCenters(): List<Int> {
+        if (puzzlePackBandWidth <= 0 || puzzlePackMaxRating < puzzlePackMinRating) return emptyList()
+        return (puzzlePackMinRating..puzzlePackMaxRating step puzzlePackBandWidth).toList()
+    }
+
     fun dailyCapSeconds(): Long? = dailyCapMinutes?.let { it * 60L }
 
     companion object {

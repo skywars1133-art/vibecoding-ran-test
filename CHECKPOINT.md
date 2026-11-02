@@ -4,15 +4,26 @@ Resume file. Update after every meaningful step and before any likely credit cut
 
 ## Status
 - Date: 2026-11-02
-- Current phase: Phase 1 (MVP), in progress
+- Current phase: Phase 2 (puzzle supply) — implemented; awaiting live release + device verification and user feedback
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: Phase 1 task 9 — README wrap-up (build/test and run-on-device instructions, architecture, decisions and the license table including AdMob).
-- Also completed after the wrap-up: in-app language selection (System/English/Slovak), Cburnett as the default style, and four licensed SVG piece sets (Chessnut, Fantasy, Celtic, Spatial) rendered with AndroidSVG.
+- Last completed: Phase 2 — daily 150-puzzle packs from the Lichess dump via GitHub Actions, WorkManager sync
+  (24 h + launch + "Download now"), Wi-Fi-only default, Room accumulation with solved-never-repeat, and the Settings
+  stock/download UI.
+- Before Phase 2: Phase 1 was complete (MVP, language selection, Cburnett default, four licensed SVG piece sets).
 
 ## Verification
-- Ran `:domain:test :app:testDebugUnitTest :app:assembleDebug` with JDK 21.0.11, Gradle 8.14.3 and Android SDK 35.
-- **110 domain tests + 31 app tests passed (141 total); 0 failures, errors or skips.**
-- `:app:assembleDebug` produced a signed debug APK.
+- Phase 2: ran `:domain:test :app:testDebugUnitTest :app:assembleDebug` with JDK 21.0.11, Gradle 8.14.3 and Android
+  SDK 35. **116 domain tests + 31 app tests passed (147 total); 0 failures, errors or skips.** Debug APK built.
+- Phase 2: validated `scripts/build-puzzle-packs.py` on synthetic data with a portable Python 3.12.7: 13 files x 150
+  rows, unique IDs, ratings inside every band window, sorted rows, and a different daily salt produces a different
+  selection. EN/SK resources were checked programmatically: 132 keys in both files, no placeholder mismatches and no
+  `R.string.*` references missing from the default resources.
+- Phase 2 pending live checks: the `puzzle-packs` GitHub Release has not been generated yet (no `gh` CLI locally), and
+  the WorkManager download/toggle/stock-empty flow has not been run on a device (tablet `R9TX902F92W` is currently
+  `unauthorized` in adb; re-authorize USB debugging to test).
+- Phase 1 verification history:
+  - **110 domain tests + 31 app tests passed (141 total); 0 failures, errors or skips.**
+  - `:app:assembleDebug` produced a signed debug APK.
 - Language/piece verification on the Samsung tablet `R9TX902F92W` (SM-X210, Android 16, Slovak locale):
   - switching System -> Slovak -> English updated every visible string immediately, without an activity restart or
     crash, and `settings.preferences_pb` stored `app_language=slovak` / `english`;
@@ -45,6 +56,9 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - `adb shell input` (taps/keyevents) is rejected with `INJECT_EVENTS`; use `am start`, `monkey`, `uiautomator dump`, `dumpsys` and logcat for verification.
 - `pm grant POST_NOTIFICATIONS` is rejected on this device; grant notification permission manually or through the app's onboarding/settings links.
 - A secure lock is active after reboot. `wm dismiss-keyguard` cannot bypass it; the device must be unlocked manually.
+- This machine has no system Python/Node/`gh`. A portable interpreter for validating scripts is at
+  `C:\Users\detid\AppData\Local\Temp\opencode\python-embed\python.exe`; the GitHub Action itself uses the runner's
+  `python3` and `gh`.
 
 ## Plan (approved)
 
@@ -92,7 +106,24 @@ Resume file. Update after every meaningful step and before any likely credit cut
   (Apache-2.0), Fantasy/Celtic/Spatial (MIT). SVGs render at runtime with AndroidSVG 1.4 and a bitmap `LruCache`;
   failures fall back to Classic glyphs. Spatial assets were normalised for AndroidSVG (root size/style removed,
   gradient stops inlined). 5 new tests (141 total); device-verified all styles and both languages.
+- 2026-11-02: **Phase 2 implemented.** Added `PuzzlePackPlanner` (nearest 200-point band, ±300 range, deterministic
+  filename/URL, due check) + 6 tests; `puzzlePack*`/Wi-Fi constants in `AppConfig`; HTTP CSV client, sync orchestrator,
+  DataStore sync metadata, Hilt `PuzzlePackWorker`, and `PuzzlePackScheduler` (24 h periodic + launch/forced one-time,
+  `UNMETERED` by default and `CONNECTED` when mobile data is allowed); Room `unsolvedCount`, `prepareStock` and
+  `addPuzzles` with `INSERT IGNORE`; Settings stock/last-sync/error/Wi-Fi/Download-now UI; clearer empty-stock screen
+  with Settings + Retry; English/Slovak strings; generator script and daily GitHub Action publishing to the fixed
+  `puzzle-packs` release; README/notices/checkpoint updates. Build + 147 tests pass; generator validated on synthetic
+  data. Live release and on-device checks pending (see Verification).
 
 ## Next step
-1. **Phase 1 is complete.** Wait for user feedback before starting Phase 2 (puzzle supply).
-2. Optional pending device check: reconnect/unlock the old phone `CIYDDIMV5D5XNFUS`, launch the app once (clears Android's stopped flag), reboot, unlock, and confirm `BlockingService` starts automatically and the notification says protection is active. Also tap through the block screen buttons and permission dialogs there manually.
+1. **Phase 2 is implemented; live checks remain.**
+   - Trigger `.github/workflows/puzzle-packs.yml` (Actions UI or `workflow_dispatch`) and verify the `puzzle-packs`
+     release contains 13 `puzzles-*.csv` assets, each with 150 rows.
+   - Re-authorize the tablet (`adb devices` currently shows `unauthorized`), install the debug APK, and verify: the
+     launch/periodic sync downloads a band matching the current ELO, stock count rises, "Download now" forces a
+     download, the Wi-Fi-only switch changes the WorkManager constraint, the empty-stock message and buttons work, and
+     solved puzzles never return. Check both English and Slovak.
+2. Optional pending Phase 1 device check: reconnect/unlock the old phone `CIYDDIMV5D5XNFUS`, launch the app once,
+   reboot, unlock, and confirm `BlockingService` starts automatically. Also exercise the block-screen buttons and
+   permission dialogs manually.
+3. Stop for user feedback after Phase 2 verification.

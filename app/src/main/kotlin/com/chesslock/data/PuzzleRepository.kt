@@ -8,6 +8,7 @@ import com.chesslock.domain.puzzle.Puzzle
 import com.chesslock.domain.puzzle.PuzzleSelector
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -24,6 +25,9 @@ class PuzzleRepository @Inject constructor(
     private val importMutex = Mutex()
     private var builtInsImported = false
 
+    /** Unsolved puzzles currently available offline, for the Settings stock counter. */
+    val unsolvedCount: Flow<Int> = dao.unsolvedCount()
+
     /**
      * Picks an unsolved puzzle near [targetRating]. [excludeIds] lets the placement test keep every
      * puzzle unique within one run without marking them solved (they stay available for normal play).
@@ -32,7 +36,7 @@ class PuzzleRepository @Inject constructor(
         targetRating: Int,
         excludeIds: Set<String> = emptySet(),
     ): Puzzle? = withContext(Dispatchers.IO) {
-        ensureBuiltInsImported()
+        importBuiltInsIfNeeded()
         val candidates = dao.getAll().map { it.toDomain() }
         PuzzleSelector.pick(
             candidates = candidates,
@@ -47,7 +51,26 @@ class PuzzleRepository @Inject constructor(
         dao.markSolved(puzzleId)
     }
 
-    private suspend fun ensureBuiltInsImported() {
+    /**
+     * Makes sure the built-in offline set is in Room (first launch, placement test). Safe to call
+     * repeatedly; parsed rows are inserted with IGNORE and never reset an already-solved puzzle.
+     */
+    suspend fun prepareStock() = withContext(Dispatchers.IO) {
+        importBuiltInsIfNeeded()
+    }
+
+    /**
+     * Adds a downloaded pack. Existing rows win (IGNORE), so solved puzzles stay solved and a pack
+     * that overlaps an earlier one never produces duplicates. Returns how many rows were new.
+     */
+    suspend fun addPuzzles(puzzles: List<Puzzle>): Int = withContext(Dispatchers.IO) {
+        importBuiltInsIfNeeded()
+        if (puzzles.isEmpty()) return@withContext 0
+        val rowIds = dao.insertAll(puzzles.map { it.toEntity() })
+        rowIds.count { it != -1L }
+    }
+
+    private suspend fun importBuiltInsIfNeeded() {
         if (builtInsImported) return
         importMutex.withLock {
             if (builtInsImported) return@withLock
