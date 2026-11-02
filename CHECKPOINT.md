@@ -6,16 +6,21 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - Date: 2026-11-02
 - Current phase: Phase 1 (MVP), in progress
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: Phase 1 tasks 1, 2 and 3 (skeleton, domain rules, puzzle model/parser/progress). Task 3 is partial: built-in puzzle FILE not generated yet (needs network)
+- Last completed: Phase 1 tasks 3 and 4 (real built-in puzzle stock, app chess/storage integration, board and puzzle screen).
 
-## Environment notes (important for the next session)
-- The authoring sandbox cannot reach Maven Central, Google Maven or the Gradle plugin portal, and has no Android SDK.
-  So `:app` cannot be compiled there. Only `:domain` is verified, via `scripts/test-domain.sh`
-  (uses the Kotlin compiler and JUnit bundled in Gradle's lib folder). Last run: **98 tests, all passing**.
+## Verification
+- Ran `:domain:test :app:testDebugUnitTest :app:assembleDebug` with JDK 17.0.12, Gradle 8.14.3 and Android SDK 35.
+- **98 domain tests + 8 app tests passed; 0 failures, errors or skips.**
+- `:app:assembleDebug` produced a signed debug APK containing `assets/builtin_puzzles.csv`.
+- Room exported `app/schemas/com.chesslock.data.ChessLockDatabase/1.json` without a schema-location warning.
+- Not yet exercised on an emulator or physical device.
+
+## Environment notes
+- Dependencies resolve from Google Maven, Maven Central and JitPack (chesslib).
+- The committed built-in set contains 50 real Lichess CC0 puzzles, five in each rating band from 600 through 2600. Every FEN and complete UCI sequence was validated with `python-chess`.
+- The generator streams the large Lichess dump while retaining only the best candidates per rating band.
 - Pushing needs the Claude GitHub App installed on the repo owner (already done; push works).
-- No pip/npm/Maven/Lichess access in the sandbox: cannot fetch real puzzles or install chesslib/python-chess. Do NOT invent puzzle data.
-- Gradle wrapper was generated offline (8.14.3).
-- Dependency versions in `gradle/libs.versions.toml` are unresolved/unverified.
+- Do NOT invent puzzle data.
 
 ## Plan (approved)
 
@@ -34,12 +39,11 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - Licenses: record every dependency, dataset and piece set in README.
 
 ### Phase 1 task order
-1. [x] Gradle project, Hilt, `AppConfig`, string resources sk/en, theme (written, `:app` not yet compiled)
-2. [x] Domain logic + unit tests: ELO, reward, lives/penalties, hints, skip rules, budget + midnight reset (56 tests pass)
-3. [~] Puzzles: DONE `Puzzle` + `LichessPuzzleCsv` parser, `PuzzleProgress` (auto opponent moves, alt-mate via `MateChecker` seam), tests, `scripts/build-builtin-puzzles.py`.
-   TODO (needs network on a dev machine): generate `app/src/main/assets/builtin_puzzles.csv` (see README), add chesslib to `:app`, implement `MateChecker` + legal-move validation + Room loader
-4. [ ] Board component + puzzle screen
-5. [~] Placement test: DONE logic `PlacementTest` (staircase) + `PuzzleSelector` with tests. TODO: UI flow using the built-in set
+1. [x] Gradle project, Hilt, `AppConfig`, string resources sk/en, theme.
+2. [x] Domain logic + unit tests: ELO, reward, lives/penalties, hints, skip rules, budget + midnight reset.
+3. [x] Puzzles: `Puzzle` + Lichess CSV parser, `PuzzleProgress`, chesslib legal moves and mating alternatives, Room stock and solved tracking, DataStore player progress, and the generated 50-puzzle built-in asset.
+4. [x] Tap-to-move Compose board with legal targets, last-move highlighting, orientation and promotion picker; puzzle screen with lives, ELO, timer, rewards and both skip paths.
+5. [~] Placement test: DONE logic `PlacementTest` (staircase) + `PuzzleSelector` with tests. TODO: UI flow using the built-in set.
 6. [ ] Blocking service, categories, block screen, boot receiver
 7. [ ] Onboarding + permissions + protection status
 8. [ ] Hints with AdMob test ads
@@ -48,10 +52,9 @@ Resume file. Update after every meaningful step and before any likely credit cut
 ## Done log
 - 2026-11-02: cloned repo, read all docs, wrote checkpoint, plan approved, pushed checkpoint.
 - 2026-11-02: added `:domain` (AppConfig, EloCalculator, RewardCalculator, PuzzleSession, SkipPolicy, TimeBudget) with 56 passing tests; Gradle project, wrapper, Android skeleton, README build/decisions/licenses, `scripts/test-domain.sh`.
-
 - 2026-11-02: added Puzzle model, Lichess CSV parser, PuzzleProgress, 23 more tests (79 total), built-in set generator script (tested on synthetic data only).
-
 - 2026-11-02: added PlacementTest (staircase) and PuzzleSelector, 19 more tests (98 total), new AppConfig constants.
+- 2026-11-02: generated and validated the 50-puzzle Lichess asset; added bounded-memory generation, Room/DataStore, chesslib adapters, the Compose board and puzzle flow, sk/en resources, and 8 passing app tests. Full debug build verified.
 
 ## Next step
-All offline-verifiable `:domain` logic for Phase 1 is done. Remaining work is in `:app` and cannot be compiled in the sandbox (no Maven/Android SDK): blocking service + block screen + boot receiver (task 6), onboarding/permissions (7), board + puzzle screen (4, needs chesslib), AdMob hints (8). Best order if a machine with network is available: generate the built-in puzzle file, confirm `./gradlew :app:assembleDebug` builds, then continue with 4, 6, 7, 8. Otherwise write that code unverified and flag it clearly.
+Implement the placement-test UI using the built-in set (task 5), then continue with blocking, onboarding/permissions and AdMob hints in the approved order. Puzzle rewards are currently calculated and displayed but are not yet credited to the blocking budget; connect them when the budget/blocking app layer is implemented. No Hint button is exposed before rewarded ads are implemented.

@@ -2,4 +2,27 @@
 <resources>
     <string name="app_name">ChessLock</string>
     <string name="home_placeholder">Earn time by solving chess puzzles</string>
+    <string name="puzzle_title">Chess puzzle</string>
+    <string name="puzzle_rating">Puzzle rating: %1$d</string>
+    <string name="player_elo">ELO: %1$d</string>
+    <string name="elo_change">ELO change: %1$s</string>
+    <string name="lives">Lives: %1$d</string>
+    <string name="reward_time">Time reward: %1$s</string>
+    <string name="solving_time">Solving time: %1$s</string>
+    <string name="skip_puzzle">Skip</string>
+    <string name="side_white">You play White</string>
+    <string name="side_black">You play Black</string>
+    <string name="wrong_move">Wrong move. Try again.</string>
+    <string name="correct_move">Correct — keep going.</string>
+    <string name="puzzle_solved">Puzzle solved!</string>
+    <string name="next_puzzle">Next puzzle</string>
+    <string name="no_puzzles">No unsolved puzzles are left in the offline stock.</string>
+    <string name="puzzle_load_error">The puzzle could not be loaded.</string>
+    <string name="retry">Retry</string>
+    <string name="promotion_title">Pawn promotion</string>
+    <string name="promotion_message">Choose a piece</string>
+    <string name="promotion_queen">Queen</string>
+    <string name="promotion_rook">Rook</string>
+    <string name="promotion_bishop">Bishop</string>
+    <string name="promotion_knight">Knight</string>
 </resources>

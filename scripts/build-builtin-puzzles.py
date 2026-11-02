@@ -49,7 +49,12 @@ def main() -> int:
             continue
         if len(moves) < 2 or len(moves) % 2 != 0 or len(moves) > args.max_moves:
             continue
-        buckets.setdefault((rating - args.min_rating) // args.bucket, []).append(row)
+        bucket = (rating - args.min_rating) // args.bucket
+        rows = buckets.setdefault(bucket, [])
+        rows.append(row)
+        rows.sort(key=lambda r: (int(r[4]), -int(r[5]), -int(r[6]), r[0]))
+        # Keep only the best candidates instead of retaining the whole multi-gigabyte dump.
+        del rows[args.per_bucket:]
 
     out = csv.writer(sys.stdout, lineterminator="\n")
     out.writerow(HEADER)

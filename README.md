@@ -16,6 +16,7 @@ Requirements: JDK 17+, Android Studio (or the Android SDK).
 
 ```
 ./gradlew :domain:test          # unit tests for all rules (ELO, rewards, lives, hints, skips, budget)
+./gradlew :app:testDebugUnitTest # chess rules and mating alternatives
 ./gradlew :app:assembleDebug    # Android app (needs the Android SDK; set sdk.dir in local.properties)
 ```
 
@@ -26,8 +27,8 @@ Kotlin compiler and JUnit bundled in the Gradle distribution:
 scripts/test-domain.sh
 ```
 
-### Built-in puzzle set (required before the puzzle screen works)
-The ~50 built-in puzzles must be real Lichess puzzles (CC0), generated once on a machine with internet:
+### Built-in puzzle set
+The committed `app/src/main/assets/builtin_puzzles.csv` contains 50 real Lichess puzzles (CC0). To regenerate it on a machine with internet:
 
 ```
 curl -O https://database.lichess.org/lichess_db_puzzle.csv.zst
@@ -35,13 +36,16 @@ zstdcat lichess_db_puzzle.csv.zst | python3 scripts/build-builtin-puzzles.py > a
 ```
 
 It picks 5 puzzles per 200-point rating band from 600 to 2600 (most reliable, most popular first) and prints a
-warning if a band has fewer. Commit the resulting file. It has not been generated yet.
+warning if a band has fewer. Only the best candidates per band are retained while streaming, so memory use stays bounded.
+Commit the resulting file after validating it.
 
 ## Architecture
 - `domain/`: pure Kotlin/JVM, no Android imports. `config/AppConfig` (the ONE place for numeric constants), `elo`,
   `reward`, `puzzle` (`Puzzle` + Lichess CSV parser, `PuzzleProgress` solution tracking, `PuzzleSession` lives/hints,
   `SkipPolicy`), `budget` (daily time budget, midnight reset).
-- `app/`: Android app (Compose, Material 3, Hilt). `di/ConfigModule` provides `AppConfig`.
+- `app/`: Android app (Compose, Material 3, Hilt). `di/ConfigModule` provides `AppConfig`; `data/` contains the Room
+  puzzle stock and DataStore player progress; `chess/` adapts chesslib for legal UCI moves and mating alternatives;
+  `ui/puzzle/` contains the tap-to-move board, promotion picker, timer, skip controls and puzzle ViewModel.
 
 ## Decisions
 - **Domain module is plain Kotlin/JVM.** Rules are testable without an emulator and stay independent of Android.
@@ -56,8 +60,8 @@ warning if a band has fewer. Commit the resulting file. It has not been generate
   not refill the budget. Earned time is capped by the optional daily cap, and lowering the cap never removes
   time already earned.
 - **Chess rules sit behind a seam.** `PuzzleProgress` only compares UCI strings; whether an alternative move delivers
-  mate comes from an injected `MateChecker`, to be implemented on top of the chess library in the app module.
-  Lichess accepts any mating move, so the first mating alternative ends the puzzle.
+  mate comes from an injected `MateChecker`, implemented by `ChesslibMateChecker` in the app module. `ChessPosition`
+  exposes only legal UCI moves to the board. Lichess accepts any mating move, so the first mating alternative ends the puzzle.
 - **Puzzle validation:** a puzzle needs an even number of moves, at least 2 (opponent's automatic first move, then
   player/opponent pairs ending on the player's move). Malformed CSV rows are skipped and reported, never fatal.
 - **No invented puzzle data.** The built-in set is generated from the real dump by `scripts/build-builtin-puzzles.py`.
@@ -82,5 +86,5 @@ warning if a band has fewer. Commit the resulting file. It has not been generate
 | Hilt / Dagger | Apache-2.0 | DI |
 | Kotlin, KSP | Apache-2.0 | Language / build |
 | JUnit 4 | EPL-1.0 | Tests only (not shipped) |
-| chesslib (planned) | Apache-2.0 | Chess rules, to be added with the board |
-| Chess piece graphics | _to be chosen: CC0 or permissive set_ | Not added yet |
+| chesslib | Apache-2.0 | Legal moves, FEN and checkmate detection |
+| System Unicode chess glyphs | No separate asset | Board pieces rendered as text; no bundled piece graphics |

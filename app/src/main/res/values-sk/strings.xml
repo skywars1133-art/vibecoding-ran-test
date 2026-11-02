@@ -2,4 +2,27 @@
 <resources>
     <string name="app_name">ChessLock</string>
     <string name="home_placeholder">Získaj čas riešením šachových úloh</string>
+    <string name="puzzle_title">Šachová úloha</string>
+    <string name="puzzle_rating">Hodnotenie úlohy: %1$d</string>
+    <string name="player_elo">ELO: %1$d</string>
+    <string name="elo_change">Zmena ELO: %1$s</string>
+    <string name="lives">Životy: %1$d</string>
+    <string name="reward_time">Časová odmena: %1$s</string>
+    <string name="solving_time">Čas riešenia: %1$s</string>
+    <string name="skip_puzzle">Preskočiť</string>
+    <string name="side_white">Hráš bielymi</string>
+    <string name="side_black">Hráš čiernymi</string>
+    <string name="wrong_move">Nesprávny ťah. Skús to znova.</string>
+    <string name="correct_move">Správne — pokračuj.</string>
+    <string name="puzzle_solved">Úloha vyriešená!</string>
+    <string name="next_puzzle">Ďalšia úloha</string>
+    <string name="no_puzzles">V lokálnej zásobe nezostali žiadne nevyriešené úlohy.</string>
+    <string name="puzzle_load_error">Úlohu sa nepodarilo načítať.</string>
+    <string name="retry">Skúsiť znova</string>
+    <string name="promotion_title">Povýšenie pešiaka</string>
+    <string name="promotion_message">Vyber si figúrku</string>
+    <string name="promotion_queen">Dáma</string>
+    <string name="promotion_rook">Veža</string>
+    <string name="promotion_bishop">Strelec</string>
+    <string name="promotion_knight">Jazdec</string>
 </resources>

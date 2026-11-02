@@ -34,6 +34,8 @@ data class AppConfig(
     val freeSkipsPerDay: Int = 1,
     /** After this long on one puzzle the player may skip regardless of free skips. */
     val skipUnlockAfterMinutes: Int = 20,
+    /** UI tick used by the solving timer and time-based skip availability. */
+    val puzzleTimerTickSeconds: Long = 1,
 
     // --- Hints (SPEC 3b) ---
     /** Level 1 highlights the piece, level 2 also highlights the target square. */
