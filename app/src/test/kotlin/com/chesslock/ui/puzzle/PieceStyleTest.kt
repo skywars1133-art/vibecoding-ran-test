@@ -18,24 +18,27 @@ class PieceStyleTest {
     }
 
     @Test
-    fun `missing or unknown storage key falls back to classic`() {
-        assertEquals(PieceStyle.CLASSIC, PieceStyle.fromStorageKey(null))
-        assertEquals(PieceStyle.CLASSIC, PieceStyle.fromStorageKey("unknown"))
+    fun `missing or unknown storage key falls back to the default`() {
+        assertEquals(PieceStyle.DEFAULT, PieceStyle.fromStorageKey(null))
+        assertEquals(PieceStyle.DEFAULT, PieceStyle.fromStorageKey("unknown"))
+    }
+
+    @Test
+    fun `cburnett is the default artwork style`() {
+        assertEquals(PieceStyle.CBURNETT, PieceStyle.DEFAULT)
     }
 
     @Test
     fun `every text style has a glyph for every piece type`() {
-        PieceStyle.entries
-            .filter { it.artwork(ChessPieceType.KING, isWhite = true) == null }
-            .forEach { style ->
-                ChessPieceType.entries.forEach { type ->
-                    assertFalse(type.glyph(style).isNullOrEmpty())
-                }
+        PieceStyle.entries.filter { it.isText }.forEach { style ->
+            ChessPieceType.entries.forEach { type ->
+                assertFalse(type.glyph(style).isNullOrEmpty())
             }
+        }
     }
 
     @Test
-    fun `artwork style has a drawable for every piece type and colour`() {
+    fun `cburnett has a drawable for every piece type and colour`() {
         ChessPieceType.entries.forEach { type ->
             assertNotNull(PieceStyle.CBURNETT.artwork(type, isWhite = true))
             assertNotNull(PieceStyle.CBURNETT.artwork(type, isWhite = false))
@@ -43,11 +46,35 @@ class PieceStyleTest {
     }
 
     @Test
+    fun `svg artwork styles load from their bundled asset folder`() {
+        val svgStyles = PieceStyle.entries.filter { it.svgFolder != null }
+        assertEquals(
+            setOf(
+                PieceStyle.CHESSNUT,
+                PieceStyle.FANTASY,
+                PieceStyle.CELTIC,
+                PieceStyle.SPATIAL,
+            ),
+            svgStyles.toSet(),
+        )
+        svgStyles.forEach { style ->
+            assertFalse(style.isText)
+            assertEquals(style.storageKey, style.svgFolder)
+            ChessPieceType.entries.forEach { type ->
+                assertNull(style.artwork(type, isWhite = true))
+                assertNull(type.glyph(style))
+            }
+        }
+    }
+
+    @Test
     fun `text styles do not use artwork`() {
         val textStyles = listOf(PieceStyle.CLASSIC, PieceStyle.OUTLINE, PieceStyle.LETTERS)
         textStyles.forEach { style ->
+            assertTrue(style.isText)
             assertNull(style.artwork(ChessPieceType.PAWN, isWhite = true))
         }
+        assertFalse(PieceStyle.CBURNETT.isText)
         assertNull(ChessPieceType.PAWN.glyph(PieceStyle.CBURNETT))
     }
 

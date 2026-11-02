@@ -27,6 +27,11 @@
     <string name="promotion_knight">Knight</string>
     <string name="settings_title">Settings</string>
     <string name="back">Back</string>
+    <string name="settings_language_section">Language</string>
+    <string name="settings_language_description">Choose the app language. System follows your device.</string>
+    <string name="settings_language_system">System default</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_slovak">Slovenčina</string>
     <string name="settings_board_section">Board</string>
     <string name="piece_style_title">Piece style</string>
     <string name="piece_style_description">Choose how the pieces look on the board.</string>
@@ -34,6 +39,10 @@
     <string name="piece_style_outline">Outline</string>
     <string name="piece_style_letters">Letters</string>
     <string name="piece_style_cburnett">Cburnett (artwork)</string>
+    <string name="piece_style_chessnut">Chessnut (artwork)</string>
+    <string name="piece_style_fantasy">Fantasy (artwork)</string>
+    <string name="piece_style_celtic">Celtic (artwork)</string>
+    <string name="piece_style_spatial">Spatial (artwork)</string>
     <string name="piece_style_preview">Preview</string>
     <string name="placement_title">Placement test</string>
     <string name="placement_progress">Puzzle %1$d of %2$d</string>

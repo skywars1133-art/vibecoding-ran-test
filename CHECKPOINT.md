@@ -7,11 +7,21 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - Current phase: Phase 1 (MVP), in progress
 - Plan: **approved by the user** (2026-11-02)
 - Last completed: Phase 1 task 9 — README wrap-up (build/test and run-on-device instructions, architecture, decisions and the license table including AdMob).
+- Also completed after the wrap-up: in-app language selection (System/English/Slovak), Cburnett as the default style, and four licensed SVG piece sets (Chessnut, Fantasy, Celtic, Spatial) rendered with AndroidSVG.
 
 ## Verification
 - Ran `:domain:test :app:testDebugUnitTest :app:assembleDebug` with JDK 21.0.11, Gradle 8.14.3 and Android SDK 35.
-- **110 domain tests + 26 app tests passed (136 total); 0 failures, errors or skips.**
+- **110 domain tests + 31 app tests passed (141 total); 0 failures, errors or skips.**
 - `:app:assembleDebug` produced a signed debug APK.
+- Language/piece verification on the Samsung tablet `R9TX902F92W` (SM-X210, Android 16, Slovak locale):
+  - switching System -> Slovak -> English updated every visible string immediately, without an activity restart or
+    crash, and `settings.preferences_pb` stored `app_language=slovak` / `english`;
+  - every artwork style rendered in the Settings preview rows and on the puzzle board; logcat had no
+    `Could not render SVG` warnings;
+  - Cburnett, Chessnut, Fantasy, Celtic and Spatial all produced comparable non-background pixel counts, and Spatial
+    showed pieces on exactly the same squares as Cburnett for the same puzzle;
+  - Spatial initially rendered only outlines/blank because its SVGs use root `width`/`height` in points and inherited
+    gradients. After removing the root sizing and inlining the gradient stops, every Spatial piece rasterized normally.
 - Hint/ad flow verified on the Samsung tablet `R9TX902F92W` (SM-X210, Android 16, Slovak locale):
   - tapping Hint showed the confirmation dialog; confirming opened `com.google.android.gms.ads.AdActivity` with the official AdMob *test* ad;
   - the reward was granted only after the ad reported `Odmena je udelená`; `player.preferences_pb` then contained `hint_date=2026-11-02` and `hints_used=2`;
@@ -76,6 +86,12 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - 2026-11-02: added the permissions onboarding (usage access, overlay, notifications) and a protection-status banner on the puzzle screen and in settings; the blocking service now exposes its running state and pauses counting / hides the overlay while the screen is off. The Compose-only additions keep the suite at 129 tests (109 domain + 20 app); full build verified. Device boot re-check pending unlock.
 - 2026-11-02: added rewarded-ad hints (AdMob 23.6.0, official test IDs): `RewardedAdManager` preloads/shows with reward granted only in `onUserEarnedReward`; `HintAvailability` + `PuzzleSession.hintAvailability` domain rules; `PlayerStore` daily hint counter; `HintHighlight` board highlighting (level 1 piece, level 2 target); ViewModel/UI dialog, offline and daily-limit notes; en/sk strings. 7 new tests (136 total). Device-verified full ad + reward + hint flow on the SM-X210 tablet.
 - 2026-11-02: Phase 1 task 9 README wrap-up: run-on-device steps, updated architecture/decisions/status, and the license table incl. AdMob; committed and pushed `9437825`. **Phase 1 (MVP) is complete — stopping for user feedback.**
+- 2026-11-02: added the in-app language option (`AppLanguage` System/English/Slovak, DataStore persistence, localized
+  `ContextWrapper` + `LocalConfiguration` provider so `hiltViewModel()` still finds the Activity), made Cburnett the
+  default piece style, and added four commercially usable SVG sets from the Lichess repository: Chessnut
+  (Apache-2.0), Fantasy/Celtic/Spatial (MIT). SVGs render at runtime with AndroidSVG 1.4 and a bitmap `LruCache`;
+  failures fall back to Classic glyphs. Spatial assets were normalised for AndroidSVG (root size/style removed,
+  gradient stops inlined). 5 new tests (141 total); device-verified all styles and both languages.
 
 ## Next step
 1. **Phase 1 is complete.** Wait for user feedback before starting Phase 2 (puzzle supply).

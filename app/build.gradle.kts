@@ -81,6 +81,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.chesslib)
     implementation(libs.play.services.ads)
+    implementation(libs.androidsvg)
 
     testImplementation(libs.junit)
 }

@@ -3,6 +3,7 @@ package com.chesslock.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.chesslock.blocking.BlockingServiceController
+import com.chesslock.data.AppLanguage
 import com.chesslock.data.AppSettings
 import com.chesslock.data.PieceStyle
 import com.chesslock.data.SettingsStore
@@ -35,6 +36,12 @@ class SettingsViewModel @Inject constructor(
     fun setPieceStyle(style: PieceStyle) {
         viewModelScope.launch {
             store.setPieceStyle(style)
+        }
+    }
+
+    fun setLanguage(language: AppLanguage) {
+        viewModelScope.launch {
+            store.setLanguage(language)
         }
     }
 

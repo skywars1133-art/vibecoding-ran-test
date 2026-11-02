@@ -3,18 +3,44 @@ package com.chesslock.data
 import com.chesslock.domain.blocking.BlockCategory
 import com.chesslock.domain.config.AppConfig
 
-/** Piece sets the board can render. Text styles need no assets; [CBURNETT] uses bundled artwork. */
-enum class PieceStyle(val storageKey: String) {
+/**
+ * Piece sets the board can render. Text styles need no assets; [CBURNETT] uses bundled
+ * VectorDrawables and the other artwork styles load licensed SVG assets from `assets/pieces`.
+ */
+enum class PieceStyle(val storageKey: String, val svgFolder: String? = null) {
     CLASSIC("classic"),
     OUTLINE("outline"),
     LETTERS("letters"),
     CBURNETT("cburnett"),
+    CHESSNUT("chessnut", "chessnut"),
+    FANTASY("fantasy", "fantasy"),
+    CELTIC("celtic", "celtic"),
+    SPATIAL("spatial", "spatial"),
+    ;
+
+    /** True for styles drawn with text glyphs (no artwork assets). */
+    val isText: Boolean get() = this != CBURNETT && svgFolder == null
+
+    companion object {
+        /** Cburnett (BSD-3-Clause) is the default because its license clearly allows commercial use. */
+        val DEFAULT = CBURNETT
+
+        fun fromStorageKey(key: String?): PieceStyle =
+            entries.firstOrNull { it.storageKey == key } ?: DEFAULT
+    }
+}
+
+/** In-app language override; [SYSTEM] follows the device locale. */
+enum class AppLanguage(val storageKey: String, val languageTag: String?) {
+    SYSTEM("system", null),
+    ENGLISH("english", "en"),
+    SLOVAK("slovak", "sk"),
     ;
 
     companion object {
-        val DEFAULT = CLASSIC
+        val DEFAULT = SYSTEM
 
-        fun fromStorageKey(key: String?): PieceStyle =
+        fun fromStorageKey(key: String?): AppLanguage =
             entries.firstOrNull { it.storageKey == key } ?: DEFAULT
     }
 }
@@ -28,6 +54,7 @@ enum class AppBlockOverride {
 
 data class AppSettings(
     val pieceStyle: PieceStyle = PieceStyle.DEFAULT,
+    val language: AppLanguage = AppLanguage.DEFAULT,
     val blockingEnabled: Boolean,
     val dailyLimitMinutes: Int,
     val dailyCapMinutes: Int?,

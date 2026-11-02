@@ -19,7 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import com.chesslock.blocking.BlockingServiceController
+import com.chesslock.data.AppLanguage
 import com.chesslock.data.SettingsStore
+import com.chesslock.ui.common.ProvideAppLanguage
 import com.chesslock.ui.onboarding.PermissionsScreen
 import com.chesslock.ui.placement.PlacementTestScreen
 import com.chesslock.ui.puzzle.PuzzleScreen
@@ -41,34 +43,36 @@ class MainActivity : ComponentActivity() {
             if (settingsStore.settings.first().blockingEnabled) blockingController.start()
         }
         setContent {
+            val mainViewModel: MainViewModel = hiltViewModel()
+            val player by mainViewModel.player.collectAsState()
+            val settings by mainViewModel.settings.collectAsState()
             ChessLockTheme {
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    val mainViewModel: MainViewModel = hiltViewModel()
-                    val player by mainViewModel.player.collectAsState()
-                    val settings by mainViewModel.settings.collectAsState()
-                    when {
-                        player == null || settings == null -> LoadingScreen()
+                ProvideAppLanguage(settings?.language ?: AppLanguage.DEFAULT) {
+                    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                        when {
+                            player == null || settings == null -> LoadingScreen()
 
-                        player?.placementCompleted != true -> PlacementTestScreen()
+                            player?.placementCompleted != true -> PlacementTestScreen()
 
-                        settings?.permissionsOnboardingSeen != true -> PermissionsScreen(
-                            onDone = mainViewModel::markPermissionsOnboardingSeen,
-                        )
+                            settings?.permissionsOnboardingSeen != true -> PermissionsScreen(
+                                onDone = mainViewModel::markPermissionsOnboardingSeen,
+                            )
 
-                        else -> {
-                            var showSettings by rememberSaveable { mutableStateOf(false) }
-                            var showPermissions by rememberSaveable { mutableStateOf(false) }
-                            when {
-                                showSettings -> SettingsScreen(onBack = { showSettings = false })
+                            else -> {
+                                var showSettings by rememberSaveable { mutableStateOf(false) }
+                                var showPermissions by rememberSaveable { mutableStateOf(false) }
+                                when {
+                                    showSettings -> SettingsScreen(onBack = { showSettings = false })
 
-                                showPermissions -> PermissionsScreen(
-                                    onDone = { showPermissions = false },
-                                )
+                                    showPermissions -> PermissionsScreen(
+                                        onDone = { showPermissions = false },
+                                    )
 
-                                else -> PuzzleScreen(
-                                    onOpenSettings = { showSettings = true },
-                                    onFixProtection = { showPermissions = true },
-                                )
+                                    else -> PuzzleScreen(
+                                        onOpenSettings = { showSettings = true },
+                                        onFixProtection = { showPermissions = true },
+                                    )
+                                }
                             }
                         }
                     }

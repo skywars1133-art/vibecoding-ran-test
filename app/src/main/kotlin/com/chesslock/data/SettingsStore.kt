@@ -24,6 +24,7 @@ class SettingsStore @Inject constructor(
     private val config: AppConfig,
 ) {
     private val pieceStyleKey = stringPreferencesKey("piece_style")
+    private val languageKey = stringPreferencesKey("app_language")
     private val blockingEnabledKey = booleanPreferencesKey("blocking_enabled")
     private val dailyLimitKey = intPreferencesKey("daily_limit_minutes")
     private val dailyCapKey = intPreferencesKey("daily_cap_minutes")
@@ -46,6 +47,7 @@ class SettingsStore @Inject constructor(
         }
         AppSettings(
             pieceStyle = PieceStyle.fromStorageKey(preferences[pieceStyleKey]),
+            language = AppLanguage.fromStorageKey(preferences[languageKey]),
             blockingEnabled = preferences[blockingEnabledKey] ?: config.blockingEnabledByDefault,
             dailyLimitMinutes = preferences[dailyLimitKey] ?: config.defaultDailyLimitMinutes,
             dailyCapMinutes = storedCap,
@@ -59,6 +61,12 @@ class SettingsStore @Inject constructor(
     suspend fun setPieceStyle(style: PieceStyle) {
         context.settingsDataStore.edit { preferences ->
             preferences[pieceStyleKey] = style.storageKey
+        }
+    }
+
+    suspend fun setLanguage(language: AppLanguage) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[languageKey] = language.storageKey
         }
     }
 

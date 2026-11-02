@@ -8,6 +8,13 @@
 - **Phase 1:** the app uses the official AdMob **test** app ID and rewarded test unit ID. Production IDs, consent (UMP)
   and the privacy-policy/Data-safety updates are Phase 4 work.
 
+## AndroidSVG
+
+- **Artifact:** `com.caverock:androidsvg-aar` version 1.4.
+- **Author:** Paul LeBeau and contributors (<https://github.com/BigBadaboom/androidsvg>).
+- **License:** Apache License 2.0 (<https://www.apache.org/licenses/LICENSE-2.0>).
+- **Use:** rasterizes the bundled SVG chess-piece sets to bitmaps at runtime; no source is modified.
+
 ## Cburnett chess pieces
 
 - **Author:** Colin M.L. Burnett (Wikimedia Commons user [Cburnett](https://commons.wikimedia.org/wiki/User:Cburnett))
@@ -51,3 +58,49 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+## Chessnut chess pieces
+
+- **Author:** Alexis Luengas (<https://github.com/LexLuengas>).
+- **Files used:** the twelve `wK`, `wQ`, `wR`, `wB`, `wN`, `wP`, `bK`, `bQ`, `bR`, `bB`, `bN`, `bP` SVGs, bundled as
+  `app/src/main/assets/pieces/chessnut/`.
+- **Source:** <https://github.com/lichess-org/lila/tree/master/public/piece/chessnut>; upstream
+  <https://github.com/LexLuengas/chessnut-pieces>.
+- **License:** Apache License 2.0 (<https://www.apache.org/licenses/LICENSE-2.0>). The upstream
+  `LICENSE.txt` and the Lichess copying table both list Apache-2.0.
+- **Modifications:** none beyond downloading the SVG files.
+
+## Fantasy, Celtic and Spatial chess pieces
+
+- **Author:** Maurizio Monge (<https://github.com/maurimo/chess-art>).
+- **Files used:** the twelve `wK`, `wQ`, `wR`, `wB`, `wN`, `wP`, `bK`, `bQ`, `bR`, `bB`, `bN`, `bP` SVGs in each of
+  `app/src/main/assets/pieces/fantasy/`, `app/src/main/assets/pieces/celtic/` and
+  `app/src/main/assets/pieces/spatial/`.
+- **Source:** <https://github.com/lichess-org/lila/tree/master/public/piece/{fantasy,celtic,spatial}>; upstream
+  <https://github.com/maurimo/chess-art>.
+- **License:** MIT (upstream `LICENSE` and the Lichess copying table).
+- **Modifications:** the Spatial files had the root `width`/`height`/`style` attributes removed and their inherited
+  gradient stops copied into each gradient so AndroidSVG 1.4 can rasterize them; no artistic changes were made.
+
+### MIT License
+
+Copyright (c) Maurizio Monge
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+

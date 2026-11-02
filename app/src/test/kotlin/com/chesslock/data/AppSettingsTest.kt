@@ -49,6 +49,30 @@ class AppSettingsTest {
     }
 
     @Test
+    fun `language defaults to system and round-trips storage keys`() {
+        assertEquals(AppLanguage.SYSTEM, AppLanguage.DEFAULT)
+        AppLanguage.entries.forEach { language ->
+            assertEquals(language, AppLanguage.fromStorageKey(language.storageKey))
+        }
+        assertEquals(AppLanguage.SYSTEM, AppLanguage.fromStorageKey(null))
+        assertEquals(AppLanguage.SYSTEM, AppLanguage.fromStorageKey("unknown"))
+    }
+
+    @Test
+    fun `language tags drive the in-app locale override`() {
+        assertNull(AppLanguage.SYSTEM.languageTag)
+        assertEquals("en", AppLanguage.ENGLISH.languageTag)
+        assertEquals("sk", AppLanguage.SLOVAK.languageTag)
+    }
+
+    @Test
+    fun `default settings use cburnett and system language`() {
+        val settings = AppSettings.defaults(config)
+        assertEquals(PieceStyle.CBURNETT, settings.pieceStyle)
+        assertEquals(AppLanguage.SYSTEM, settings.language)
+    }
+
+    @Test
     fun `default blocked categories are social games and video`() {
         assertEquals(
             setOf(BlockCategory.SOCIAL, BlockCategory.GAMES, BlockCategory.VIDEO),

@@ -37,7 +37,8 @@ scripts/test-domain.sh
 
    Or open the project in Android Studio and press Run.
 2. Finish the placement test (or skip through it as described in `CHECKPOINT.md`) to reach normal puzzle play.
-3. Open **Settings** to choose the daily limit, blocked categories and piece style.
+3. Open **Settings** to choose the app language (System default / English / Slovak), the daily limit, blocked
+   categories and piece style.
 4. Grant **Usage access**, **Display over other apps** and (optionally) **Notifications** from the protection banner or
    Settings; the banner turns to "Protection is active" once the blocking service is running.
 5. Solve a puzzle to earn time, then open a blocked app after the budget runs out to see the block screen.
@@ -98,10 +99,15 @@ Commit the resulting file after validating it.
   unsolved puzzles. Returns "no puzzle" only when the whole stock is solved.
 - **Starting ELO before the placement test:** 1000 (`AppConfig.eloStart`).
 - **Piece styles.** Settings (opened from the puzzle top bar) offers Classic (solid Unicode glyphs), Outline (hollow
-  Unicode glyphs with a contrast stroke), Letters (K/Q/R/B/N/P) and Cburnett (bundled SVG artwork by Colin M.L.
-  Burnett, BSD-3-Clause — see `THIRD_PARTY_NOTICES.md`). The choice is stored in the `settings` DataStore and applied
-  to the board immediately; switching does not reset the current puzzle. Tornelo's named sets (Chigorin, Blackburne,
-  etc.) are proprietary and are not bundled.
+  Unicode glyphs with a contrast stroke), Letters (K/Q/R/B/N/P), Cburnett (bundled VectorDrawable artwork by Colin M.L.
+  Burnett, BSD-3-Clause) and four licensed SVG sets rendered at runtime with AndroidSVG: Chessnut (Alexis Luengas,
+  Apache-2.0), Fantasy, Celtic and Spatial (Maurizio Monge, MIT). Cburnett is the default. The choice is stored in the
+  `settings` DataStore and applied to the board immediately; switching does not reset the current puzzle. Tornelo's
+  named sets (Chigorin, Blackburne, etc.) are proprietary and are not bundled. See `THIRD_PARTY_NOTICES.md`.
+- **Language is in-app.** Settings offers System default, English and Slovak. The choice is stored in the `settings`
+  DataStore and applied through a localized `ContextWrapper` + `LocalConfiguration` override, so every Compose string
+  switches immediately without restarting the activity. Notification and foreground-service text still follows the
+  system locale because they are built outside the composition.
 - **Blocking is non-strict and permission-based.** A foreground service polls `UsageStatsManager` events (no
   `AccessibilityService`) and charges the one shared daily budget only while a blocked package is in the foreground.
   `TYPE_APPLICATION_OVERLAY` (granted through `SYSTEM_ALERT_WINDOW`) shows a full-screen Compose block screen when the
@@ -131,7 +137,10 @@ Commit the resulting file after validating it.
   and UMP consent are Phase 4 work.
 - **Min SDK 26** (java.time without desugaring, notification channels).
 - **Dependency versions** in `gradle/libs.versions.toml` are a resolved compatible set (AGP 8.7.3, Kotlin 2.0.21,
-  KSP 2.0.21-1.0.28, Hilt 2.52, Compose BOM 2024.10.01, AdMob 23.6.0). Bump them if Gradle complains.
+  KSP 2.0.21-1.0.28, Hilt 2.52, Compose BOM 2024.10.01, AdMob 23.6.0, AndroidSVG 1.4). Bump them if Gradle complains.
+- **Piece artwork** lives in `app/src/main/assets/pieces/<style>/` as 12 SVGs per set; Cburnett stays as VectorDrawable
+  resources. AndroidSVG rasterizes the SVG sets to a small `LruCache` of bitmaps; a failed render falls back to the
+  Classic glyph so the board never becomes unplayable.
 - **Status of the Android module:** Phase 1 tasks 1–8 are implemented (puzzle stock, board/puzzle flow, placement test,
   blocking service and overlay, permissions onboarding and protection status, rewarded-ad hints). The app compiles,
   its unit tests pass, and blocking plus the hint/ad flow have been verified on physical Android devices. A final
@@ -148,5 +157,8 @@ Commit the resulting file after validating it.
 | JUnit 4 | EPL-1.0 | Tests only (not shipped) |
 | chesslib | Apache-2.0 | Legal moves, FEN and checkmate detection |
 | Google Mobile Ads SDK (AdMob) | Google Mobile Ads SDK / Google APIs terms (proprietary) | Rewarded hint ads; official test IDs in Phase 1; production IDs and UMP consent in Phase 4 |
-| Cburnett chess pieces | BSD-3-Clause (also GFDL/GPL) | Bundled board artwork (`res/drawable/cburnett_*.xml`); see `THIRD_PARTY_NOTICES.md` |
+| AndroidSVG | Apache-2.0 | Rasterizes the bundled SVG piece sets |
+| Cburnett chess pieces | BSD-3-Clause (also GFDL/GPL) | Default board artwork (`res/drawable/cburnett_*.xml`); see `THIRD_PARTY_NOTICES.md` |
+| Chessnut chess pieces | Apache-2.0 | Bundled artwork (`assets/pieces/chessnut/`) |
+| Fantasy, Celtic, Spatial chess pieces | MIT | Bundled artwork (`assets/pieces/{fantasy,celtic,spatial}/`) |
 | System Unicode chess glyphs | No separate asset | Classic/Outline/Letters styles rendered as text |

@@ -51,6 +51,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.chesslock.R
 import com.chesslock.blocking.BlockingPermissions
+import com.chesslock.data.AppLanguage
 import com.chesslock.data.AppSettings
 import com.chesslock.data.PieceStyle
 import com.chesslock.domain.blocking.BlockCategory
@@ -110,6 +111,38 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
         ) {
+            Text(
+                text = stringResource(R.string.settings_language_section),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = stringResource(R.string.settings_language_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            AppLanguage.entries.forEach { language ->
+                val selected = settings.language == language
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = selected,
+                            role = Role.RadioButton,
+                            onClick = { viewModel.setLanguage(language) },
+                        )
+                        .padding(vertical = 4.dp),
+                ) {
+                    RadioButton(selected = selected, onClick = null)
+                    Text(
+                        text = stringResource(language.labelRes()),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(start = 8.dp),
+                    )
+                }
+            }
+
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
             Text(
                 text = stringResource(R.string.settings_board_section),
                 style = MaterialTheme.typography.titleMedium,
@@ -357,6 +390,17 @@ private fun PieceStyle.labelRes(): Int = when (this) {
     PieceStyle.OUTLINE -> R.string.piece_style_outline
     PieceStyle.LETTERS -> R.string.piece_style_letters
     PieceStyle.CBURNETT -> R.string.piece_style_cburnett
+    PieceStyle.CHESSNUT -> R.string.piece_style_chessnut
+    PieceStyle.FANTASY -> R.string.piece_style_fantasy
+    PieceStyle.CELTIC -> R.string.piece_style_celtic
+    PieceStyle.SPATIAL -> R.string.piece_style_spatial
+}
+
+@StringRes
+private fun AppLanguage.labelRes(): Int = when (this) {
+    AppLanguage.SYSTEM -> R.string.settings_language_system
+    AppLanguage.ENGLISH -> R.string.settings_language_english
+    AppLanguage.SLOVAK -> R.string.settings_language_slovak
 }
 
 @StringRes

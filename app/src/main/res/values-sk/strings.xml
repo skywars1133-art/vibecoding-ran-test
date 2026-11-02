@@ -27,6 +27,11 @@
     <string name="promotion_knight">Jazdec</string>
     <string name="settings_title">Nastavenia</string>
     <string name="back">Späť</string>
+    <string name="settings_language_section">Jazyk</string>
+    <string name="settings_language_description">Vyber jazyk aplikácie. Systémový sleduje jazyk zariadenia.</string>
+    <string name="settings_language_system">Systémový</string>
+    <string name="settings_language_english">Angličtina</string>
+    <string name="settings_language_slovak">Slovenčina</string>
     <string name="settings_board_section">Šachovnica</string>
     <string name="piece_style_title">Vzhľad figúrok</string>
     <string name="piece_style_description">Vyber si vzhľad figúrok na šachovnici.</string>
@@ -34,6 +39,10 @@
     <string name="piece_style_outline">Obrysové</string>
     <string name="piece_style_letters">Písmená</string>
     <string name="piece_style_cburnett">Cburnett (kresba)</string>
+    <string name="piece_style_chessnut">Chessnut (kresba)</string>
+    <string name="piece_style_fantasy">Fantasy (kresba)</string>
+    <string name="piece_style_celtic">Keltské (kresba)</string>
+    <string name="piece_style_spatial">Priestorové (kresba)</string>
     <string name="piece_style_preview">Náhľad</string>
     <string name="placement_title">Zaraďovací test</string>
     <string name="placement_progress">Úloha %1$d z %2$d</string>
