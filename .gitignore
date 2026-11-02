@@ -1,0 +1,17 @@
+.gradle/
+build/
+*/build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Never commit production ad unit IDs or signing material (CLAUDE.md hard rule)
+keystore.properties
+*.jks
+*.keystore
+secrets.properties
+google-services.json
