@@ -61,6 +61,11 @@ warning if a band has fewer. Commit the resulting file. It has not been generate
 - **Puzzle validation:** a puzzle needs an even number of moves, at least 2 (opponent's automatic first move, then
   player/opponent pairs ending on the player's move). Malformed CSV rows are skipped and reported, never fatal.
 - **No invented puzzle data.** The built-in set is generated from the real dump by `scripts/build-builtin-puzzles.py`.
+- **Placement test is a staircase:** the target puzzle rating starts at the default ELO, goes up after a solve and
+  down after a failure, with steps 300, 225, 169, ... shrinking to a 75 minimum. The estimate is the target the next
+  puzzle would have had (clamped to 400..2800). No hints or skips during placement; a skip counts as a failure.
+- **Next-puzzle choice:** desired rating = ELO + Gaussian offset (sigma 100), then a random pick among the 3 closest
+  unsolved puzzles. Returns "no puzzle" only when the whole stock is solved.
 - **Starting ELO before the placement test:** 1000 (`AppConfig.eloStart`).
 - **Min SDK 26** (java.time without desugaring, notification channels).
 - **Dependency versions** in `gradle/libs.versions.toml` were picked as a compatible set (AGP 8.7.3, Kotlin 2.0.21,

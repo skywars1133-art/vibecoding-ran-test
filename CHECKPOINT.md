@@ -11,7 +11,7 @@ Resume file. Update after every meaningful step and before any likely credit cut
 ## Environment notes (important for the next session)
 - The authoring sandbox cannot reach Maven Central, Google Maven or the Gradle plugin portal, and has no Android SDK.
   So `:app` cannot be compiled there. Only `:domain` is verified, via `scripts/test-domain.sh`
-  (uses the Kotlin compiler and JUnit bundled in Gradle's lib folder). Last run: **79 tests, all passing**.
+  (uses the Kotlin compiler and JUnit bundled in Gradle's lib folder). Last run: **98 tests, all passing**.
 - Pushing needs the Claude GitHub App installed on the repo owner (already done; push works).
 - No pip/npm/Maven/Lichess access in the sandbox: cannot fetch real puzzles or install chesslib/python-chess. Do NOT invent puzzle data.
 - Gradle wrapper was generated offline (8.14.3).
@@ -39,7 +39,7 @@ Resume file. Update after every meaningful step and before any likely credit cut
 3. [~] Puzzles: DONE `Puzzle` + `LichessPuzzleCsv` parser, `PuzzleProgress` (auto opponent moves, alt-mate via `MateChecker` seam), tests, `scripts/build-builtin-puzzles.py`.
    TODO (needs network on a dev machine): generate `app/src/main/assets/builtin_puzzles.csv` (see README), add chesslib to `:app`, implement `MateChecker` + legal-move validation + Room loader
 4. [ ] Board component + puzzle screen
-5. [ ] Placement test (adaptive, offline)
+5. [~] Placement test: DONE logic `PlacementTest` (staircase) + `PuzzleSelector` with tests. TODO: UI flow using the built-in set
 6. [ ] Blocking service, categories, block screen, boot receiver
 7. [ ] Onboarding + permissions + protection status
 8. [ ] Hints with AdMob test ads
@@ -51,5 +51,7 @@ Resume file. Update after every meaningful step and before any likely credit cut
 
 - 2026-11-02: added Puzzle model, Lichess CSV parser, PuzzleProgress, 23 more tests (79 total), built-in set generator script (tested on synthetic data only).
 
+- 2026-11-02: added PlacementTest (staircase) and PuzzleSelector, 19 more tests (98 total), new AppConfig constants.
+
 ## Next step
-Blocked on network for: generating the built-in puzzle file, adding chesslib, compiling `:app`. Still doable offline in `:domain`: task 5 placement-test logic (adaptive difficulty, ELO from results) and adaptive puzzle selection with unit tests. Do that next, then UI/blocking code in `:app` (written but unverifiable here).
+All offline-verifiable `:domain` logic for Phase 1 is done. Remaining work is in `:app` and cannot be compiled in the sandbox (no Maven/Android SDK): blocking service + block screen + boot receiver (task 6), onboarding/permissions (7), board + puzzle screen (4, needs chesslib), AdMob hints (8). Best order if a machine with network is available: generate the built-in puzzle file, confirm `./gradlew :app:assembleDebug` builds, then continue with 4, 6, 7, 8. Otherwise write that code unverified and flag it clearly.

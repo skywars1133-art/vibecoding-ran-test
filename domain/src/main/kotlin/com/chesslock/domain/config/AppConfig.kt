@@ -52,6 +52,19 @@ data class AppConfig(
     /** Number of rated puzzles that use [kFactorEarly]. */
     val kFactorEarlyPuzzleCount: Int = 20,
     val placementPuzzleCount: Int = 10,
+
+    // --- Placement test: adaptive staircase (SPEC 4) ---
+    /** First step up/down in puzzle rating; shrinks by [placementStepDecay] per puzzle. */
+    val placementStepInitial: Int = 300,
+    val placementStepMin: Int = 75,
+    val placementStepDecay: Double = 0.75,
+    val placementMaxRating: Int = 2800,
+
+    // --- Adaptive puzzle selection (SPEC 2) ---
+    /** Standard deviation of the random offset applied to the player's ELO ("mild variation"). */
+    val selectionSigma: Int = 100,
+    /** Pick randomly among this many unsolved puzzles closest to the desired rating. */
+    val selectionPoolSize: Int = 3,
 ) {
     fun dailyCapSeconds(): Long? = dailyCapMinutes?.let { it * 60L }
 
