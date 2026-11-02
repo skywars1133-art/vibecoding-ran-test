@@ -11,6 +11,7 @@ import com.chesslock.data.BudgetStore
 import com.chesslock.data.SettingsStore
 import com.chesslock.domain.config.AppConfig
 import com.chesslock.domain.elo.EloResult
+import com.chesslock.domain.puzzle.HintAvailability
 import com.chesslock.domain.puzzle.MoveResult
 import com.chesslock.domain.puzzle.PuzzleProgress
 import com.chesslock.domain.puzzle.PuzzleSession
@@ -54,6 +55,11 @@ data class PuzzleUiState(
     val canSkip: Boolean = false,
     val moveStatus: PuzzleMoveStatus = PuzzleMoveStatus.NONE,
     val solved: Boolean = false,
+    val hintsUsedToday: Int = 0,
+    val hintLevel: Int = 0,
+    val hintSourceSquare: String? = null,
+    val hintTargetSquare: String? = null,
+    val hintAvailability: HintAvailability = HintAvailability.AVAILABLE,
 )
 
 @HiltViewModel
@@ -111,6 +117,8 @@ class PuzzleViewModel @Inject constructor(
                     rewardSeconds = nextSession.currentRewardSeconds(),
                     freeSkipsUsedToday = player.freeSkipsUsedToday,
                     canSkip = SkipPolicy.availableSkip(player.freeSkipsUsedToday, 0, config) != null,
+                    hintsUsedToday = player.hintsUsedToday,
+                    hintAvailability = nextSession.hintAvailability(player.hintsUsedToday),
                 )
                 startTimer(puzzle.id)
             } catch (e: CancellationException) {
@@ -163,6 +171,37 @@ class PuzzleViewModel @Inject constructor(
                 mutableState.value = mutableState.value.copy(loadError = true)
             } finally {
                 moveInProgress = false
+            }
+        }
+    }
+
+    /**
+     * Grants a hint ONLY after the rewarded ad reported that the reward was earned (SPEC 3b). The
+     * caller must not grant anything when the ad fails, is skipped or the player closes it early.
+     */
+    fun onAdRewardEarned() {
+        val currentSession = session ?: return
+        val currentProgress = progress ?: return
+        val current = mutableState.value
+        if (current.isLoading || current.solved) return
+        if (!currentSession.canRequestHint(current.hintsUsedToday)) return
+
+        viewModelScope.launch {
+            try {
+                val hintsUsedToday = playerStore.consumeHint()
+                val level = currentSession.grantHint()
+                val highlight = HintHighlight.forMove(currentProgress.expectedMove, level)
+                mutableState.value = mutableState.value.copy(
+                    hintsUsedToday = hintsUsedToday,
+                    hintLevel = level,
+                    hintSourceSquare = highlight?.sourceSquare,
+                    hintTargetSquare = highlight?.targetSquare,
+                    hintAvailability = currentSession.hintAvailability(hintsUsedToday),
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // The ad was already watched; keep the puzzle usable even if persistence fails.
             }
         }
     }
@@ -233,6 +272,13 @@ class PuzzleViewModel @Inject constructor(
                         eloDelta = eloDelta,
                         moveStatus = if (result.solved) PuzzleMoveStatus.SOLVED else PuzzleMoveStatus.CORRECT,
                         solved = result.solved,
+                        // The hint level resets after every correct move (SPEC 3b).
+                        hintLevel = currentSession.currentHintLevel,
+                        hintSourceSquare = null,
+                        hintTargetSquare = null,
+                        hintAvailability = currentSession.hintAvailability(
+                            mutableState.value.hintsUsedToday,
+                        ),
                     )
                 }
             }

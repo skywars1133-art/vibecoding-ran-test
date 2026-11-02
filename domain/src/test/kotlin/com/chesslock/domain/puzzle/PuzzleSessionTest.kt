@@ -200,4 +200,20 @@ class PuzzleSessionTest {
         s.solved()
         assertFalse(s.canRequestHint(0))
     }
+
+    @Test
+    fun hintAvailabilityReportsTheBlockingReason() {
+        val s = session()
+        assertEquals(HintAvailability.AVAILABLE, s.hintAvailability(0))
+        s.grantHint()
+        s.grantHint()
+        assertEquals(HintAvailability.LEVEL_REACHED, s.hintAvailability(0))
+        assertEquals(HintAvailability.LEVEL_REACHED, s.hintAvailability(10))
+
+        val limited = PuzzleSession(900, config.copy(dailyHintLimit = 2))
+        assertEquals(HintAvailability.DAILY_LIMIT, limited.hintAvailability(2))
+
+        s.skip()
+        assertEquals(HintAvailability.FINISHED, s.hintAvailability(0))
+    }
 }

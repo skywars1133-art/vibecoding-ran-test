@@ -101,4 +101,19 @@
     <string name="protection_inactive">Protection is not active</string>
     <string name="protection_disabled">App blocking is off</string>
     <string name="protection_fix">Set up</string>
+
+    <!-- Hints (rewarded ads) -->
+    <string name="hint_button">Hint</string>
+    <string name="hint_dialog_title">Use a hint?</string>
+    <string name="hint_dialog_body">Watch a short ad to reveal this move. Using any hint halves the time reward, and a win after a hint gives no ELO gain.</string>
+    <string name="hint_watch_ad">Watch ad</string>
+    <string name="hint_cancel">Cancel</string>
+    <string name="hint_offline">Hints need an internet connection.</string>
+    <string name="hint_ad_loading">Preparing the ad…</string>
+    <string name="hint_ad_unavailable">The ad is not available right now.</string>
+    <string name="hint_retry_ad">Retry ad</string>
+    <string name="hint_daily_limit">Today\'s hint limit is reached.</string>
+    <string name="hint_level_reached">Both hints are already shown for this move.</string>
+    <string name="hint_level_piece">Hint: move the highlighted piece.</string>
+    <string name="hint_level_target">Hint: move it to the highlighted square.</string>
 </resources>

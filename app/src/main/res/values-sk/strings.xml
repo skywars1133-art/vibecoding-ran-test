@@ -101,4 +101,19 @@
     <string name="protection_inactive">Ochrana nie je aktívna</string>
     <string name="protection_disabled">Blokovanie aplikácií je vypnuté</string>
     <string name="protection_fix">Nastaviť</string>
+
+    <!-- Hints (rewarded ads) -->
+    <string name="hint_button">Nápoveda</string>
+    <string name="hint_dialog_title">Použiť nápovedu?</string>
+    <string name="hint_dialog_body">Pozri krátku reklamu a zobrazí sa tento ťah. Každá nápoveda zníži odmenu o polovicu a výhra s nápovedou nezvýši ELO.</string>
+    <string name="hint_watch_ad">Pozrieť reklamu</string>
+    <string name="hint_cancel">Zrušiť</string>
+    <string name="hint_offline">Nápovedy potrebujú internetové pripojenie.</string>
+    <string name="hint_ad_loading">Pripravuje sa reklama…</string>
+    <string name="hint_ad_unavailable">Reklama momentálne nie je dostupná.</string>
+    <string name="hint_retry_ad">Skúsiť znova</string>
+    <string name="hint_daily_limit">Denný limit nápovedí je vyčerpaný.</string>
+    <string name="hint_level_reached">Obe nápovedy sú pre tento ťah už zobrazené.</string>
+    <string name="hint_level_piece">Nápoveda: pohni zvýrazneným kameňom.</string>
+    <string name="hint_level_target">Nápoveda: pohni ním na zvýraznené pole.</string>
 </resources>

@@ -1,5 +1,13 @@
 # Third-party notices
 
+## Google Mobile Ads SDK (AdMob)
+
+- **Artifact:** `com.google.android.gms:play-services-ads` (version 23.6.0).
+- **Terms:** the SDK is proprietary Google software governed by the Google Mobile Ads SDK terms and the Google APIs
+  Terms of Service. It is not bundled as source and no ad content is shipped with the app.
+- **Phase 1:** the app uses the official AdMob **test** app ID and rewarded test unit ID. Production IDs, consent (UMP)
+  and the privacy-policy/Data-safety updates are Phase 4 work.
+
 ## Cburnett chess pieces
 
 - **Author:** Colin M.L. Burnett (Wikimedia Commons user [Cburnett](https://commons.wikimedia.org/wiki/User:Cburnett))

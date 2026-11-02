@@ -19,6 +19,17 @@ data class SolveOutcome(
     val eloAlreadyApplied: Boolean,
 )
 
+/** Why the Hint button is unavailable; the UI maps this to an explanation (SPEC 3b). */
+enum class HintAvailability {
+    AVAILABLE,
+    /** Both hint levels for the current move were already shown. */
+    LEVEL_REACHED,
+    /** The configurable daily hint limit was reached. */
+    DAILY_LIMIT,
+    /** The puzzle is solved, skipped or otherwise finished. */
+    FINISHED,
+}
+
 /**
  * Pure rules of one puzzle attempt: lives, post-loss penalties, hints, ELO result, reward.
  * Knows nothing about chess moves, ads, storage or time; the caller reports events.
@@ -71,9 +82,15 @@ class PuzzleSession(
      * Does not cover ad availability or connectivity; the ads layer checks those.
      */
     fun canRequestHint(hintsUsedToday: Int): Boolean =
-        !finished &&
-            currentHintLevel < config.hintLevelsPerMove &&
-            (config.dailyHintLimit == null || hintsUsedToday < config.dailyHintLimit)
+        hintAvailability(hintsUsedToday) == HintAvailability.AVAILABLE
+
+    /** Distinguishes "no more levels for this move" from "daily limit reached" for the UI note. */
+    fun hintAvailability(hintsUsedToday: Int): HintAvailability = when {
+        finished -> HintAvailability.FINISHED
+        currentHintLevel >= config.hintLevelsPerMove -> HintAvailability.LEVEL_REACHED
+        config.dailyHintLimit != null && hintsUsedToday >= config.dailyHintLimit -> HintAvailability.DAILY_LIMIT
+        else -> HintAvailability.AVAILABLE
+    }
 
     /**
      * Call ONLY from the ad's `onUserEarnedReward` callback. Returns the new hint level.

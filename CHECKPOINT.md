@@ -6,12 +6,17 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - Date: 2026-11-02
 - Current phase: Phase 1 (MVP), in progress
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: Phase 1 tasks 6 and 7 — the blocking layer (categories, shared budget, foreground service, overlay block screen, warnings, boot receiver, settings controls) and the permissions onboarding / protection-status UI.
+- Last completed: Phase 1 task 8 — rewarded-ad hints (hint only after a completed AdMob rewarded ad, two levels, reward halved, no ELO gain on a hint win, no life cost, resettable counter, daily limit, offline note).
 
 ## Verification
 - Ran `:domain:test :app:testDebugUnitTest :app:assembleDebug` with JDK 21.0.11, Gradle 8.14.3 and Android SDK 35.
-- **109 domain tests + 20 app tests passed; 0 failures, errors or skips.**
+- **110 domain tests + 26 app tests passed (136 total); 0 failures, errors or skips.**
 - `:app:assembleDebug` produced a signed debug APK.
+- Hint/ad flow verified on the Samsung tablet `R9TX902F92W` (SM-X210, Android 16, Slovak locale):
+  - tapping Hint showed the confirmation dialog; confirming opened `com.google.android.gms.ads.AdActivity` with the official AdMob *test* ad;
+  - the reward was granted only after the ad reported `Odmena je udelená`; `player.preferences_pb` then contained `hint_date=2026-11-02` and `hints_used=2`;
+  - the time reward dropped from 3:00 to 1:30 after the hint, the level-1 text rendered, and a screenshot pixel scan found exactly one blue hint square (`c4`) — a hint never costs a life;
+  - the daily counter persists across a relaunch.
 - On the test device (Android 15, `CIYDDIMV5D5XNFUS`):
   - usage access and overlay appops granted; the foreground service runs with notification id 1001;
   - opening Facebook with a normal budget charged usage (10 s recorded in `budget.preferences_pb`) and showed no block screen;
@@ -55,7 +60,7 @@ Resume file. Update after every meaningful step and before any likely credit cut
 5. [x] Placement test: `PlacementTest` staircase + adaptive `PuzzleSelector` with tests, plus the onboarding UI flow using the built-in stock.
 6. [x] Blocking service, categories, block screen, boot receiver (device reboot re-check pending after unlock).
 7. [x] Onboarding + permissions + protection status.
-8. [ ] Hints with AdMob test ads
+8. [x] Hints with AdMob test ads
 9. [ ] README wrap-up for Phase 1, then STOP and wait for feedback
 
 ## Done log
@@ -69,8 +74,8 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - 2026-11-02: added the placement-test onboarding flow: shared board component, adaptive 10-puzzle run from the built-in stock with no rewards/ELO writes, 3 lives per puzzle, early finish on an empty stock, result screen, and `placement_completed` routing. Build and all 113 tests pass; device routing verified.
 - 2026-11-02: added the blocking layer: `BlockCategory`/`PlatformCategory`/`AppCategoryClassifier`/`BlockPolicy` with precedence tests, daily `BudgetStore`, `ForegroundAppDetector`, `AppInfoProvider`, foreground `BlockingService`, main-thread Compose `BlockOverlayController` and `BlockScreen`, 5/1-minute warnings, `BootReceiver`, settings controls for limit/cap/categories/permissions, and puzzle rewards credited to the budget. 14 new tests (127 total at that point); device overlay and budget behavior verified.
 - 2026-11-02: added the permissions onboarding (usage access, overlay, notifications) and a protection-status banner on the puzzle screen and in settings; the blocking service now exposes its running state and pauses counting / hides the overlay while the screen is off. The Compose-only additions keep the suite at 129 tests (109 domain + 20 app); full build verified. Device boot re-check pending unlock.
+- 2026-11-02: added rewarded-ad hints (AdMob 23.6.0, official test IDs): `RewardedAdManager` preloads/shows with reward granted only in `onUserEarnedReward`; `HintAvailability` + `PuzzleSession.hintAvailability` domain rules; `PlayerStore` daily hint counter; `HintHighlight` board highlighting (level 1 piece, level 2 target); ViewModel/UI dialog, offline and daily-limit notes; en/sk strings. 7 new tests (136 total). Device-verified full ad + reward + hint flow on the SM-X210 tablet.
 
 ## Next step
-1. Reconnect/unlock the phone, launch the app once (clears Android's stopped flag), reboot, unlock, and confirm `BlockingService` starts automatically and the notification says protection is active.
-2. Manually tap through the block screen buttons and the permission dialogs on the device.
-3. Continue with Phase 1 task 8: hints with AdMob **test** ads (hint only after a completed rewarded ad, reward reduction, no ELO gain on a hint win, no life effect), then task 9 README wrap-up and STOP.
+1. Phase 1 task 9: finish the README wrap-up, confirm the build/tests, commit and push, then STOP and wait for user feedback.
+2. Optional pending device check: reconnect/unlock the old phone `CIYDDIMV5D5XNFUS`, launch the app once (clears Android's stopped flag), reboot, unlock, and confirm `BlockingService` starts automatically and the notification says protection is active. Also tap through the block screen buttons and permission dialogs there manually.

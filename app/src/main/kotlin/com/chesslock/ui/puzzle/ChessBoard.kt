@@ -1,6 +1,7 @@
 package com.chesslock.ui.puzzle
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -42,6 +43,8 @@ fun ChessBoard(
     solved: Boolean,
     onMove: (String) -> Unit,
     pieceStyle: PieceStyle = PieceStyle.DEFAULT,
+    hintSourceSquare: String? = null,
+    hintTargetSquare: String? = null,
     resetKey: Any? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -98,12 +101,24 @@ fun ChessBoard(
                         val isTarget = selected != null && legalMoves.any {
                             it.startsWith(selected) && it.substring(2, 4) == square
                         }
+                        val hintColor = when {
+                            square == hintTargetSquare -> Color(0xFF1565C0)
+                            square == hintSourceSquare -> Color(0xFF2196F3)
+                            else -> null
+                        }
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
                                 .weight(1f)
                                 .fillMaxHeight()
                                 .background(background)
+                                .then(
+                                    if (hintColor != null) {
+                                        Modifier.border(3.dp, hintColor)
+                                    } else {
+                                        Modifier
+                                    },
+                                )
                                 .clickable { selectSquare(square) },
                         ) {
                             if (isTarget && piece == null) {

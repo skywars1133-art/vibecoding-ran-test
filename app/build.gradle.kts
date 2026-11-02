@@ -20,6 +20,14 @@ android {
         versionName = "0.1.0"
         // Slovak and English only (SPEC 6).
         resourceConfigurations += listOf("en", "sk")
+
+        // AdMob official TEST identifiers. Production IDs are Phase 4 work (SPEC 5 / PHASES.md).
+        manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
+        buildConfigField(
+            "String",
+            "ADMOB_REWARDED_UNIT_ID",
+            "\"ca-app-pub-3940256099942544/5224354917\"",
+        )
     }
 
     buildTypes {
@@ -35,6 +43,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -71,6 +80,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.chesslib)
+    implementation(libs.play.services.ads)
 
     testImplementation(libs.junit)
 }
