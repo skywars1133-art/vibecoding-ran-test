@@ -27,6 +27,23 @@ Kotlin compiler and JUnit bundled in the Gradle distribution:
 scripts/test-domain.sh
 ```
 
+### Run on a device
+
+1. Install the debug build (Android 8.0 / API 26 or newer):
+
+   ```
+   adb install -r app/build/outputs/apk/debug/app-debug.apk
+   ```
+
+   Or open the project in Android Studio and press Run.
+2. Finish the placement test (or skip through it as described in `CHECKPOINT.md`) to reach normal puzzle play.
+3. Open **Settings** to choose the daily limit, blocked categories and piece style.
+4. Grant **Usage access**, **Display over other apps** and (optionally) **Notifications** from the protection banner or
+   Settings; the banner turns to "Protection is active" once the blocking service is running.
+5. Solve a puzzle to earn time, then open a blocked app after the budget runs out to see the block screen.
+6. Hints use AdMob's official **test** ad IDs in this phase, so no real ad is shown or billed. Hints need a network and
+   are disabled with an explanatory note while offline.
+
 ### Built-in puzzle set
 The committed `app/src/main/assets/builtin_puzzles.csv` contains 50 real Lichess puzzles (CC0). To regenerate it on a machine with internet:
 
