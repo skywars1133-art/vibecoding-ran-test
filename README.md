@@ -67,8 +67,9 @@ fixed **`puzzle-packs`** release:
 - band centers are every 200 points from 400 to 2800 (13 files: `puzzles-400.csv` ... `puzzles-2800.csv`);
 - each file contains 150 puzzles from `center - 300` to `center + 300`, so it has easier and harder material around
   the player;
-- candidates are filtered for rating reliability (deviation), popularity and play count, then a daily salt rotates
-  the selection so a new download normally brings new material even when the dump itself has not changed.
+- candidates are filtered for rating reliability (deviation), popularity and play count, then kept per 50-point rating
+  slice so a pack spans the whole band instead of drifting toward its easiest puzzles; a daily salt rotates the
+  selection, so a new download normally brings new material even when the dump itself has not changed.
 
 The app picks the band nearest the current ELO, downloads its CSV with `HttpURLConnection`, and inserts it into Room.
 It asks for a pack via WorkManager every 24 hours, once per app launch (only if the last success is old enough), and
@@ -137,9 +138,10 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
 - **Daily packs are pre-processed outside the app.** A GitHub Action streams the CC0 Lichess dump into 13 rating-band
   CSVs and publishes them as assets of the fixed `puzzle-packs` GitHub Release (no backend, no Pages setup). The app
   maps ELO to the nearest 200-point center and downloads only that file, so the phone never sees the multi-gigabyte
-  dump. Packs cover center +/-300 and hold 150 puzzles. The pipeline keeps the 3000 best candidates per band (rating
-  deviation, popularity, plays, reasonable length) and rotates the 150 by a daily salt; the app adds the UTC day as a
-  query parameter so a replaced release asset is not served from a cache.
+  dump. Packs cover center +/-300 and hold 150 puzzles. The pipeline keeps up to 3000 candidates per band, stratified
+  into 50-point rating slices (rating deviation, popularity, plays, reasonable length rank the candidates within each
+  slice) and rotates the 150 by a daily salt; the app adds the UTC day as a query parameter so a replaced release asset
+  is not served from a cache.
 - **Pack sync is WorkManager + DataStore metadata.** The periodic request runs every 24 h; the app also queues a
   one-time check on launch (skipped when the last success is fresh) and a forced sync from **Download now**. The
   default constraint is `UNMETERED` (Wi-Fi-only), relaxed to `CONNECTED` when the user allows mobile data. Failures

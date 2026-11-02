@@ -11,8 +11,9 @@ Usage (the GitHub Action runs this, but it also works locally):
 
 Output: one `puzzles-<center>.csv` per 200-point band center from 400 to 2800. Each file contains
 150 puzzles from center-300 to center+300, chosen from a larger pool of reliable/popular puzzles.
-The daily salt rotates the selection, so a new download normally brings new material even when the
-Lichess dump itself has not changed.
+The pool is kept per 50-point rating slice, so a pack spans the whole band instead of drifting
+toward its easiest, most-played puzzles. The daily salt rotates the selection, so a new download
+normally brings new material even when the Lichess dump itself has not changed.
 
 The app's `PuzzlePackPlanner` uses the same centers and spread (`AppConfig`). Keep these defaults in
 sync when changing them. Stdlib only; the candidate pool is bounded so the full dump is streamed.
@@ -51,6 +52,8 @@ def main() -> int:
     ap.add_argument("--pack-size", type=int, default=150, help="puzzles written per file")
     ap.add_argument("--pool-per-band", type=int, default=3000,
                     help="candidate puzzles retained per band before the daily rotation")
+    ap.add_argument("--slice-width", type=int, default=50,
+                    help="rating slice used to keep the candidate pool evenly spread across a band")
     ap.add_argument("--max-deviation", type=int, default=100, help="skip puzzles with an unreliable rating")
     ap.add_argument("--min-popularity", type=int, default=90)
     ap.add_argument("--min-plays", type=int, default=2000)
@@ -60,9 +63,17 @@ def main() -> int:
     args = ap.parse_args()
 
     centers = band_centers(args.min_rating, args.max_rating, args.band_width)
-    # Each band's heap keeps its best `pool-per-band` candidates. The tuple is ordered so the
-    # min-heap root is the *worst* retained candidate: high deviation, low popularity/plays.
-    pools: dict[int, list[tuple[int, int, int, int, list[str]]]] = {c: [] for c in centers}
+    if args.slice_width <= 0:
+        raise SystemExit("--slice-width must be positive")
+    # Each band keeps a bounded pool of its best candidates, split into rating slices so easy,
+    # mid-band and hard puzzles all make it in (a single quality-ranked pool skews toward the
+    # easier, more-played puzzles and leaves the top of the band empty).
+    # Each slice is a heap whose root is the *worst* retained item: high deviation, low popularity.
+    slices = max(1, (2 * args.spread + args.slice_width - 1) // args.slice_width)
+    per_slice = max(1, args.pool_per_band // slices)
+    pools: dict[int, list[list[tuple[int, int, int, int, list[str]]]]] = {
+        c: [[] for _ in range(slices)] for c in centers
+    }
     sequence = 0
     rows_read = 0
     rows_kept = 0
@@ -92,8 +103,9 @@ def main() -> int:
         sequence += 1
         item = (-dev, pop, plays, sequence, row[:10])
         for center in matching:
-            heap = pools[center]
-            if len(heap) < args.pool_per_band:
+            index = min(slices - 1, (rating - (center - args.spread)) // args.slice_width)
+            heap = pools[center][index]
+            if len(heap) < per_slice:
                 heapq.heappush(heap, item)
                 rows_kept += 1
             else:
@@ -104,8 +116,8 @@ def main() -> int:
     total_written = 0
     warnings = 0
     for center in centers:
-        heap = pools[center]
-        ordered = sorted(heap, key=lambda item: daily_key(args.day, item[4][0]))
+        pool = [item for heap in pools[center] for item in heap]
+        ordered = sorted(pool, key=lambda item: daily_key(args.day, item[4][0]))
         chosen: list[list[str]] = []
         seen_ids: set[str] = set()
         for item in ordered:
@@ -120,7 +132,7 @@ def main() -> int:
         if len(chosen) < args.pack_size:
             message = (
                 f"band {center} ({center - args.spread}..{center + args.spread - 1}) "
-                f"has only {len(chosen)} puzzles (pool {len(heap)})"
+                f"has only {len(chosen)} puzzles (pool {len(pool)})"
             )
             if args.require_full:
                 raise SystemExit(f"error: {message}; refusing to publish an incomplete pack")
