@@ -26,9 +26,21 @@ Kotlin compiler and JUnit bundled in the Gradle distribution:
 scripts/test-domain.sh
 ```
 
+### Built-in puzzle set (required before the puzzle screen works)
+The ~50 built-in puzzles must be real Lichess puzzles (CC0), generated once on a machine with internet:
+
+```
+curl -O https://database.lichess.org/lichess_db_puzzle.csv.zst
+zstdcat lichess_db_puzzle.csv.zst | python3 scripts/build-builtin-puzzles.py > app/src/main/assets/builtin_puzzles.csv
+```
+
+It picks 5 puzzles per 200-point rating band from 600 to 2600 (most reliable, most popular first) and prints a
+warning if a band has fewer. Commit the resulting file. It has not been generated yet.
+
 ## Architecture
 - `domain/`: pure Kotlin/JVM, no Android imports. `config/AppConfig` (the ONE place for numeric constants), `elo`,
-  `reward`, `puzzle` (lives, hints, skips), `budget` (daily time budget, midnight reset).
+  `reward`, `puzzle` (`Puzzle` + Lichess CSV parser, `PuzzleProgress` solution tracking, `PuzzleSession` lives/hints,
+  `SkipPolicy`), `budget` (daily time budget, midnight reset).
 - `app/`: Android app (Compose, Material 3, Hilt). `di/ConfigModule` provides `AppConfig`.
 
 ## Decisions
@@ -43,6 +55,12 @@ scripts/test-domain.sh
 - **Midnight reset:** budget rolls over only when the local date moves *forward*. Moving the device clock back does
   not refill the budget. Earned time is capped by the optional daily cap, and lowering the cap never removes
   time already earned.
+- **Chess rules sit behind a seam.** `PuzzleProgress` only compares UCI strings; whether an alternative move delivers
+  mate comes from an injected `MateChecker`, to be implemented on top of the chess library in the app module.
+  Lichess accepts any mating move, so the first mating alternative ends the puzzle.
+- **Puzzle validation:** a puzzle needs an even number of moves, at least 2 (opponent's automatic first move, then
+  player/opponent pairs ending on the player's move). Malformed CSV rows are skipped and reported, never fatal.
+- **No invented puzzle data.** The built-in set is generated from the real dump by `scripts/build-builtin-puzzles.py`.
 - **Starting ELO before the placement test:** 1000 (`AppConfig.eloStart`).
 - **Min SDK 26** (java.time without desugaring, notification channels).
 - **Dependency versions** in `gradle/libs.versions.toml` were picked as a compatible set (AGP 8.7.3, Kotlin 2.0.21,
