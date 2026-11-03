@@ -28,6 +28,9 @@ class PuzzleRepository @Inject constructor(
     /** Unsolved puzzles currently available offline, for the Settings stock counter. */
     val unsolvedCount: Flow<Int> = dao.unsolvedCount()
 
+    /** Unique puzzles ever solved; used by the local statistics screen (SPEC 5). */
+    val solvedCount: Flow<Int> = dao.solvedCount()
+
     /**
      * Picks an unsolved puzzle near [targetRating]. [excludeIds] lets the placement test keep every
      * puzzle unique within one run without marking them solved (they stay available for normal play).

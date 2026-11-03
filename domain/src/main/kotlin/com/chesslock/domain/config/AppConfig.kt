@@ -96,6 +96,37 @@ data class AppConfig(
     /** Pick randomly among this many unsolved puzzles closest to the desired rating. */
     val selectionPoolSize: Int = 3,
 
+    // --- Local statistics (SPEC 5) ---
+    /** Points kept for the "ELO over time" chart (plus one synthetic starting point). */
+    val statsEloHistoryLimit: Int = 30,
+    /** Themes shown in "Success by theme"; all other themes remain in the database. */
+    val statsTopThemes: Int = 6,
+    /** "This week" in the blocked-time card, including today. */
+    val statsWeekDays: Int = 7,
+    /**
+     * Lichess tags that describe length, player type or time control rather than a puzzle motif;
+     * they would drown out useful themes such as "fork", "endgame" or "mateIn2".
+     */
+    val statsIgnoredThemes: Set<String> = setOf(
+        "short",
+        "long",
+        "veryLong",
+        "oneMove",
+        "master",
+        "masterVsMaster",
+        "superGM",
+        "playerVsPlayer",
+        "computer",
+        "correspondence",
+        "classical",
+        "rapid",
+        "blitz",
+        "bullet",
+        "ultraBullet",
+        "chess960",
+        "fromPosition",
+    ),
+
     // --- Daily puzzle packs (SPEC 2, Phase 2) ---
     /** WorkManager asks for a fresh pack this often. */
     val puzzlePackRefreshHours: Long = 24,

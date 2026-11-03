@@ -18,6 +18,9 @@ interface PuzzleDao {
     @Query("SELECT COUNT(*) FROM puzzles WHERE solved = 0")
     fun unsolvedCount(): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM puzzles WHERE solved = 1")
+    fun solvedCount(): Flow<Int>
+
     @Query("SELECT id FROM puzzles WHERE solved = 1")
     suspend fun getSolvedIds(): List<String>
 

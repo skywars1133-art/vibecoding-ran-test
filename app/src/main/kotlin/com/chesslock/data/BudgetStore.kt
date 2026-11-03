@@ -1,6 +1,7 @@
 package com.chesslock.data
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -20,10 +21,14 @@ private val Context.budgetDataStore by preferencesDataStore(name = "budget")
 /**
  * Persists the one shared daily budget (SPEC 1). Usage is recorded by the blocking service,
  * earned time by the puzzle screen. All date handling goes through [TimeBudget].
+ *
+ * The same writes feed the local statistics history ([StatsDao]). That history is best-effort:
+ * a failure there must never make the blocking service retry (and double-count) budget seconds.
  */
 @Singleton
 class BudgetStore @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val statsDao: StatsDao,
 ) {
     private val dateKey = stringPreferencesKey("date")
     private val earnedKey = longPreferencesKey("earned_seconds")
@@ -42,6 +47,7 @@ class BudgetStore @Inject constructor(
             preferences.write(state)
             preferences[usedKey] = state.usedSeconds + seconds
         }
+        recordHistory { addUsageHistory(today, seconds) }
     }
 
     suspend fun addEarned(
@@ -51,10 +57,43 @@ class BudgetStore @Inject constructor(
         today: LocalDate = LocalDate.now(),
     ) {
         if (seconds <= 0L) return
+        var credited = 0L
         context.budgetDataStore.edit { preferences ->
             val state = preferences.toBudgetState(today)
             val earned = TimeBudget.addEarned(state, seconds, limitSeconds, capSeconds)
+            credited = earned.earnedSeconds - state.earnedSeconds
             preferences.write(earned)
+        }
+        if (credited > 0L) recordHistory { addEarnedHistory(today, credited) }
+    }
+
+    /**
+     * Adds to the per-day history without SQLite UPSERT (API 26 ships an old SQLite). A concurrent
+     * first write falls back to an update; blocked usage has a single writer in practice.
+     */
+    private suspend fun addUsageHistory(date: LocalDate, seconds: Long) {
+        val key = date.toString()
+        if (statsDao.addUsageToExisting(key, seconds) == 0) {
+            val id = statsDao.insertUsageDay(
+                UsageDayEntity(date = key, usedSeconds = seconds, earnedSeconds = 0),
+            )
+            if (id == -1L) statsDao.addUsageToExisting(key, seconds)
+        }
+    }
+
+    private suspend fun addEarnedHistory(date: LocalDate, seconds: Long) {
+        val key = date.toString()
+        if (statsDao.addEarnedToExisting(key, seconds) == 0) {
+            val id = statsDao.insertUsageDay(
+                UsageDayEntity(date = key, usedSeconds = 0, earnedSeconds = seconds),
+            )
+            if (id == -1L) statsDao.addEarnedToExisting(key, seconds)
+        }
+    }
+
+    private suspend fun recordHistory(write: suspend () -> Unit) {
+        runCatching { write() }.onFailure { error ->
+            Log.w("BudgetStore", "Could not record local statistics history", error)
         }
     }
 

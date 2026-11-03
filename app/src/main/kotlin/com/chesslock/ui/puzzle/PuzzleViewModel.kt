@@ -9,6 +9,7 @@ import com.chesslock.data.PlayerStore
 import com.chesslock.data.PuzzleRepository
 import com.chesslock.data.BudgetStore
 import com.chesslock.data.SettingsStore
+import com.chesslock.data.StatisticsStore
 import com.chesslock.domain.config.AppConfig
 import com.chesslock.domain.elo.EloResult
 import com.chesslock.domain.puzzle.HintAvailability
@@ -68,6 +69,7 @@ class PuzzleViewModel @Inject constructor(
     private val playerStore: PlayerStore,
     private val budgetStore: BudgetStore,
     private val settingsStore: SettingsStore,
+    private val statisticsStore: StatisticsStore,
     private val config: AppConfig,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(PuzzleUiState(playerElo = config.eloStart))
@@ -151,6 +153,7 @@ class PuzzleViewModel @Inject constructor(
 
     fun skipPuzzle() {
         val currentSession = session ?: return
+        val currentPuzzle = progress?.puzzle
         val current = mutableState.value
         if (moveInProgress || current.isLoading || current.solved) return
         val skipKind = SkipPolicy.availableSkip(
@@ -162,6 +165,13 @@ class PuzzleViewModel @Inject constructor(
         moveInProgress = true
         viewModelScope.launch {
             try {
+                // A puzzle whose LOSS was already recorded keeps that attempt; do not log a skip
+                // on top of it (it would show up twice in the history).
+                if (currentPuzzle != null && currentSession.eloResult != EloResult.LOSS) {
+                    runCatching {
+                        statisticsStore.recordSkip(currentPuzzle, current.playerElo)
+                    }
+                }
                 currentSession.skip()
                 if (skipKind == SkipKind.FREE) playerStore.consumeFreeSkip()
                 loadPuzzle()
@@ -225,6 +235,15 @@ class PuzzleViewModel @Inject constructor(
                         val update = playerStore.recordResult(currentSession.puzzleRating, EloResult.LOSS)
                         elo = update.newElo
                         eloDelta = update.delta
+                        // The third lost life is when ELO changes, so the attempt is logged here.
+                        runCatching {
+                            statisticsStore.recordLoss(
+                                puzzle = currentProgress.puzzle,
+                                hintsUsed = currentSession.hintsUsed,
+                                eloBefore = update.oldElo,
+                                eloAfter = update.newElo,
+                            )
+                        }
                     }
                     mutableState.value = mutableState.value.copy(
                         livesLeft = currentSession.livesLeft,
@@ -246,10 +265,16 @@ class PuzzleViewModel @Inject constructor(
                     var reward = currentSession.currentRewardSeconds()
                     if (result.solved) {
                         val outcome = currentSession.solved()
+                        // When the LOSS was already applied, the attempt row is completed instead
+                        // of adding a second entry with a second ELO change.
+                        var statsEloBefore = elo
+                        var statsEloAfter = elo
                         if (!outcome.eloAlreadyApplied) {
                             val update = playerStore.recordResult(currentSession.puzzleRating, outcome.eloResult)
                             elo = update.newElo
                             eloDelta = update.delta
+                            statsEloBefore = update.oldElo
+                            statsEloAfter = update.newElo
                         }
                         reward = outcome.rewardSeconds
                         repository.markSolved(currentProgress.puzzle.id)
@@ -260,6 +285,32 @@ class PuzzleViewModel @Inject constructor(
                                 limitSeconds = settings.dailyLimitSeconds,
                                 capSeconds = settings.dailyCapSeconds,
                             )
+                        }
+                        runCatching {
+                            if (outcome.eloAlreadyApplied) {
+                                val completed = statisticsStore.completeLoss(
+                                    puzzleId = currentProgress.puzzle.id,
+                                    rewardSeconds = outcome.rewardSeconds,
+                                    hintsUsed = currentSession.hintsUsed,
+                                )
+                                if (!completed) {
+                                    statisticsStore.recordSolved(
+                                        puzzle = currentProgress.puzzle,
+                                        hintsUsed = currentSession.hintsUsed,
+                                        eloBefore = statsEloBefore,
+                                        eloAfter = statsEloAfter,
+                                        rewardSeconds = outcome.rewardSeconds,
+                                    )
+                                }
+                            } else {
+                                statisticsStore.recordSolved(
+                                    puzzle = currentProgress.puzzle,
+                                    hintsUsed = currentSession.hintsUsed,
+                                    eloBefore = statsEloBefore,
+                                    eloAfter = statsEloAfter,
+                                    rewardSeconds = outcome.rewardSeconds,
+                                )
+                            }
                         }
                     }
                     mutableState.value = mutableState.value.copy(

@@ -140,4 +140,32 @@
     <string name="hint_level_reached">Obe nápovedy sú pre tento ťah už zobrazené.</string>
     <string name="hint_level_piece">Nápoveda: pohni zvýrazneným kameňom.</string>
     <string name="hint_level_target">Nápoveda: pohni ním na zvýraznené pole.</string>
+
+    <!-- Local statistics (SPEC 5, Phase 3) -->
+    <string name="stats_title">Štatistiky</string>
+    <string name="stats_open">Štatistiky</string>
+    <string name="stats_elo_title">ELO v čase</string>
+    <string name="stats_elo_current">Aktuálne ELO: %1$d</string>
+    <string name="stats_elo_empty">Vyrieš ohodnotenú úlohu a začni si budovať históriu ELO.</string>
+    <string name="stats_elo_window">Ohodnotené úlohy v grafe: %1$d</string>
+    <string name="stats_success_title">Úspešnosť</string>
+    <string name="stats_success_none">Zatiaľ žiadne ohodnotené úlohy. Preskočenia sa nepočítajú.</string>
+    <string name="stats_success_overall">%1$d%% (%2$d z %3$d)</string>
+    <string name="stats_themes_title">Podľa témy</string>
+    <string name="stats_theme_value">%1$d%% · %2$d/%3$d</string>
+    <string name="stats_theme_mate_in">Mat v %1$s</string>
+    <string name="stats_streak_title">Séria dní</string>
+    <string name="stats_streak_best">Najlepšia: %1$s</string>
+    <plurals name="stats_streak_days">
+        <item quantity="one">%1$d deň</item>
+        <item quantity="few">%1$d dni</item>
+        <item quantity="other">%1$d dní</item>
+    </plurals>
+    <string name="stats_solved_title">Vyriešené úlohy</string>
+    <string name="stats_reward_title">Získaný čas</string>
+    <string name="stats_reward_total">Spolu %1$s</string>
+    <string name="stats_usage_title">Blokované aplikácie</string>
+    <string name="stats_usage_today">Dnes: %1$s</string>
+    <string name="stats_usage_week">Tento týždeň: %1$s</string>
+    <string name="stats_local_note">Štatistiky a história používania aplikácií zostávajú v tomto zariadení. Nič sa neodosiela.</string>
 </resources>

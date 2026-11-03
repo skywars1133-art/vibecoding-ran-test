@@ -140,4 +140,31 @@
     <string name="hint_level_reached">Both hints are already shown for this move.</string>
     <string name="hint_level_piece">Hint: move the highlighted piece.</string>
     <string name="hint_level_target">Hint: move it to the highlighted square.</string>
+
+    <!-- Local statistics (SPEC 5, Phase 3) -->
+    <string name="stats_title">Statistics</string>
+    <string name="stats_open">Stats</string>
+    <string name="stats_elo_title">ELO over time</string>
+    <string name="stats_elo_current">Current ELO: %1$d</string>
+    <string name="stats_elo_empty">Solve a rated puzzle to start your ELO history.</string>
+    <string name="stats_elo_window">Rated puzzles in chart: %1$d</string>
+    <string name="stats_success_title">Success rate</string>
+    <string name="stats_success_none">No rated puzzles yet. Skips are not counted.</string>
+    <string name="stats_success_overall">%1$d%% (%2$d of %3$d)</string>
+    <string name="stats_themes_title">By theme</string>
+    <string name="stats_theme_value">%1$d%% · %2$d/%3$d</string>
+    <string name="stats_theme_mate_in">Mate in %1$s</string>
+    <string name="stats_streak_title">Day streak</string>
+    <string name="stats_streak_best">Best: %1$s</string>
+    <plurals name="stats_streak_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <string name="stats_solved_title">Puzzles solved</string>
+    <string name="stats_reward_title">Time earned</string>
+    <string name="stats_reward_total">%1$s total</string>
+    <string name="stats_usage_title">Blocked apps</string>
+    <string name="stats_usage_today">Today: %1$s</string>
+    <string name="stats_usage_week">This week: %1$s</string>
+    <string name="stats_local_note">Statistics and app-usage history stay on this device. Nothing is uploaded.</string>
 </resources>

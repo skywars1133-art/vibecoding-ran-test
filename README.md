@@ -44,7 +44,9 @@ scripts/test-domain.sh
 5. Grant **Usage access**, **Display over other apps** and (optionally) **Notifications** from the protection banner or
    Settings; the banner turns to "Protection is active" once the blocking service is running.
 6. Solve a puzzle to earn time, then open a blocked app after the budget runs out to see the block screen.
-7. Hints use AdMob's official **test** ad IDs in this phase, so no real ad is shown or billed. Hints need a network and
+7. Tap **Stats** in the puzzle top bar for local-only statistics: ELO over time, overall and per-theme success rate,
+   day streak, puzzles solved, time earned, and blocked-app time today/this week. Nothing is uploaded.
+8. Hints use AdMob's official **test** ad IDs in this phase, so no real ad is shown or billed. Hints need a network and
    are disabled with an explanatory note while offline.
 
 ### Shareable test APK
@@ -121,17 +123,19 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
 ## Architecture
 - `domain/`: pure Kotlin/JVM, no Android imports. `config/AppConfig` (the ONE place for numeric constants), `elo`,
   `reward`, `puzzle` (`Puzzle` + Lichess CSV parser, `PuzzleProgress` solution tracking, `PuzzleSession` lives/hints,
-  `SkipPolicy`, `PuzzlePackPlanner` band/URL/due rules), `budget` (daily time budget, midnight reset), and `blocking`
+  `SkipPolicy`, `PuzzlePackPlanner` band/URL/due rules), `budget` (daily time budget, midnight reset), `stats`
+  (`Statistics` aggregation for success rate, streaks, themes, ELO history and earned time), and `blocking`
   (`BlockCategory`, the curated `AppCategoryClassifier`, `BlockRules`/`BlockPolicy`).
 - `app/`: Android app (Compose, Material 3, Hilt). `di/ConfigModule` provides `AppConfig`; `data/` contains the Room
-  puzzle stock, DataStore player progress, the shared `BudgetStore`, the settings store, the puzzle-sync metadata
-  store, `PuzzlePackClient` (HTTP CSV download), `PuzzlePackSync` (ELO -> band -> Room), `PuzzlePackScheduler` and
-  `PuzzlePackWorker` (WorkManager); `chess/` adapts chesslib for legal UCI moves and mating alternatives;
-  `ui/puzzle/` contains the tap-to-move board, piece rendering, promotion picker, timer, skip controls and puzzle
-  ViewModel; `ui/settings/` contains the settings screen and its ViewModel; `blocking/` contains the foreground
-  service, usage detector, overlay controller, notifications, boot receiver and permission helpers; `ads/` contains
-  the rewarded-ad manager and connectivity helper; `ui/blocking/` contains the block screen and protection-status
-  banner; `ui/onboarding/` contains the permissions onboarding.
+  puzzle stock and the local `attempts`/`usage_days` statistics tables, DataStore player progress, the shared
+  `BudgetStore`, the settings store, the puzzle-sync metadata store, `PuzzlePackClient` (HTTP CSV download),
+  `PuzzlePackSync` (ELO -> band -> Room), `PuzzlePackScheduler` and `PuzzlePackWorker` (WorkManager); `chess/` adapts
+  chesslib for legal UCI moves and mating alternatives; `ui/puzzle/` contains the tap-to-move board, piece rendering,
+  promotion picker, timer, skip controls and puzzle ViewModel; `ui/stats/` contains the local statistics screen,
+  ELO chart and its ViewModel; `ui/settings/` contains the settings screen and its ViewModel; `blocking/` contains the
+  foreground service, usage detector, overlay controller, notifications, boot receiver and permission helpers; `ads/`
+  contains the rewarded-ad manager and connectivity helper; `ui/blocking/` contains the block screen and
+  protection-status banner; `ui/onboarding/` contains the permissions onboarding.
 
 ## Decisions
 - **Domain module is plain Kotlin/JVM.** Rules are testable without an emulator and stay independent of Android.
@@ -213,6 +217,22 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   (`AppConfig.dailyHintLimit`); offline devices show an explanatory note and disable the button. The next ad is
   preloaded after the previous one closes. Phase 1 uses AdMob's official test app and rewarded-unit IDs; production IDs
   and UMP consent are Phase 4 work.
+- **Statistics are local-only for now.** Accounts, cloud sync and the leaderboard are deferred at the user's request;
+  the statistics screen reads Room and DataStore on the device and uploads nothing. Room v2 adds append-only
+  `attempts` and per-day `usage_days`; `MIGRATION_1_2` only creates the new tables/indices, so existing puzzles and
+  solved flags survive the upgrade.
+- **One row per attempt.** A LOSS is written when the third life is lost (the moment ELO changes). If the player keeps
+  going and solves that puzzle, the same row is completed with its reward and hint count, and the ELO result stays the
+  loss that was already applied. Skips are logged but excluded from the success rate; a skip after an already-recorded
+  loss is not logged again. "Puzzles solved" is the cumulative count of unique solved puzzles, so solves from before
+  statistics existed are included.
+- **Stats aggregation lives in the domain module.** `Statistics.summarize` takes attempts, the current ELO and `today`,
+  then produces the success rate, day streaks (today may still be empty), top themes, the latest
+  `statsEloHistoryLimit` rated attempts, and total earned time. Generic Lichess tags (`short`, `long`, `master`,
+  `blitz`, ...) are filtered from the theme list via `AppConfig.statsIgnoredThemes`.
+- **Usage history is best-effort.** `BudgetStore` mirrors its usage/earned writes into `usage_days`, but a statistics
+  failure is logged and never changes the budget result. The screen uses the larger of today's history row and the live
+  budget, so usage recorded before the stats table existed is not shown as zero. All date handling uses the local date.
 - **Min SDK 26** (java.time without desugaring, notification channels).
 - **Dependency versions** in `gradle/libs.versions.toml` are a resolved compatible set (AGP 8.7.3, Kotlin 2.0.21,
   KSP 2.0.21-1.0.28, Hilt 2.52, Compose BOM 2024.10.01, AdMob 23.6.0, AndroidSVG 1.4, WorkManager 2.9.1,
@@ -222,10 +242,11 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   Classic glyph so the board never becomes unplayable.
 - **Status of the Android module:** Phase 1 is complete (puzzle stock, board/puzzle flow, placement test, blocking
   service and overlay, permissions onboarding and protection status, rewarded-ad hints, language and piece styles).
-  Phase 2 is implemented: daily rating-band pack generation in GitHub Actions, WorkManager downloads with a
-  Wi-Fi-only default, Room accumulation, solved-never-repeat, and the Settings stock/download UI. The app compiles and
-  all unit tests pass; the pack release and the on-device WorkManager run still need a live check. The old test phone
-  also still awaits a manual unlock for the boot-receiver re-check. Details are in `CHECKPOINT.md`.
+  Phase 2 is complete and device-verified (daily rating-band pack generation in GitHub Actions, WorkManager downloads
+  with a Wi-Fi-only default, Room accumulation, solved-never-repeat, and the Settings stock/download UI). Phase 3 is
+  implemented as **local-only statistics** (ELO history, success rate overall/per theme, streaks, solved count, earned
+  time, blocked-app usage) with accounts/cloud/leaderboard deferred. The app compiles and all unit tests pass; the
+  statistics migration and attempt recording were verified on the tablet. Details are in `CHECKPOINT.md`.
 
 ## Licenses
 | Item | License | Use |

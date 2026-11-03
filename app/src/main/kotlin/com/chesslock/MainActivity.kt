@@ -27,6 +27,7 @@ import com.chesslock.ui.onboarding.PermissionsScreen
 import com.chesslock.ui.placement.PlacementTestScreen
 import com.chesslock.ui.puzzle.PuzzleScreen
 import com.chesslock.ui.settings.SettingsScreen
+import com.chesslock.ui.stats.StatisticsScreen
 import com.chesslock.ui.theme.ChessLockTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
@@ -67,8 +68,13 @@ class MainActivity : ComponentActivity() {
 
                             else -> {
                                 var showSettings by rememberSaveable { mutableStateOf(false) }
+                                var showStatistics by rememberSaveable { mutableStateOf(false) }
                                 var showPermissions by rememberSaveable { mutableStateOf(false) }
                                 when {
+                                    showStatistics -> StatisticsScreen(
+                                        onBack = { showStatistics = false },
+                                    )
+
                                     showSettings -> SettingsScreen(onBack = { showSettings = false })
 
                                     showPermissions -> PermissionsScreen(
@@ -77,6 +83,7 @@ class MainActivity : ComponentActivity() {
 
                                     else -> PuzzleScreen(
                                         onOpenSettings = { showSettings = true },
+                                        onOpenStatistics = { showStatistics = true },
                                         onFixProtection = { showPermissions = true },
                                     )
                                 }

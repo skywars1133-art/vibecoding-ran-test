@@ -3,18 +3,43 @@
 Resume file. Update after every meaningful step and before any likely credit cutoff. A new session reads this first, then CLAUDE.md, SPEC.md, PHASES.md and the README "Decisions".
 
 ## Status
-- Date: 2026-11-02
-- Current phase: Phase 2 (puzzle supply) — complete and device-verified; awaiting user feedback
+- Date: 2026-11-03
+- Current phase: Phase 3 (local-only statistics) — complete and device-verified; awaiting user feedback
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: Phase 2 — daily 150-puzzle packs from the Lichess dump via GitHub Actions, WorkManager sync
-  (24 h + launch + "Download now"), Wi-Fi-only default, Room accumulation with solved-never-repeat, and the Settings
-  stock/download UI. Live release published and all flows verified on the tablet. Shareable test APK built and installed.
-- Deferred: Phase 3 (accounts + leaderboard), at the user's request.
-- Before Phase 2: Phase 1 was complete (MVP, language selection, Cburnett default, four licensed SVG piece sets).
+- Last completed: Phase 3 local statistics — ELO history chart, overall/per-theme success rate, day streak, puzzles
+  solved, total earned time, and blocked-app usage today/this week. Room v2 (`attempts`, `usage_days`) with a tested
+  migration, attempt recording for solve/loss/skip, EN/SK UI, and 19 new tests. Shareable test APK rebuilt.
+- Deferred: accounts, cloud sync and leaderboard, at the user's request.
+- Before Phase 3: Phase 2 complete (daily puzzle packs, WorkManager sync, solved-never-repeat) and Phase 1 complete
+  (MVP, language selection, Cburnett default, four licensed SVG piece sets).
 
 ## Verification
-- Phase 2: ran `:domain:test :app:testDebugUnitTest :app:assembleDebug` with JDK 21.0.11, Gradle 8.14.3 and Android
-  SDK 35. **116 domain tests + 31 app tests passed (147 total); 0 failures, errors or skips.** Debug APK built.
+- Phase 3: ran `:domain:test :app:testDebugUnitTest :app:assembleDebug` with JDK 21.0.11, Gradle 8.14.3 and Android
+  SDK 35. **128 domain tests + 38 app tests passed (166 total); 0 failures, errors or skips.** This includes 12 new
+  `StatisticsTest` cases and 7 new `StatisticsStoreTest` cases (fake DAO: solve, loss, completed loss, skip, theme
+  mapping).
+- Phase 3 Room: generated schema `app/schemas/com.chesslock.data.ChessLockDatabase/2.json` matches `MIGRATION_1_2`
+  exactly (both tables, both indices, identity hash `d7629fc58c1418e194fa270c73837155`).
+- Phase 3 on-device migration (`R9TX902F92W`): installed the debuggable build over the existing v1 data. The pulled DB
+  reported `user_version=2`, tables `attempts`/`usage_days`, both indices, and the same identity hash. Existing data
+  survived: 500 puzzles, 43 solved, 457 unsolved (the tablet had progressed past the old checkpoint values).
+- Phase 3 on-device attempt flow:
+  - skip recorded `(ZsbkT, skipped=1, ELO 1573->1573, reward 0)` and the UI advanced to the next puzzle;
+  - three legal-but-wrong moves recorded a LOSS `(y8PHt, solved=0, ELO 1573->1558)`;
+  - solving the same puzzle afterwards completed that row instead of adding a second one `(solved=1,
+    rewardSeconds=240)`, set the puzzle's solved flag, moved the solved total 43 -> 44, and wrote
+    `usage_days('2026-11-03', 0, 240)`; ELO stayed at the already-applied loss;
+  - a normal solve on the next puzzle (`15WYw`, rating 1623) added one new attempt
+    `(solved=1, ELO 1558->1570, rewardSeconds=300)`, moved solved 44 -> 45, and raised
+    `usage_days.earnedSeconds` to 540;
+  - the Statistics screen before the first solve showed `0% (0 of 1)` with the Advantage/Endgame themes and streak 0;
+    after the completed loss it showed `100% (1 of 1)`, `4:00 total`, streak 1, solved 44; after the normal solve it
+    showed `100% (2 of 2)`, `9:00 total`, solved 45, and the plural strings rendered as "1 day" / "Best: 1 day".
+  - theme labels render readably, e.g. `Mate in 2` (EN) / `Mat v 2` (SK) instead of the raw `mateIn2` tag.
+- Phase 3 shareable APK: rebuilt after the plural-string polish, `dist/ChessLock-0.1.0-test.apk` (release, debug-signed,
+  10.7 MB, v2/v3 signatures verified, SHA-256
+  `959E766A0E2DC396484C3AA548F56E7D0B923EB0A3F7D7E5DE7A9CEA10374166`).
+
 - Phase 2: validated `scripts/build-puzzle-packs.py` on synthetic data with a portable Python 3.12.7: 13 files x 150
   rows, unique IDs, ratings inside every band window, sorted rows, and a different daily salt produces a different
   selection. EN/SK resources were checked programmatically: 132 keys in both files, no placeholder mismatches and no
@@ -148,10 +173,21 @@ Resume file. Update after every meaningful step and before any likely credit cut
   `1ACC7839F098B6833CE56FEE4E93627B532B8AFE8E2C424AED26825A8EEAA9C5`). Verified with `apksigner` (v2/v3), installed over
   the debug build on `R9TX902F92W`, and confirmed the ELO (1088) and stock (192) survived. Accounts/leaderboard
   (Phase 3) are deferred at the user's request; Phase 2 remains the current deliverable.
+- 2026-11-03: **Phase 3 implemented as local-only statistics** (accounts/cloud/leaderboard deferred). Added
+  `domain/stats/Statistics` aggregation (success rate, streaks, themes, ELO history, earned time) with 12 tests;
+  `stats*` constants and ignored generic themes in `AppConfig`; Room v2 `attempts`/`usage_days` with `MIGRATION_1_2`
+  and `StatsDao`; `StatisticsStore` with 7 fake-DAO tests; best-effort usage/earned history in `BudgetStore`; attempt
+  recording for loss, solve, loss-then-solve completion and skip in `PuzzleViewModel`; `StatisticsViewModel` +
+  `StatisticsScreen` with a Canvas ELO chart; Stats entry in the puzzle top bar; EN/SK strings (plural-safe streak
+  wording); README/architecture/decisions updates. Build + 166 tests pass, Room v2 schema/migration verified on the
+  tablet, and skip/loss/solve flows plus the stats UI were device-verified. Rebuilt the shareable APK (SHA-256
+  `959E766A0E2DC396484C3AA548F56E7D0B923EB0A3F7D7E5DE7A9CEA10374166`).
 
 ## Next step
-1. **Phase 2 is complete; a shareable test APK is ready at `dist/ChessLock-0.1.0-test.apk`.** Accounts and the
-   leaderboard are deferred — wait for user feedback before starting Phase 3.
-2. Optional pending Phase 1 device check: reconnect/unlock the old phone `CIYDDIMV5D5XNFUS`, launch the app once,
+1. **Phase 3 local statistics are complete; a shareable test APK is ready at
+   `dist/ChessLock-0.1.0-test.apk`.** Wait for user feedback before starting accounts/cloud/leaderboard.
+2. Optional: reinstall the release APK over the current debug build on `R9TX902F92W` and confirm ELO/stock/attempts
+   survive (same debug key; data should be kept).
+3. Optional pending Phase 1 device check: reconnect/unlock the old phone `CIYDDIMV5D5XNFUS`, launch the app once,
    reboot, unlock, and confirm `BlockingService` starts automatically. Also exercise the block-screen buttons and
    permission dialogs manually (adb input injection is blocked on that device).

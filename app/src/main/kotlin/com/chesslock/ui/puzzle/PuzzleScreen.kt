@@ -58,6 +58,7 @@ import java.util.Locale
 @Composable
 fun PuzzleScreen(
     onOpenSettings: () -> Unit,
+    onOpenStatistics: () -> Unit,
     onFixProtection: () -> Unit,
     viewModel: PuzzleViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel(),
@@ -119,6 +120,9 @@ fun PuzzleScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.puzzle_title)) },
                 actions = {
+                    TextButton(onClick = onOpenStatistics) {
+                        Text(stringResource(R.string.stats_open))
+                    }
                     TextButton(onClick = onOpenSettings) {
                         Text(stringResource(R.string.settings_title))
                     }
