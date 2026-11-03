@@ -45,6 +45,21 @@ enum class AppLanguage(val storageKey: String, val languageTag: String?) {
     }
 }
 
+/** Light/dark override; [SYSTEM] follows the device theme (SPEC 6). */
+enum class ThemeMode(val storageKey: String) {
+    SYSTEM("system"),
+    LIGHT("light"),
+    DARK("dark"),
+    ;
+
+    companion object {
+        val DEFAULT = SYSTEM
+
+        fun fromStorageKey(key: String?): ThemeMode =
+            entries.firstOrNull { it.storageKey == key } ?: DEFAULT
+    }
+}
+
 /** Per-app overrides from the apps picker. */
 enum class AppBlockOverride {
     DEFAULT,
@@ -55,6 +70,7 @@ enum class AppBlockOverride {
 data class AppSettings(
     val pieceStyle: PieceStyle = PieceStyle.DEFAULT,
     val language: AppLanguage = AppLanguage.DEFAULT,
+    val themeMode: ThemeMode = ThemeMode.DEFAULT,
     /** SPEC 2: download puzzle packs only on an unmetered network by default. */
     val wifiOnlyDownloads: Boolean,
     val blockingEnabled: Boolean,

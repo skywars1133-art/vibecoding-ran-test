@@ -71,6 +71,17 @@ class AppSettingsTest {
         val settings = AppSettings.defaults(config)
         assertEquals(PieceStyle.CBURNETT, settings.pieceStyle)
         assertEquals(AppLanguage.SYSTEM, settings.language)
+        assertEquals(ThemeMode.SYSTEM, settings.themeMode)
+    }
+
+    @Test
+    fun `theme mode round-trips storage keys`() {
+        assertEquals(ThemeMode.SYSTEM, ThemeMode.DEFAULT)
+        ThemeMode.entries.forEach { mode ->
+            assertEquals(mode, ThemeMode.fromStorageKey(mode.storageKey))
+        }
+        assertEquals(ThemeMode.SYSTEM, ThemeMode.fromStorageKey(null))
+        assertEquals(ThemeMode.SYSTEM, ThemeMode.fromStorageKey("unknown"))
     }
 
     @Test

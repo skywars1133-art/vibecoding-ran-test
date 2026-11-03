@@ -58,6 +58,7 @@ import com.chesslock.data.AppLanguage
 import com.chesslock.data.AppSettings
 import com.chesslock.data.PieceStyle
 import com.chesslock.data.PuzzleSyncState
+import com.chesslock.data.ThemeMode
 import com.chesslock.domain.blocking.BlockCategory
 import com.chesslock.ui.common.PermissionCard
 import com.chesslock.ui.puzzle.PieceStylePreview
@@ -70,6 +71,7 @@ import java.util.Locale
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onOpenApps: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.settings.collectAsState()
@@ -155,6 +157,38 @@ fun SettingsScreen(
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             Text(
+                text = stringResource(R.string.settings_theme_section),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = stringResource(R.string.settings_theme_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            ThemeMode.entries.forEach { mode ->
+                val selected = settings.themeMode == mode
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = selected,
+                            role = Role.RadioButton,
+                            onClick = { viewModel.setThemeMode(mode) },
+                        )
+                        .padding(vertical = 4.dp),
+                ) {
+                    RadioButton(selected = selected, onClick = null)
+                    Text(
+                        text = stringResource(mode.labelRes()),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(start = 8.dp),
+                    )
+                }
+            }
+
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
+            Text(
                 text = stringResource(R.string.settings_board_section),
                 style = MaterialTheme.typography.titleMedium,
             )
@@ -226,6 +260,7 @@ fun SettingsScreen(
                 onLimitChange = viewModel::setDailyLimitMinutes,
                 onCapChange = viewModel::setDailyCapMinutes,
                 onCategoryChange = viewModel::setCategoryBlocked,
+                onOpenApps = onOpenApps,
             )
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
@@ -302,6 +337,7 @@ private fun BlockingSettings(
     onLimitChange: (Int) -> Unit,
     onCapChange: (Int?) -> Unit,
     onCategoryChange: (BlockCategory, Boolean) -> Unit,
+    onOpenApps: () -> Unit,
 ) {
     Text(
         text = stringResource(R.string.settings_blocking_section),
@@ -401,6 +437,15 @@ private fun BlockingSettings(
                 modifier = Modifier.padding(start = 8.dp),
             )
         }
+    }
+
+    Text(
+        text = stringResource(R.string.settings_apps_description),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Button(onClick = onOpenApps) {
+        Text(stringResource(R.string.settings_apps_button))
     }
 }
 
@@ -517,6 +562,13 @@ private fun AppLanguage.labelRes(): Int = when (this) {
     AppLanguage.SYSTEM -> R.string.settings_language_system
     AppLanguage.ENGLISH -> R.string.settings_language_english
     AppLanguage.SLOVAK -> R.string.settings_language_slovak
+}
+
+@StringRes
+private fun ThemeMode.labelRes(): Int = when (this) {
+    ThemeMode.SYSTEM -> R.string.settings_theme_system
+    ThemeMode.LIGHT -> R.string.settings_theme_light
+    ThemeMode.DARK -> R.string.settings_theme_dark
 }
 
 @StringRes

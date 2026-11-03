@@ -11,6 +11,7 @@ import com.chesslock.data.PuzzleRepository
 import com.chesslock.data.PuzzleSyncState
 import com.chesslock.data.PuzzleSyncStore
 import com.chesslock.data.SettingsStore
+import com.chesslock.data.ThemeMode
 import com.chesslock.domain.blocking.BlockCategory
 import com.chesslock.domain.config.AppConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -68,6 +69,12 @@ class SettingsViewModel @Inject constructor(
     fun setLanguage(language: AppLanguage) {
         viewModelScope.launch {
             store.setLanguage(language)
+        }
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        viewModelScope.launch {
+            store.setThemeMode(mode)
         }
     }
 

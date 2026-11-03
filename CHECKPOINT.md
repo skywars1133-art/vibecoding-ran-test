@@ -4,16 +4,34 @@ Resume file. Update after every meaningful step and before any likely credit cut
 
 ## Status
 - Date: 2026-11-03
-- Current phase: Phase 3 (local-only statistics) — complete and device-verified; awaiting user feedback
+- Current phase: Phase 3 (local-only statistics) — complete and device-verified. A local settings bundle (theme +
+  per-app blocking picker) is also complete and device-verified; awaiting user feedback
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: Phase 3 local statistics — ELO history chart, overall/per-theme success rate, day streak, puzzles
+- Last completed: local settings bundle — in-app Light/Dark/System theme and a searchable per-app blocking picker
+  (Use categories / Always block / Never block) built on the existing overrides. 172 tests pass; debug and release
+  APKs rebuilt, release APK re-signed and installed over the previous build with all data intact.
+- Before that: Phase 3 local statistics — ELO history chart, overall/per-theme success rate, day streak, puzzles
   solved, total earned time, and blocked-app usage today/this week. Room v2 (`attempts`, `usage_days`) with a tested
-  migration, attempt recording for solve/loss/skip, EN/SK UI, and 19 new tests. Shareable test APK rebuilt.
+  migration, attempt recording for solve/loss/skip, EN/SK UI, and 19 new tests.
 - Deferred: accounts, cloud sync and leaderboard, at the user's request.
 - Before Phase 3: Phase 2 complete (daily puzzle packs, WorkManager sync, solved-never-repeat) and Phase 1 complete
   (MVP, language selection, Cburnett default, four licensed SVG piece sets).
 
 ## Verification
+- Local settings bundle (2026-11-03): ran `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease`
+  with JDK 21.0.11. **128 domain tests + 44 app tests passed (172 total); 0 failures, errors or skips.** The new
+  `AppPickerTest` covers blank/trimmed/case-insensitive label and package search; `AppSettingsTest` covers the theme
+  default and storage-key round-trip.
+- Theme on the tablet `R9TX902F92W`: Settings shows System default / Light / Dark. A screenshot pixel check measured
+  the light background at `(250,248,255)` and dark at `(18,19,24)`; the choice persisted as `theme_mode=light|dark`
+  in `settings.preferences_pb`, survived reinstall, and was left on System default (the tablet's system theme is light).
+- Per-app picker on the tablet: **Choose individual apps** lists launchable apps (critical packages excluded), search
+  for `chr` reduced the list to Chrome, and the row label changed after each selection. Selecting **Always block**
+  wrote `always_blocked_packages=com.android.chrome`; **Never block** moved it to `never_blocked_packages`; **Use
+  categories** removed it from both. The dialog renders in the in-app language (English and Slovak were both checked).
+- Release APK: rebuilt and signed at `dist/ChessLock-0.1.0-test.apk` (v2/v3 signatures verified, SHA-256
+  `C01ED9D0DBB8E8D23168772F2CB61ABAB8C72D2FE256001E618E1943BD774BA5`), then installed over the debug build. The app kept
+  ELO 1559, `66% (2 of 3)`, `Endgame 50% (1/2)`, the saved theme and the app overrides.
 - Phase 3: ran `:domain:test :app:testDebugUnitTest :app:assembleDebug` with JDK 21.0.11, Gradle 8.14.3 and Android
   SDK 35. **128 domain tests + 38 app tests passed (166 total); 0 failures, errors or skips.** This includes 12 new
   `StatisticsTest` cases and 7 new `StatisticsStoreTest` cases (fake DAO: solve, loss, completed loss, skip, theme
@@ -192,12 +210,16 @@ Resume file. Update after every meaningful step and before any likely credit cut
   `959E766A0E2DC396484C3AA548F56E7D0B923EB0A3F7D7E5DE7A9CEA10374166`).
 - 2026-11-03: verified per-theme success with a real failure: lost `tPMdL` on purpose and the Stats screen dropped to
   `66% (2 of 3)` overall and `Endgame 50% (1/2)`. No code change needed; the aggregation was already correct.
+- 2026-11-03: local settings bundle. Added `ThemeMode` (System/Light/Dark) stored in DataStore and applied at the
+  Compose root, plus a searchable per-app blocking picker backed by the existing `alwaysBlockedPackages`/
+  `neverBlockedPackages` overrides. Added EN/SK strings, `AppPickerTest`, theme round-trip tests, and device-verified
+  both features plus the rebuilt release APK. 172 tests pass.
 
 ## Next step
-1. **Phase 3 local statistics are complete; a shareable test APK is ready at
-   `dist/ChessLock-0.1.0-test.apk`.** Wait for user feedback before starting accounts/cloud/leaderboard.
-2. Optional: reinstall the release APK over the current debug build on `R9TX902F92W` and confirm ELO/stock/attempts
-   survive (same debug key; data should be kept).
+1. **Phase 3 local statistics and the local settings bundle (theme + per-app picker) are complete; a shareable test
+   APK is ready at `dist/ChessLock-0.1.0-test.apk`.** Wait for user feedback before accounts/cloud/leaderboard.
+2. Good candidates for the next local-only bundle: haptics/sounds, a privacy/ads screen, notification controls, or a
+   home-screen remaining-time view.
 3. Optional pending Phase 1 device check: reconnect/unlock the old phone `CIYDDIMV5D5XNFUS`, launch the app once,
    reboot, unlock, and confirm `BlockingService` starts automatically. Also exercise the block-screen buttons and
    permission dialogs manually (adb input injection is blocked on that device).

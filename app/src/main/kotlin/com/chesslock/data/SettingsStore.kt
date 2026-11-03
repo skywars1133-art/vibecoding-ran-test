@@ -25,6 +25,7 @@ class SettingsStore @Inject constructor(
 ) {
     private val pieceStyleKey = stringPreferencesKey("piece_style")
     private val languageKey = stringPreferencesKey("app_language")
+    private val themeModeKey = stringPreferencesKey("theme_mode")
     private val wifiOnlyDownloadsKey = booleanPreferencesKey("wifi_only_downloads")
     private val blockingEnabledKey = booleanPreferencesKey("blocking_enabled")
     private val dailyLimitKey = intPreferencesKey("daily_limit_minutes")
@@ -49,6 +50,7 @@ class SettingsStore @Inject constructor(
         AppSettings(
             pieceStyle = PieceStyle.fromStorageKey(preferences[pieceStyleKey]),
             language = AppLanguage.fromStorageKey(preferences[languageKey]),
+            themeMode = ThemeMode.fromStorageKey(preferences[themeModeKey]),
             wifiOnlyDownloads = preferences[wifiOnlyDownloadsKey] ?: config.wifiOnlyDownloadsByDefault,
             blockingEnabled = preferences[blockingEnabledKey] ?: config.blockingEnabledByDefault,
             dailyLimitMinutes = preferences[dailyLimitKey] ?: config.defaultDailyLimitMinutes,
@@ -69,6 +71,12 @@ class SettingsStore @Inject constructor(
     suspend fun setLanguage(language: AppLanguage) {
         context.settingsDataStore.edit { preferences ->
             preferences[languageKey] = language.storageKey
+        }
+    }
+
+    suspend fun setThemeMode(mode: ThemeMode) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[themeModeKey] = mode.storageKey
         }
     }
 

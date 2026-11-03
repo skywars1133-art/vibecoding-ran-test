@@ -37,16 +37,18 @@ scripts/test-domain.sh
 
    Or open the project in Android Studio and press Run.
 2. Finish the placement test (or skip through it as described in `CHECKPOINT.md`) to reach normal puzzle play.
-3. Open **Settings** to choose the app language (System default / English / Slovak), the daily limit, blocked
-   categories and piece style.
-4. The **Puzzle downloads** section shows the offline stock, the last download and the Wi-Fi-only switch. Tap
+3. Open **Settings** to choose the app language (System default / English / Slovak), the theme (System default / Light /
+   Dark), the daily limit, blocked categories, individual app overrides and piece style.
+4. Under **App blocking**, tap **Choose individual apps** to search installed apps and set **Use categories**, **Always
+   block** or **Never block** per app. Phone, launcher and system settings stay allowed regardless.
+5. The **Puzzle downloads** section shows the offline stock, the last download and the Wi-Fi-only switch. Tap
    **Download now** to fetch the current pack immediately; otherwise WorkManager refreshes it about once a day.
-5. Grant **Usage access**, **Display over other apps** and (optionally) **Notifications** from the protection banner or
+6. Grant **Usage access**, **Display over other apps** and (optionally) **Notifications** from the protection banner or
    Settings; the banner turns to "Protection is active" once the blocking service is running.
-6. Solve a puzzle to earn time, then open a blocked app after the budget runs out to see the block screen.
-7. Tap **Stats** in the puzzle top bar for local-only statistics: ELO over time, overall and per-theme success rate,
+7. Solve a puzzle to earn time, then open a blocked app after the budget runs out to see the block screen.
+8. Tap **Stats** in the puzzle top bar for local-only statistics: ELO over time, overall and per-theme success rate,
    day streak, puzzles solved, time earned, and blocked-app time today/this week. Nothing is uploaded.
-8. Hints use AdMob's official **test** ad IDs in this phase, so no real ad is shown or billed. Hints need a network and
+9. Hints use AdMob's official **test** ad IDs in this phase, so no real ad is shown or billed. Hints need a network and
    are disabled with an explanatory note while offline.
 
 ### Shareable test APK
@@ -132,7 +134,8 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   `PuzzlePackSync` (ELO -> band -> Room), `PuzzlePackScheduler` and `PuzzlePackWorker` (WorkManager); `chess/` adapts
   chesslib for legal UCI moves and mating alternatives; `ui/puzzle/` contains the tap-to-move board, piece rendering,
   promotion picker, timer, skip controls and puzzle ViewModel; `ui/stats/` contains the local statistics screen,
-  ELO chart and its ViewModel; `ui/settings/` contains the settings screen and its ViewModel; `blocking/` contains the
+  ELO chart and its ViewModel; `ui/settings/` contains the settings screen, the per-app blocking picker and their
+  ViewModels; `blocking/` contains the
   foreground service, usage detector, overlay controller, notifications, boot receiver and permission helpers; `ads/`
   contains the rewarded-ad manager and connectivity helper; `ui/blocking/` contains the block screen and
   protection-status banner; `ui/onboarding/` contains the permissions onboarding.
@@ -190,6 +193,14 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   DataStore and applied through a localized `ContextWrapper` + `LocalConfiguration` override, so every Compose string
   switches immediately without restarting the activity. Notification and foreground-service text still follows the
   system locale because they are built outside the composition.
+- **Theme is in-app.** Settings offers System default, Light and Dark, stored in the `settings` DataStore. The root
+  `ChessLockTheme` receives the resolved dark/light flag, so switching is immediate and survives restarts. Android 12+
+  keeps Material You dynamic colors for both modes; older devices use the built-in Material 3 schemes.
+- **Individual app overrides.** Settings -> **Choose individual apps** lists launchable apps (critical system packages
+  are excluded), supports case-insensitive search over labels and package names, and sets one of three states:
+  Use categories, Always block or Never block. The two package sets already consumed by `BlockPolicy` are persisted in
+  the `settings` DataStore; "Never block" keeps precedence over "Always block". The dialog resolves its strings before
+  opening because a platform dialog window reads the system resources rather than the in-app language wrapper.
 - **Blocking is non-strict and permission-based.** A foreground service polls `UsageStatsManager` events (no
   `AccessibilityService`) and charges the one shared daily budget only while a blocked package is in the foreground.
   `TYPE_APPLICATION_OVERLAY` (granted through `SYSTEM_ALERT_WINDOW`) shows a full-screen Compose block screen when the
@@ -201,7 +212,7 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   daily limit defaults to 30 min and the optional total cap is off.
 - **Category source:** `ApplicationInfo.category` plus a curated map of popular packages, because many apps leave the
   platform category unset and Android has no communication/shopping category values. `QUERY_ALL_PACKAGES` is declared
-  for reliable metadata reads and the future individual-apps picker; the Play policy declaration is release-prep work.
+  for reliable metadata reads and the individual-apps picker; the Play policy declaration is release-prep work.
 - **Protection status is visible.** First run explains usage access, overlay and notification permissions and lets the
   user continue without them; afterwards the puzzle screen and Settings show "Protection is not active" (or "App
   blocking is off") with a shortcut to fix it. The status also reflects whether the blocking service is alive.
@@ -246,7 +257,8 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   with a Wi-Fi-only default, Room accumulation, solved-never-repeat, and the Settings stock/download UI). Phase 3 is
   implemented as **local-only statistics** (ELO history, success rate overall/per theme, streaks, solved count, earned
   time, blocked-app usage) with accounts/cloud/leaderboard deferred. The app compiles and all unit tests pass; the
-  statistics migration and attempt recording were verified on the tablet. Details are in `CHECKPOINT.md`.
+  statistics migration and attempt recording were verified on the tablet. On top of that, the local settings now
+  include an in-app Light/Dark/System theme and a per-app blocking picker. Details are in `CHECKPOINT.md`.
 
 ## Licenses
 | Item | License | Use |

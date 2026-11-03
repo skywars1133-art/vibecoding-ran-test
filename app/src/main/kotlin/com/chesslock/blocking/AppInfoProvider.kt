@@ -11,11 +11,37 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/** One launchable app shown in the per-app blocking picker. */
+data class LaunchableApp(val packageName: String, val label: String)
+
 /** Reads Android app metadata and builds the always-allowed set (SPEC 1). */
 @Singleton
 class AppInfoProvider @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
+    /**
+     * Launchable apps that the user is allowed to block. Critical components (phone, launcher,
+     * system settings, this app) are excluded because [BlockPolicy] never blocks them anyway.
+     */
+    fun launchableApps(): List<LaunchableApp> {
+        val launcher = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        val packageManager = context.packageManager
+        @Suppress("DEPRECATION")
+        val activities = packageManager.queryIntentActivities(launcher, 0)
+        val whitelisted = whitelistedPackages()
+        return activities.asSequence()
+            .mapNotNull { it.activityInfo?.applicationInfo }
+            .filter { it.packageName !in whitelisted }
+            .distinctBy { it.packageName }
+            .map {
+                LaunchableApp(
+                    packageName = it.packageName,
+                    label = packageManager.getApplicationLabel(it).toString(),
+                )
+            }
+            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.label })
+            .toList()
+    }
     fun platformCategory(packageName: String): PlatformCategory {
         val info = try {
             context.packageManager.getApplicationInfo(packageName, 0)

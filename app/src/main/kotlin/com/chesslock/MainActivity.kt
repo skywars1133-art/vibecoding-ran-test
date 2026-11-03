@@ -3,6 +3,7 @@ package com.chesslock
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -22,10 +23,12 @@ import com.chesslock.blocking.BlockingServiceController
 import com.chesslock.data.AppLanguage
 import com.chesslock.data.PuzzlePackScheduler
 import com.chesslock.data.SettingsStore
+import com.chesslock.data.ThemeMode
 import com.chesslock.ui.common.ProvideAppLanguage
 import com.chesslock.ui.onboarding.PermissionsScreen
 import com.chesslock.ui.placement.PlacementTestScreen
 import com.chesslock.ui.puzzle.PuzzleScreen
+import com.chesslock.ui.settings.BlockedAppsScreen
 import com.chesslock.ui.settings.SettingsScreen
 import com.chesslock.ui.stats.StatisticsScreen
 import com.chesslock.ui.theme.ChessLockTheme
@@ -54,7 +57,14 @@ class MainActivity : ComponentActivity() {
             val mainViewModel: MainViewModel = hiltViewModel()
             val player by mainViewModel.player.collectAsState()
             val settings by mainViewModel.settings.collectAsState()
-            ChessLockTheme {
+            val systemDark = isSystemInDarkTheme()
+            ChessLockTheme(
+                darkTheme = when (settings?.themeMode ?: ThemeMode.DEFAULT) {
+                    ThemeMode.SYSTEM -> systemDark
+                    ThemeMode.LIGHT -> false
+                    ThemeMode.DARK -> true
+                },
+            ) {
                 ProvideAppLanguage(settings?.language ?: AppLanguage.DEFAULT) {
                     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                         when {
@@ -70,12 +80,20 @@ class MainActivity : ComponentActivity() {
                                 var showSettings by rememberSaveable { mutableStateOf(false) }
                                 var showStatistics by rememberSaveable { mutableStateOf(false) }
                                 var showPermissions by rememberSaveable { mutableStateOf(false) }
+                                var showBlockedApps by rememberSaveable { mutableStateOf(false) }
                                 when {
                                     showStatistics -> StatisticsScreen(
                                         onBack = { showStatistics = false },
                                     )
 
-                                    showSettings -> SettingsScreen(onBack = { showSettings = false })
+                                    showBlockedApps -> BlockedAppsScreen(
+                                        onBack = { showBlockedApps = false },
+                                    )
+
+                                    showSettings -> SettingsScreen(
+                                        onBack = { showSettings = false },
+                                        onOpenApps = { showBlockedApps = true },
+                                    )
 
                                     showPermissions -> PermissionsScreen(
                                         onDone = { showPermissions = false },

@@ -10,7 +10,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-// Light / dark / system (SPEC 6). An explicit user override is wired in with the settings screen.
+// Light / dark / system (SPEC 6). The saved ThemeMode is applied by MainActivity.
 @Composable
 fun ChessLockTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
