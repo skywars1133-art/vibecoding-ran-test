@@ -36,9 +36,11 @@ Resume file. Update after every meaningful step and before any likely credit cut
     after the completed loss it showed `100% (1 of 1)`, `4:00 total`, streak 1, solved 44; after the normal solve it
     showed `100% (2 of 2)`, `9:00 total`, solved 45, and the plural strings rendered as "1 day" / "Best: 1 day".
   - theme labels render readably, e.g. `Mate in 2` (EN) / `Mat v 2` (SK) instead of the raw `mateIn2` tag.
-- Phase 3 shareable APK: rebuilt after the plural-string polish, `dist/ChessLock-0.1.0-test.apk` (release, debug-signed,
-  10.7 MB, v2/v3 signatures verified, SHA-256
-  `959E766A0E2DC396484C3AA548F56E7D0B923EB0A3F7D7E5DE7A9CEA10374166`).
+- Phase 3 shareable APK: rebuilt after the plural/theme-string polish, `dist/ChessLock-0.1.0-test.apk` (release,
+  debug-signed, 10.7 MB, v2/v3 signatures verified, SHA-256
+  `959E766A0E2DC396484C3AA548F56E7D0B923EB0A3F7D7E5DE7A9CEA10374166`). Installed it over the debuggable build on
+  `R9TX902F92W`; the app still showed ELO 1570, 100% (2 of 2), 45 solved, 9:00 earned and the existing attempts.
+- Phase 3 was committed and pushed as `258b89a`.
 
 - Phase 2: validated `scripts/build-puzzle-packs.py` on synthetic data with a portable Python 3.12.7: 13 files x 150
   rows, unique IDs, ratings inside every band window, sorted rows, and a different daily salt produces a different
