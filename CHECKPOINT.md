@@ -3,13 +3,17 @@
 Resume file. Update after every meaningful step and before any likely credit cutoff. A new session reads this first, then CLAUDE.md, SPEC.md, PHASES.md and the README "Decisions".
 
 ## Status
-- Date: 2026-11-03
-- Current phase: Phase 3 (local-only statistics) — complete and device-verified. A local settings bundle (theme +
-  per-app blocking picker) is also complete and device-verified; awaiting user feedback
+- Date: 2026-11-04
+- Current phase: Phase 3 (local-only statistics) — complete and device-verified. The local settings bundle (theme +
+  per-app blocking picker) and the Home remaining-time screen are implemented; awaiting user feedback
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: local settings bundle — in-app Light/Dark/System theme and a searchable per-app blocking picker
-  (Use categories / Always block / Never block) built on the existing overrides. 172 tests pass; debug and release
-  APKs rebuilt, release APK re-signed and installed over the previous build with all data intact.
+- Last completed: Home screen as the app root — big remaining-time card (limit/earned/used breakdown, progress bar),
+  ELO and earned-today metrics, protection banner, and **Solve a puzzle** / **Stats** / **Settings** actions. Usage
+  accounting was also hardened: the blocking service now counts through a unit-tested `UsageMeter`, advances its tick
+  before any I/O so a failed poll can never charge the same interval twice, and no longer mixes the live DataStore
+  value into the running total. 189 tests pass; debug and release APKs rebuilt, release APK re-signed.
+- Before that: local settings bundle — in-app Light/Dark/System theme and a searchable per-app blocking picker
+  (Use categories / Always block / Never block) built on the existing overrides. 172 tests pass.
 - Before that: Phase 3 local statistics — ELO history chart, overall/per-theme success rate, day streak, puzzles
   solved, total earned time, and blocked-app usage today/this week. Room v2 (`attempts`, `usage_days`) with a tested
   migration, attempt recording for solve/loss/skip, EN/SK UI, and 19 new tests.
@@ -18,6 +22,18 @@ Resume file. Update after every meaningful step and before any likely credit cut
   (MVP, language selection, Cburnett default, four licensed SVG piece sets).
 
 ## Verification
+- Home bundle + usage fix (2026-11-04): ran `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease`
+  with JDK 21.0.11. **136 domain tests + 53 app tests passed (189 total); 0 failures, errors or skips.** The 8 new
+  `UsageMeterTest` cases cover persisted-reset, per-tick counting, remaining-budget clamp, flush/restore and the
+  midnight reset. `HomeStateTest` (5) and `TimeFormatTest` (4) cover the home mapping and clock formatting.
+  Release APK rebuilt and signed at `dist/ChessLock-0.1.0-test.apk` (v2/v3 verified, SHA-256
+  `5D3E9866A9AF084D976F2CAF2FBB4F14940477BFA97CF1CFDFEC6A4096EB1135`).
+  **Pending device check:** the tablet `R9TX902F92W` was not connected during this build, so the controlled
+  blocked-app overcount re-test, the Home values after a solve, and reverting Chrome from **Always block** to
+  **Use categories** still need to be done on the next connection.
+- Home flow on the tablet (2026-11-03, debug build): Home showed limit `30:00`, earned `14:00`, used `0:00`,
+  remaining `44:00`, ELO 1559; **Solve a puzzle** opened the puzzle with a **Back** action and system Back returned
+  Home; Stats and Settings opened from Home.
 - Local settings bundle (2026-11-03): ran `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease`
   with JDK 21.0.11. **128 domain tests + 44 app tests passed (172 total); 0 failures, errors or skips.** The new
   `AppPickerTest` covers blank/trimmed/case-insensitive label and package search; `AppSettingsTest` covers the theme

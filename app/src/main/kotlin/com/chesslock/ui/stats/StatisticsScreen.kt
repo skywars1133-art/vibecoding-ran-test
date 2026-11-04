@@ -41,6 +41,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.chesslock.R
 import com.chesslock.domain.stats.EloPoint
 import com.chesslock.domain.stats.ThemeStat
+import com.chesslock.ui.common.formatClock
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -180,7 +181,7 @@ fun StatisticsScreen(
                 Text(
                     text = stringResource(
                         R.string.stats_reward_total,
-                        formatDuration(summary.totalRewardSeconds),
+                        formatClock(summary.totalRewardSeconds),
                     ),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
@@ -191,13 +192,13 @@ fun StatisticsScreen(
                 Text(
                     text = stringResource(
                         R.string.stats_usage_today,
-                        formatDuration(uiState.todayUsedSeconds),
+                        formatClock(uiState.todayUsedSeconds),
                     ),
                 )
                 Text(
                     text = stringResource(
                         R.string.stats_usage_week,
-                        formatDuration(uiState.weekUsedSeconds),
+                        formatClock(uiState.weekUsedSeconds),
                     ),
                 )
             }
@@ -333,14 +334,3 @@ private fun themeLabel(tag: String): String {
     }
 }
 
-private fun formatDuration(seconds: Long): String {
-    val total = seconds.coerceAtLeast(0)
-    val hours = total / 3600
-    val minutes = (total % 3600) / 60
-    val remaining = total % 60
-    return if (hours > 0) {
-        String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, remaining)
-    } else {
-        String.format(Locale.getDefault(), "%d:%02d", minutes, remaining)
-    }
-}

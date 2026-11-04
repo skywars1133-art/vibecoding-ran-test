@@ -3,6 +3,7 @@ package com.chesslock.ui.puzzle
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,6 +51,7 @@ import com.chesslock.ads.RewardedAdState
 import com.chesslock.blocking.BlockingPermissions
 import com.chesslock.domain.puzzle.HintAvailability
 import com.chesslock.ui.blocking.ProtectionStatusBanner
+import com.chesslock.ui.common.formatClock
 import com.chesslock.ui.settings.SettingsViewModel
 import dagger.hilt.android.EntryPointAccessors
 import java.util.Locale
@@ -60,6 +62,7 @@ fun PuzzleScreen(
     onOpenSettings: () -> Unit,
     onOpenStatistics: () -> Unit,
     onFixProtection: () -> Unit,
+    onBack: (() -> Unit)? = null,
     viewModel: PuzzleViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -115,10 +118,20 @@ fun PuzzleScreen(
         adState is RewardedAdState.Unavailable -> R.string.hint_ad_unavailable
         else -> null
     }
+    if (onBack != null) {
+        BackHandler(onBack = onBack)
+    }
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.puzzle_title)) },
+                navigationIcon = {
+                    if (onBack != null) {
+                        TextButton(onClick = onBack) {
+                            Text(stringResource(R.string.back))
+                        }
+                    }
+                },
                 actions = {
                     TextButton(onClick = onOpenStatistics) {
                         Text(stringResource(R.string.stats_open))
@@ -171,7 +184,7 @@ fun PuzzleScreen(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
-                Text(stringResource(R.string.solving_time, formatDuration(state.elapsedSeconds)))
+                Text(stringResource(R.string.solving_time, formatClock(state.elapsedSeconds)))
                 ChessBoard(
                     pieces = state.pieces,
                     legalMoves = state.legalMoves,
@@ -203,7 +216,7 @@ fun PuzzleScreen(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(stringResource(R.string.lives, state.livesLeft))
-                    Text(stringResource(R.string.reward_time, formatDuration(state.rewardSeconds)))
+                    Text(stringResource(R.string.reward_time, formatClock(state.rewardSeconds)))
                 }
                 state.eloDelta?.let { delta ->
                     Text(
@@ -307,6 +320,3 @@ private fun MessageScreen(
         }
     }
 }
-
-private fun formatDuration(seconds: Long): String =
-    String.format(Locale.getDefault(), "%d:%02d", seconds / 60, seconds % 60)

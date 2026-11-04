@@ -17,6 +17,7 @@ import com.chesslock.domain.blocking.BlockPolicy
 import com.chesslock.domain.blocking.BlockRules
 import com.chesslock.domain.budget.BudgetState
 import com.chesslock.domain.budget.TimeBudget
+import com.chesslock.domain.budget.UsageMeter
 import com.chesslock.domain.config.AppConfig
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
@@ -55,8 +56,7 @@ class BlockingService : Service() {
     private var currentSettings: AppSettings? = null
     private var budgetState: BudgetState? = null
     private var currentDate: LocalDate? = null
-    private var totalUsedSeconds = 0L
-    private var pendingUsedSeconds = 0L
+    private val meter = UsageMeter()
     private var lastTickElapsed = 0L
     private var lastFlushedElapsed = 0L
     private var previousForegroundBlocked = false
@@ -89,7 +89,7 @@ class BlockingService : Service() {
         controller.setRunning(false)
         loopJob?.cancel()
         overlay.hide()
-        if (pendingUsedSeconds > 0L) {
+        if (meter.unflushed > 0L) {
             runBlocking { flushUsage() }
         }
         scope.cancel()
@@ -135,15 +135,22 @@ class BlockingService : Service() {
         val today = LocalDate.now()
         if (currentDate != today) {
             currentDate = today
-            pendingUsedSeconds = 0L
             val fresh = budgetStore.currentState(today)
             budgetState = fresh
-            totalUsedSeconds = fresh.usedSeconds
+            meter.reset(fresh.usedSeconds)
         }
         val persisted = budgetState ?: budgetStore.currentState(today).also { budgetState = it }
-        totalUsedSeconds = maxOf(totalUsedSeconds, persisted.usedSeconds + pendingUsedSeconds)
 
         val now = SystemClock.elapsedRealtime()
+        // Advance the tick before any I/O, flush or notification work. If that work throws, the next
+        // poll must not charge the same interval a second time.
+        val delta = if (lastTickElapsed > 0L) {
+            (now - lastTickElapsed).coerceIn(0L, config.blockingMaxCatchUpSeconds)
+        } else {
+            0L
+        }
+        lastTickElapsed = now
+
         val usageAccess = detector.hasUsageAccess()
         val overlayGranted = overlay.canShow()
         // A screen that is off has no foreground app from the user's point of view. This also stops
@@ -163,12 +170,9 @@ class BlockingService : Service() {
         )
 
         var remaining = remainingSeconds(persisted, settings)
-        if (blocked && previousForegroundBlocked && lastTickElapsed > 0L) {
-            val delta = (now - lastTickElapsed).coerceIn(0L, config.blockingMaxCatchUpSeconds)
-            if (delta > 0L && remaining > 0L) {
-                val counted = minOf(delta, remaining)
-                totalUsedSeconds += counted
-                pendingUsedSeconds += counted
+        if (blocked && previousForegroundBlocked && delta > 0L) {
+            val counted = meter.count(elapsedSeconds = delta, availableSeconds = remaining)
+            if (counted > 0L) {
                 val newRemaining = remainingSeconds(persisted, settings)
                 TimeBudget.crossedWarnings(remaining, newRemaining, config.warnAtSeconds)
                     .minOrNull()
@@ -178,7 +182,7 @@ class BlockingService : Service() {
         }
 
         val flushDue = now - lastFlushedElapsed >= config.budgetFlushIntervalSeconds * 1000L
-        if (pendingUsedSeconds > 0L && (flushDue || !blocked)) {
+        if (meter.unflushed > 0L && (flushDue || !blocked)) {
             flushUsage()
         }
 
@@ -190,23 +194,30 @@ class BlockingService : Service() {
         updateNotification(remaining, usageAccess, overlayGranted)
 
         previousForegroundBlocked = blocked
-        lastTickElapsed = now
     }
 
     private fun remainingSeconds(persisted: BudgetState, settings: AppSettings): Long =
         TimeBudget.remainingSeconds(
-            state = persisted.copy(usedSeconds = totalUsedSeconds),
+            state = persisted.copy(usedSeconds = meter.usedSeconds),
             limitSeconds = settings.dailyLimitSeconds,
             capSeconds = settings.dailyCapSeconds,
         )
 
     private suspend fun flushUsage() {
-        val seconds = pendingUsedSeconds
+        val seconds = meter.takeUnflushed()
         if (seconds <= 0L) return
-        pendingUsedSeconds = 0L
-        val result = runCatching { budgetStore.addUsage(seconds) }
-        if (result.isFailure) pendingUsedSeconds += seconds
-        lastFlushedElapsed = SystemClock.elapsedRealtime()
+        try {
+            budgetStore.addUsage(seconds)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (t: Throwable) {
+            // Retry on the next poll. The meter keeps the total unchanged, so nothing is lost and
+            // nothing is charged twice.
+            meter.restore(seconds)
+            Log.w(TAG, "Could not flush usage", t)
+        } finally {
+            lastFlushedElapsed = SystemClock.elapsedRealtime()
+        }
     }
 
     private fun updateNotification(remainingSeconds: Long, usageAccess: Boolean, overlayGranted: Boolean) {

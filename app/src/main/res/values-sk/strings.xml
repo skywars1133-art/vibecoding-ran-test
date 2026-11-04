@@ -2,6 +2,14 @@
 <resources>
     <string name="app_name">ChessLock</string>
     <string name="home_placeholder">Získaj čas riešením šachových úloh</string>
+    <string name="home_time_left">Dnes zostáva</string>
+    <string name="home_daily_limit">Denný limit</string>
+    <string name="home_earned_today">Získané dnes</string>
+    <string name="home_used_today">Využité dnes</string>
+    <string name="home_elo_label">ELO</string>
+    <string name="home_solve">Vyriešiť úlohu</string>
+    <string name="home_no_time">Nezostal žiadny čas. Vyrieš úlohu a získaj viac.</string>
+    <string name="home_local_note">Tvoj rozpočet, štatistiky a používanie aplikácií zostávajú v tomto zariadení.</string>
     <string name="puzzle_title">Šachová úloha</string>
     <string name="puzzle_rating">Hodnotenie úlohy: %1$d</string>
     <string name="player_elo">ELO: %1$d</string>

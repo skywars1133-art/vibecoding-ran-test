@@ -36,7 +36,8 @@ scripts/test-domain.sh
    ```
 
    Or open the project in Android Studio and press Run.
-2. Finish the placement test (or skip through it as described in `CHECKPOINT.md`) to reach normal puzzle play.
+2. The app opens on **Home** with today's remaining time, a daily-limit/earned/used breakdown, your ELO and the
+   **Solve a puzzle** button. A protection banner above the card shows whether blocking is actually active.
 3. Open **Settings** to choose the app language (System default / English / Slovak), the theme (System default / Light /
    Dark), the daily limit, blocked categories, individual app overrides and piece style.
 4. Under **App blocking**, tap **Choose individual apps** to search installed apps and set **Use categories**, **Always
@@ -45,9 +46,10 @@ scripts/test-domain.sh
    **Download now** to fetch the current pack immediately; otherwise WorkManager refreshes it about once a day.
 6. Grant **Usage access**, **Display over other apps** and (optionally) **Notifications** from the protection banner or
    Settings; the banner turns to "Protection is active" once the blocking service is running.
-7. Solve a puzzle to earn time, then open a blocked app after the budget runs out to see the block screen.
-8. Tap **Stats** in the puzzle top bar for local-only statistics: ELO over time, overall and per-theme success rate,
-   day streak, puzzles solved, time earned, and blocked-app time today/this week. Nothing is uploaded.
+7. Solve a puzzle to earn time, then open a blocked app after the budget runs out to see the block screen. The Home
+   countdown updates live while the blocking service charges blocked-app time.
+8. Tap **Stats** on Home (or in the puzzle top bar) for local-only statistics: ELO over time, overall and per-theme
+   success rate, day streak, puzzles solved, time earned, and blocked-app time today/this week. Nothing is uploaded.
 9. Hints use AdMob's official **test** ad IDs in this phase, so no real ad is shown or billed. Hints need a network and
    are disabled with an explanatory note while offline.
 

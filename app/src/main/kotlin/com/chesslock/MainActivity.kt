@@ -25,6 +25,7 @@ import com.chesslock.data.PuzzlePackScheduler
 import com.chesslock.data.SettingsStore
 import com.chesslock.data.ThemeMode
 import com.chesslock.ui.common.ProvideAppLanguage
+import com.chesslock.ui.home.HomeScreen
 import com.chesslock.ui.onboarding.PermissionsScreen
 import com.chesslock.ui.placement.PlacementTestScreen
 import com.chesslock.ui.puzzle.PuzzleScreen
@@ -81,6 +82,7 @@ class MainActivity : ComponentActivity() {
                                 var showStatistics by rememberSaveable { mutableStateOf(false) }
                                 var showPermissions by rememberSaveable { mutableStateOf(false) }
                                 var showBlockedApps by rememberSaveable { mutableStateOf(false) }
+                                var showPuzzle by rememberSaveable { mutableStateOf(false) }
                                 when {
                                     showStatistics -> StatisticsScreen(
                                         onBack = { showStatistics = false },
@@ -99,7 +101,15 @@ class MainActivity : ComponentActivity() {
                                         onDone = { showPermissions = false },
                                     )
 
-                                    else -> PuzzleScreen(
+                                    showPuzzle -> PuzzleScreen(
+                                        onBack = { showPuzzle = false },
+                                        onOpenSettings = { showSettings = true },
+                                        onOpenStatistics = { showStatistics = true },
+                                        onFixProtection = { showPermissions = true },
+                                    )
+
+                                    else -> HomeScreen(
+                                        onSolve = { showPuzzle = true },
                                         onOpenSettings = { showSettings = true },
                                         onOpenStatistics = { showStatistics = true },
                                         onFixProtection = { showPermissions = true },
