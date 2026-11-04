@@ -144,8 +144,8 @@ class BlockingService : Service() {
         val now = SystemClock.elapsedRealtime()
         // Advance the tick before any I/O, flush or notification work. If that work throws, the next
         // poll must not charge the same interval a second time.
-        val delta = if (lastTickElapsed > 0L) {
-            (now - lastTickElapsed).coerceIn(0L, config.blockingMaxCatchUpSeconds)
+        val elapsedMillis = if (lastTickElapsed > 0L) {
+            (now - lastTickElapsed).coerceAtLeast(0L)
         } else {
             0L
         }
@@ -170,8 +170,12 @@ class BlockingService : Service() {
         )
 
         var remaining = remainingSeconds(persisted, settings)
-        if (blocked && previousForegroundBlocked && delta > 0L) {
-            val counted = meter.count(elapsedSeconds = delta, availableSeconds = remaining)
+        if (blocked && previousForegroundBlocked && elapsedMillis > 0L) {
+            val counted = meter.count(
+                elapsedMillis = elapsedMillis,
+                maxCatchUpMillis = config.blockingMaxCatchUpSeconds * 1_000L,
+                availableSeconds = remaining,
+            )
             if (counted > 0L) {
                 val newRemaining = remainingSeconds(persisted, settings)
                 TimeBudget.crossedWarnings(remaining, newRemaining, config.warnAtSeconds)
@@ -179,6 +183,8 @@ class BlockingService : Service() {
                     ?.let { notifications.warn(newRemaining) }
                 remaining = newRemaining
             }
+        } else {
+            meter.endBlockedRun()
         }
 
         val flushDue = now - lastFlushedElapsed >= config.budgetFlushIntervalSeconds * 1000L

@@ -10,11 +10,16 @@ package com.chesslock.domain.budget
  *
  * [usedSeconds] is the authoritative total for the current day: it never drops when a flush is
  * attempted, and it only moves when time is counted or the day is reset.
+ *
+ * Time arrives in milliseconds because that is what `SystemClock.elapsedRealtime()` returns. The
+ * sub-second remainder is carried between ticks, so a poll every 2 s charges exactly 2 s instead of
+ * rounding (or, worse, treating milliseconds as seconds).
  */
 class UsageMeter {
 
     private var persistedSeconds = 0L
     private var unflushedSeconds = 0L
+    private var remainderMillis = 0L
 
     /** Total seconds used today, including usage that has not been flushed yet. */
     val usedSeconds: Long get() = persistedSeconds + unflushedSeconds
@@ -26,17 +31,29 @@ class UsageMeter {
     fun reset(persistedUsedSeconds: Long) {
         persistedSeconds = persistedUsedSeconds.coerceAtLeast(0L)
         unflushedSeconds = 0L
+        remainderMillis = 0L
     }
 
     /**
-     * Charges up to [elapsedSeconds] of blocked time, never more than [availableSeconds] left in
-     * the budget. Returns the amount actually counted (zero when nothing was charged).
+     * Charges blocked time measured in milliseconds, never more than [maxCatchUpMillis] for one
+     * tick and never more than [availableSeconds] left in the budget. Returns the whole seconds
+     * actually counted (zero when nothing was charged).
      */
-    fun count(elapsedSeconds: Long, availableSeconds: Long): Long {
-        if (elapsedSeconds <= 0L || availableSeconds <= 0L) return 0L
-        val counted = minOf(elapsedSeconds, availableSeconds)
+    fun count(elapsedMillis: Long, maxCatchUpMillis: Long, availableSeconds: Long): Long {
+        if (elapsedMillis <= 0L) return 0L
+        val cappedMillis = elapsedMillis.coerceAtMost(maxCatchUpMillis.coerceAtLeast(0L))
+        val totalMillis = cappedMillis + remainderMillis
+        val seconds = totalMillis / 1_000L
+        remainderMillis = totalMillis % 1_000L
+        if (seconds <= 0L || availableSeconds <= 0L) return 0L
+        val counted = minOf(seconds, availableSeconds)
         unflushedSeconds += counted
         return counted
+    }
+
+    /** Drops the sub-second remainder when a blocked run ends, so it is not charged later. */
+    fun endBlockedRun() {
+        remainderMillis = 0L
     }
 
     /**
