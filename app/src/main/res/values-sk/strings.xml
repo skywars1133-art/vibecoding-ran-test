@@ -120,7 +120,17 @@
     <string name="settings_permission_overlay">Zobrazovanie nad inými aplikáciami</string>
     <string name="settings_permission_granted">Povolené</string>
     <string name="settings_permission_missing">Nepovolené</string>
+    <string name="settings_permission_recommended">Odporúčané</string>
+    <string name="settings_permission_battery">Výnimka z optimalizácie batérie</string>
     <string name="settings_open_permission">Otvoriť nastavenia</string>
+    <string name="settings_warning_notifications">Upozornenia na čas</string>
+    <string name="settings_warning_notifications_description">Upozorni ma pri zostávajúcich 5 minútach a 1 minúte.</string>
+    <string name="settings_feedback_section">Odozva</string>
+    <string name="settings_haptics">Haptická odozva</string>
+    <string name="settings_haptics_description">Krátke zavibrovanie pri správnom a nesprávnom ťahu.</string>
+    <string name="settings_privacy_section">Súkromie a reklamy</string>
+    <string name="settings_privacy_description">Zisti, čo zostáva v zariadení a ako fungujú odmenené reklamy.</string>
+    <string name="settings_privacy_open">Súkromie a reklamy</string>
 
     <!-- Puzzle downloads (SPEC 2, Phase 2) -->
     <string name="settings_puzzles_section">Sťahovanie úloh</string>
@@ -143,6 +153,7 @@
     <string name="permissions_overlay_description">Zobrazí blokovaciu obrazovku nad blokovanou aplikáciou, keď vyprší čas.</string>
     <string name="permissions_notifications">Upozornenia</string>
     <string name="permissions_notifications_description">Zobrazuje stav ochrany a upozorní ťa pri 5 a 1 minúte.</string>
+    <string name="permissions_battery_description">Zabráni Androidu pozastaviť ochranu na pozadí. Odporúčané pre spoľahlivé blokovanie po reštarte.</string>
     <string name="permissions_allow">Povoliť</string>
     <string name="permissions_continue">Pokračovať</string>
     <string name="permissions_active">Ochrana je aktívna.</string>
@@ -194,4 +205,14 @@
     <string name="stats_usage_today">Dnes: %1$s</string>
     <string name="stats_usage_week">Tento týždeň: %1$s</string>
     <string name="stats_local_note">Štatistiky a história používania aplikácií zostávajú v tomto zariadení. Nič sa neodosiela.</string>
+
+    <!-- Privacy and ads (SPEC 5, SPEC 7) -->
+    <string name="privacy_title">Súkromie a reklamy</string>
+    <string name="privacy_local_title">Tvoje údaje zostávajú v zariadení</string>
+    <string name="privacy_local_body">ChessLock ukladá ELO, históriu úloh, denný rozpočet a históriu používania aplikácií lokálne. Nemá žiadny účet a nič neodosiela.</string>
+    <string name="privacy_usage_title">Údaje o používaní aplikácií</string>
+    <string name="privacy_usage_body">Prístup k používaniu slúži len na zistenie, ktorá aplikácia je v popredí. ChessLock nečíta, čo robíš v iných aplikáciách, a údaje o používaní sa nikdy neposielajú reklamnej sieti ani serveru.</string>
+    <string name="privacy_ads_title">Reklamy a súhlas</string>
+    <string name="privacy_ads_body">Nápovedy sú jediné reklamy v ChessLock. Sú to odmenené videá od Google AdMob a prehrajú sa len po kliknutí na Nápoveda. AdMob môže spracúvať tvoje reklamné ID a údaje o zariadení podľa vlastných zásad ochrany súkromia. Toto testovacie zostavenie používa testovacie reklamné jednotky Google; produkčné jednotky a formulár súhlasu UMP budú zapnuté pred vydaním.</string>
+    <string name="privacy_note">Štatistiky a história používania aplikácií zostávajú v tomto zariadení. Nič sa neodosiela.</string>
 </resources>

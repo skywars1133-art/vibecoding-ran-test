@@ -33,6 +33,8 @@ class SettingsStore @Inject constructor(
     private val blockedCategoriesKey = stringSetPreferencesKey("blocked_categories")
     private val alwaysBlockedKey = stringSetPreferencesKey("always_blocked_packages")
     private val neverBlockedKey = stringSetPreferencesKey("never_blocked_packages")
+    private val warningNotificationsKey = booleanPreferencesKey("warning_notifications")
+    private val hapticsKey = booleanPreferencesKey("haptics_enabled")
     private val permissionsOnboardingSeenKey = booleanPreferencesKey("permissions_onboarding_seen")
 
     val settings: Flow<AppSettings> = context.settingsDataStore.data.map { preferences ->
@@ -58,6 +60,9 @@ class SettingsStore @Inject constructor(
             blockedCategories = categories,
             alwaysBlockedPackages = preferences[alwaysBlockedKey] ?: emptySet(),
             neverBlockedPackages = preferences[neverBlockedKey] ?: emptySet(),
+            warningNotificationsEnabled = preferences[warningNotificationsKey]
+                ?: config.warningNotificationsEnabledByDefault,
+            hapticsEnabled = preferences[hapticsKey] ?: config.hapticsEnabledByDefault,
             permissionsOnboardingSeen = preferences[permissionsOnboardingSeenKey] ?: false,
         )
     }
@@ -123,6 +128,18 @@ class SettingsStore @Inject constructor(
     suspend fun setPermissionsOnboardingSeen(seen: Boolean) {
         context.settingsDataStore.edit { preferences ->
             preferences[permissionsOnboardingSeenKey] = seen
+        }
+    }
+
+    suspend fun setWarningNotificationsEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[warningNotificationsKey] = enabled
+        }
+    }
+
+    suspend fun setHapticsEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[hapticsKey] = enabled
         }
     }
 

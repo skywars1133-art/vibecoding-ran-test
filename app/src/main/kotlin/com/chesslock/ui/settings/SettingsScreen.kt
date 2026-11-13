@@ -72,6 +72,7 @@ import java.util.Locale
 fun SettingsScreen(
     onBack: () -> Unit,
     onOpenApps: () -> Unit,
+    onOpenPrivacy: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.settings.collectAsState()
@@ -97,6 +98,9 @@ fun SettingsScreen(
     }
     val notificationsGranted = remember(permissionEpoch) {
         BlockingPermissions.canPostNotifications(context)
+    }
+    val batteryOptimizationIgnored = remember(permissionEpoch) {
+        BlockingPermissions.isIgnoringBatteryOptimizations(context)
     }
     val protectionActive = settings.blockingEnabled &&
         usageAccessGranted &&
@@ -279,6 +283,32 @@ fun SettingsScreen(
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             Text(
+                text = stringResource(R.string.settings_feedback_section),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.settings_haptics),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_haptics_description),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = settings.hapticsEnabled,
+                    onCheckedChange = viewModel::setHapticsEnabled,
+                )
+            }
+
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
+            Text(
                 text = stringResource(R.string.settings_permissions_section),
                 style = MaterialTheme.typography.titleMedium,
             )
@@ -322,6 +352,50 @@ fun SettingsScreen(
                     )
                 },
             )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.settings_warning_notifications),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_warning_notifications_description),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = settings.warningNotificationsEnabled,
+                    onCheckedChange = viewModel::setWarningNotificationsEnabled,
+                )
+            }
+            PermissionCard(
+                title = R.string.settings_permission_battery,
+                description = R.string.permissions_battery_description,
+                granted = batteryOptimizationIgnored,
+                actionLabel = R.string.settings_open_permission,
+                onAction = {
+                    openSettings(context, BlockingPermissions.batteryOptimizationIntent())
+                },
+                optional = true,
+            )
+
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
+            Text(
+                text = stringResource(R.string.settings_privacy_section),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = stringResource(R.string.settings_privacy_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Button(onClick = onOpenPrivacy) {
+                Text(stringResource(R.string.settings_privacy_open))
+            }
         }
     }
 }

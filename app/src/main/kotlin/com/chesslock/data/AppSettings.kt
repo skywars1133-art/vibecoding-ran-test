@@ -79,6 +79,10 @@ data class AppSettings(
     val blockedCategories: Set<BlockCategory>,
     val alwaysBlockedPackages: Set<String> = emptySet(),
     val neverBlockedPackages: Set<String> = emptySet(),
+    /** 5-minute and 1-minute warning notifications (SPEC 1). */
+    val warningNotificationsEnabled: Boolean = true,
+    /** Haptic ticks on puzzle moves (SPEC 6). */
+    val hapticsEnabled: Boolean = true,
     /** The permissions onboarding is shown once; after that the status card covers missing grants. */
     val permissionsOnboardingSeen: Boolean = false,
 ) {
@@ -98,6 +102,8 @@ data class AppSettings(
             dailyLimitMinutes = config.defaultDailyLimitMinutes,
             dailyCapMinutes = config.dailyCapMinutes,
             blockedCategories = config.defaultBlockedCategories,
+            warningNotificationsEnabled = config.warningNotificationsEnabledByDefault,
+            hapticsEnabled = config.hapticsEnabledByDefault,
         )
     }
 }

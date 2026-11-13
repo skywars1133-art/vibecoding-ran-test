@@ -68,6 +68,9 @@ fun PermissionsScreen(onDone: () -> Unit) {
     val notificationsGranted = remember(permissionEpoch) {
         BlockingPermissions.canPostNotifications(context)
     }
+    val batteryOptimizationIgnored = remember(permissionEpoch) {
+        BlockingPermissions.isIgnoringBatteryOptimizations(context)
+    }
     val notificationLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { permissionEpoch++ }
@@ -123,6 +126,16 @@ fun PermissionsScreen(onDone: () -> Unit) {
                         notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
                 },
+            )
+            PermissionCard(
+                title = R.string.settings_permission_battery,
+                description = R.string.permissions_battery_description,
+                granted = batteryOptimizationIgnored,
+                actionLabel = R.string.settings_open_permission,
+                onAction = {
+                    openSettings(context, BlockingPermissions.batteryOptimizationIntent())
+                },
+                optional = true,
             )
 
             StatusCard(allGranted)

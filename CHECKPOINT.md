@@ -3,16 +3,21 @@
 Resume file. Update after every meaningful step and before any likely credit cutoff. A new session reads this first, then CLAUDE.md, SPEC.md, PHASES.md and the README "Decisions".
 
 ## Status
-- Date: 2026-11-04
-- Current phase: Phase 3 (local-only statistics) — complete and device-verified. The local settings bundle (theme +
-  per-app blocking picker) and the Home remaining-time screen are implemented; awaiting user feedback
+- Date: 2026-11-13
+- Current phase: Phase 4 (hardening and release prep) — first local-only bundle implemented and device-verified;
+  awaiting user feedback
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: Home screen as the app root — big remaining-time card (limit/earned/used breakdown, progress bar),
+- Last completed: Phase 4 protection and settings bundle — adaptive foreground polling (`PollingPolicy`: 2 s while
+  ≤5 min remain, relaxed 5 s otherwise), battery-optimization exemption guidance in onboarding and Settings (recommended,
+  not required for "active"), a persistent 5/1-minute **Time warnings** toggle, a **Haptic feedback** toggle wired to
+  puzzle moves, and a **Privacy and ads** explainer screen. 198 tests pass; debug and signed release APKs rebuilt, and
+  the release was installed over the debug build with all app data intact.
+- Before that: Home screen as the app root — big remaining-time card (limit/earned/used breakdown, progress bar),
   ELO and earned-today metrics, protection banner, and **Solve a puzzle** / **Stats** / **Settings** actions. The
   pre-existing blocked-app overcount was also fixed: the service compared `SystemClock.elapsedRealtime()` **milliseconds**
   against a **seconds** catch-up cap, so every 2 s poll charged the full 10 s cap (~4× inflation). Counting now goes
   through a unit-tested `UsageMeter` that converts milliseconds, carries sub-second remainders and advances the tick
-  before any I/O. 193 tests pass; debug and release APKs rebuilt and device-verified.
+  before any I/O.
 - Before that: local settings bundle — in-app Light/Dark/System theme and a searchable per-app blocking picker
   (Use categories / Always block / Never block) built on the existing overrides. 172 tests pass.
 - Before that: Phase 3 local statistics — ELO history chart, overall/per-theme success rate, day streak, puzzles
@@ -23,6 +28,36 @@ Resume file. Update after every meaningful step and before any likely credit cut
   (MVP, language selection, Cburnett default, four licensed SVG piece sets).
 
 ## Verification
+- Phase 4 bundle (2026-11-13): ran `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease` with
+  JDK 21.0.11. **145 domain tests + 53 app tests passed (198 total); 0 failures, errors or skips.** The new
+  `PollingPolicyTest` (5) covers the relaxed interval above the threshold, the switch at the threshold, empty/negative
+  budgets, relaxed-never-below-active, and interval clamping. `AppSettingsTest` now also asserts the warning and haptics
+  defaults.
+- Release APK rebuilt and signed at `dist/ChessLock-0.1.0-test.apk` (v2/v3 verified, SHA-256
+  `0891F3F80BC54F08C859056A7046BC3769C0FD4D5A2C61E5226CCC56B19BD592`, 10 801 656 bytes) and installed over the debug
+  build. Data survived and is identical to before the upgrade: ELO **1604**, budget `30:00` limit / `0:00` used,
+  `1454` unsolved puzzles, band 1600, last download 13 Nov 2026 11:33. The installed package is the release variant
+  (`run-as` reports "package not debuggable").
+- Phase 4 device checks on `R9TX902F92W` (2026-11-13):
+  - **Settings sections** render in both builds: Feedback -> **Haptic feedback**, **System permissions** -> **Time
+    warnings** (plus Usage access / Overlay / Notifications, all Granted) and **Battery optimization exemption**
+    (Granted), then **Privacy and ads**.
+  - **Toggles persist.** Haptic feedback and Time warnings were switched off: `settings.preferences_pb` gained
+    `haptics_enabled = 0` and `warning_notifications = 0` and the switches read unchecked; switching both back on
+    rewrote `1`/`1`. (An earlier attempt missed because the screen had scrolled back to the top; the switches are at
+    `x≈1137, y≈736` and `y≈1388` at the "Puzzle downloads" scroll position.)
+  - **Battery card** opens the system battery-usage list (`ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS`), where
+    ChessLock was absent because it was not exempt. `adb shell cmd deviceidle whitelist +com.chesslock` flipped the card
+    to **Granted**; the shell exemption was left in place so protection stays reliable on this test device (remove with
+    `adb shell cmd deviceidle whitelist -com.chesslock`).
+  - **Privacy and ads** opens from Settings and shows all four sections (data stays on device, app-usage data, ads and
+    consent, local-only footer); system Back returns to Settings.
+  - **Adaptive polling** verified end-to-end with the new one-line `Poll interval is now Xs` log (logged only when the
+    interval changes). At `30:00` remaining the service reported `5s`. The budget file was then temporarily rewritten
+    to `used_seconds = 3000` (valid DataStore preferences proto, backup restored immediately afterwards) to reach an
+    empty budget: the service reported `2s` and the block screen appeared over the browser within ~4 s. Restoring the
+    original file brought Home back to `30:00` / `0:00` used and the log back to `5s`; no stats rows were written
+    because an empty budget charges nothing.
 - Home bundle + usage fix (2026-11-04): ran `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease`
   with JDK 21.0.11. **140 domain tests + 53 app tests passed (193 total); 0 failures, errors or skips.** The 12
   `UsageMeterTest` cases cover persisted-reset, a 2 000 ms tick charging 2 s (the regression), remainder carry, the
@@ -235,12 +270,23 @@ Resume file. Update after every meaningful step and before any likely credit cut
   Compose root, plus a searchable per-app blocking picker backed by the existing `alwaysBlockedPackages`/
   `neverBlockedPackages` overrides. Added EN/SK strings, `AppPickerTest`, theme round-trip tests, and device-verified
   both features plus the rebuilt release APK. 172 tests pass.
+- 2026-11-13: Phase 4 protection and settings bundle. Added `PollingPolicy` (2 s low-budget/empty, 5 s relaxed) with
+  5 tests and `blockingRelaxedPollIntervalSeconds`/`blockingLowBudgetThresholdSeconds` in `AppConfig`; the service now
+  returns its next delay and cancels/respects warning notifications. Added battery-optimization detection and a
+  Play-safe exemption-list intent, shown as a recommended card in onboarding and Settings. Added persisted
+  `warningNotificationsEnabled` and `hapticsEnabled` settings with UI, haptic move feedback in the puzzle screen, and a
+  new Privacy and ads screen reachable from Settings. EN/SK strings and README decisions updated; 198 tests pass;
+  debug and release APKs rebuilt; all device checks listed under Verification passed. The service logs one line when
+  the poll interval changes, which made the adaptive cadence verifiable on the tablet (5 s at `30:00`, 2 s with an
+  empty budget, block screen within ~4 s).
 
 ## Next step
-1. **Phase 3 local statistics and the local settings bundle (theme + per-app picker) are complete; a shareable test
-   APK is ready at `dist/ChessLock-0.1.0-test.apk`.** Wait for user feedback before accounts/cloud/leaderboard.
-2. Good candidates for the next local-only bundle: haptics/sounds, a privacy/ads screen, notification controls, or a
-   home-screen remaining-time view.
+1. **Phase 4 protection/settings bundle is complete, device-verified and committed. Wait for user feedback before the
+   next bundle.** The only unverified item is the subjective feel of the haptic ticks (the switch and the settings key
+   were verified; no audio feedback exists yet).
+2. Next Phase 4 candidates: a UMP consent SDK integration (needs a new Gradle dependency and real privacy-policy URL),
+   production ad unit IDs, Play Data safety/privacy-policy prep, an `Entitlements` groundwork layer, and sounds (needs
+   audio assets). Accounts/cloud/leaderboard remain deferred.
 3. Optional pending Phase 1 device check: reconnect/unlock the old phone `CIYDDIMV5D5XNFUS`, launch the app once,
    reboot, unlock, and confirm `BlockingService` starts automatically. Also exercise the block-screen buttons and
    permission dialogs manually (adb input injection is blocked on that device).

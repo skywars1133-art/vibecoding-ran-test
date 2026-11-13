@@ -15,6 +15,7 @@ import com.chesslock.data.BudgetStore
 import com.chesslock.data.SettingsStore
 import com.chesslock.domain.blocking.BlockPolicy
 import com.chesslock.domain.blocking.BlockRules
+import com.chesslock.domain.blocking.PollingPolicy
 import com.chesslock.domain.budget.BudgetState
 import com.chesslock.domain.budget.TimeBudget
 import com.chesslock.domain.budget.UsageMeter
@@ -61,6 +62,7 @@ class BlockingService : Service() {
     private var lastFlushedElapsed = 0L
     private var previousForegroundBlocked = false
     private var lastNotificationKey: String? = null
+    private var warningNotificationsEnabled = true
     private val whitelistedPackages by lazy { appInfo.whitelistedPackages() }
 
     override fun onCreate() {
@@ -111,25 +113,42 @@ class BlockingService : Service() {
     }
 
     private suspend fun runLoop() {
+        // Start fast so a blocked app that is already open is charged correctly right away.
+        var delaySeconds = config.blockingPollIntervalSeconds
+        var loggedInterval = 0L
         while (true) {
             try {
-                poll()
+                delaySeconds = poll()
             } catch (e: CancellationException) {
                 throw e
             } catch (t: Throwable) {
                 Log.w(TAG, "Blocking poll failed", t)
+                // After a failure, slow down instead of retrying in a tight loop.
+                delaySeconds = config.blockingRelaxedPollIntervalSeconds
             }
-            delay(config.blockingPollIntervalSeconds * 1000L)
+            if (delaySeconds != loggedInterval) {
+                // One line per change keeps logcat readable and makes the adaptive cadence testable.
+                Log.i(TAG, "Poll interval is now ${delaySeconds}s")
+                loggedInterval = delaySeconds
+            }
+            delay(delaySeconds * 1000L)
         }
     }
 
-    private suspend fun poll() {
+    /** Runs one poll and returns how many seconds the loop should wait before the next one. */
+    private suspend fun poll(): Long {
         val settings = currentSettings
             ?: settingsStore.settings.first().also { currentSettings = it }
         if (!settings.blockingEnabled) {
             overlay.hide()
+            notifications.cancelWarning()
             stopSelf()
-            return
+            return config.blockingRelaxedPollIntervalSeconds
+        }
+
+        if (settings.warningNotificationsEnabled != warningNotificationsEnabled) {
+            warningNotificationsEnabled = settings.warningNotificationsEnabled
+            if (!warningNotificationsEnabled) notifications.cancelWarning()
         }
 
         val today = LocalDate.now()
@@ -178,9 +197,11 @@ class BlockingService : Service() {
             )
             if (counted > 0L) {
                 val newRemaining = remainingSeconds(persisted, settings)
-                TimeBudget.crossedWarnings(remaining, newRemaining, config.warnAtSeconds)
-                    .minOrNull()
-                    ?.let { notifications.warn(newRemaining) }
+                if (settings.warningNotificationsEnabled) {
+                    TimeBudget.crossedWarnings(remaining, newRemaining, config.warnAtSeconds)
+                        .minOrNull()
+                        ?.let { notifications.warn(newRemaining) }
+                }
                 remaining = newRemaining
             }
         } else {
@@ -200,6 +221,12 @@ class BlockingService : Service() {
         updateNotification(remaining, usageAccess, overlayGranted)
 
         previousForegroundBlocked = blocked
+        return PollingPolicy.nextIntervalSeconds(
+            remainingSeconds = remaining,
+            lowBudgetThresholdSeconds = config.blockingLowBudgetThresholdSeconds,
+            activeIntervalSeconds = config.blockingPollIntervalSeconds,
+            relaxedIntervalSeconds = config.blockingRelaxedPollIntervalSeconds,
+        )
     }
 
     private fun remainingSeconds(persisted: BudgetState, settings: AppSettings): Long =

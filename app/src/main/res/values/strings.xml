@@ -120,7 +120,17 @@
     <string name="settings_permission_overlay">Display over other apps</string>
     <string name="settings_permission_granted">Granted</string>
     <string name="settings_permission_missing">Not granted</string>
+    <string name="settings_permission_recommended">Recommended</string>
+    <string name="settings_permission_battery">Battery optimization exemption</string>
     <string name="settings_open_permission">Open settings</string>
+    <string name="settings_warning_notifications">Time warnings</string>
+    <string name="settings_warning_notifications_description">Notify me at 5 minutes and 1 minute remaining.</string>
+    <string name="settings_feedback_section">Feedback</string>
+    <string name="settings_haptics">Haptic feedback</string>
+    <string name="settings_haptics_description">Vibrate briefly on correct and wrong moves.</string>
+    <string name="settings_privacy_section">Privacy and ads</string>
+    <string name="settings_privacy_description">See what stays on this device and how rewarded ads work.</string>
+    <string name="settings_privacy_open">Privacy and ads</string>
 
     <!-- Puzzle downloads (SPEC 2, Phase 2) -->
     <string name="settings_puzzles_section">Puzzle downloads</string>
@@ -143,6 +153,7 @@
     <string name="permissions_overlay_description">Show the block screen on top of a blocked app when time runs out.</string>
     <string name="permissions_notifications">Notifications</string>
     <string name="permissions_notifications_description">Show the ongoing protection status and warn you at 5 and 1 minutes.</string>
+    <string name="permissions_battery_description">Stop Android from pausing protection in the background. Recommended for reliable blocking after a reboot.</string>
     <string name="permissions_allow">Allow</string>
     <string name="permissions_continue">Continue</string>
     <string name="permissions_active">Protection is active.</string>
@@ -193,4 +204,14 @@
     <string name="stats_usage_today">Today: %1$s</string>
     <string name="stats_usage_week">This week: %1$s</string>
     <string name="stats_local_note">Statistics and app-usage history stay on this device. Nothing is uploaded.</string>
+
+    <!-- Privacy and ads (SPEC 5, SPEC 7) -->
+    <string name="privacy_title">Privacy and ads</string>
+    <string name="privacy_local_title">Your data stays on this device</string>
+    <string name="privacy_local_body">ChessLock stores your ELO, puzzle history, daily budget and app-usage history locally. There is no account and nothing is uploaded.</string>
+    <string name="privacy_usage_title">App-usage data</string>
+    <string name="privacy_usage_body">Usage access is used only to see which app is in the foreground. ChessLock never reads what you do inside other apps, and app-usage data is never sent to the ad SDK or any server.</string>
+    <string name="privacy_ads_title">Ads and consent</string>
+    <string name="privacy_ads_body">Hints are the only ads in ChessLock. They are rewarded videos from Google AdMob and play only after you tap Hint. AdMob may process your advertising ID and device data under its own privacy policy. This test build uses Google test ad units; production ad units and the UMP consent form will be enabled before release.</string>
+    <string name="privacy_note">Statistics and app-usage history stay on this device. Nothing is uploaded.</string>
 </resources>

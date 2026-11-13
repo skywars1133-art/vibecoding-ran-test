@@ -18,6 +18,8 @@ class AppSettingsTest {
         assertEquals(config.dailyCapMinutes, settings.dailyCapMinutes)
         assertEquals(config.defaultBlockedCategories, settings.blockedCategories)
         assertEquals(config.wifiOnlyDownloadsByDefault, settings.wifiOnlyDownloads)
+        assertEquals(config.warningNotificationsEnabledByDefault, settings.warningNotificationsEnabled)
+        assertEquals(config.hapticsEnabledByDefault, settings.hapticsEnabled)
         assertEquals(emptySet<String>(), settings.alwaysBlockedPackages)
         assertEquals(emptySet<String>(), settings.neverBlockedPackages)
     }

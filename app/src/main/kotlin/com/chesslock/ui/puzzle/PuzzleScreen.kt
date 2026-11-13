@@ -35,7 +35,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -70,6 +72,7 @@ fun PuzzleScreen(
     val settings by settingsViewModel.settings.collectAsState()
     val protectionRunning by settingsViewModel.protectionRunning.collectAsState()
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var permissionEpoch by remember { mutableIntStateOf(0) }
     var online by remember { mutableStateOf(NetworkStatus.isOnline(context)) }
@@ -107,6 +110,17 @@ fun PuzzleScreen(
         usageAccessGranted &&
         overlayGranted &&
         protectionRunning
+    // A short tick confirms a correct move; a heavier buzz marks a lost life (SPEC 6).
+    LaunchedEffect(state.moveStatus) {
+        if (!settings.hapticsEnabled) return@LaunchedEffect
+        when (state.moveStatus) {
+            PuzzleMoveStatus.WRONG -> haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            PuzzleMoveStatus.CORRECT,
+            PuzzleMoveStatus.SOLVED,
+            -> haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            PuzzleMoveStatus.NONE -> Unit
+        }
+    }
     val hintAvailable = state.hintAvailability == HintAvailability.AVAILABLE
     val hintEnabled = !state.solved && hintAvailable && online && adState is RewardedAdState.Ready
     val hintNote = when {

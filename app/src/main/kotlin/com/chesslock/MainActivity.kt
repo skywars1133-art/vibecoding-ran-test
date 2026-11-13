@@ -30,6 +30,7 @@ import com.chesslock.ui.onboarding.PermissionsScreen
 import com.chesslock.ui.placement.PlacementTestScreen
 import com.chesslock.ui.puzzle.PuzzleScreen
 import com.chesslock.ui.settings.BlockedAppsScreen
+import com.chesslock.ui.settings.PrivacyScreen
 import com.chesslock.ui.settings.SettingsScreen
 import com.chesslock.ui.stats.StatisticsScreen
 import com.chesslock.ui.theme.ChessLockTheme
@@ -83,6 +84,7 @@ class MainActivity : ComponentActivity() {
                                 var showPermissions by rememberSaveable { mutableStateOf(false) }
                                 var showBlockedApps by rememberSaveable { mutableStateOf(false) }
                                 var showPuzzle by rememberSaveable { mutableStateOf(false) }
+                                var showPrivacy by rememberSaveable { mutableStateOf(false) }
                                 when {
                                     showStatistics -> StatisticsScreen(
                                         onBack = { showStatistics = false },
@@ -92,9 +94,14 @@ class MainActivity : ComponentActivity() {
                                         onBack = { showBlockedApps = false },
                                     )
 
+                                    showPrivacy -> PrivacyScreen(
+                                        onBack = { showPrivacy = false },
+                                    )
+
                                     showSettings -> SettingsScreen(
                                         onBack = { showSettings = false },
                                         onOpenApps = { showBlockedApps = true },
+                                        onOpenPrivacy = { showPrivacy = true },
                                     )
 
                                     showPermissions -> PermissionsScreen(

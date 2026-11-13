@@ -25,8 +25,12 @@ data class AppConfig(
         BlockCategory.GAMES,
         BlockCategory.VIDEO,
     ),
-    /** Foreground app polling while the blocking service runs. */
+    /** Fast foreground polling while the budget is low or empty, so the block screen is prompt. */
     val blockingPollIntervalSeconds: Long = 2,
+    /** Slower polling while the budget is comfortable; fewer wakeups save battery (SPEC 6). */
+    val blockingRelaxedPollIntervalSeconds: Long = 5,
+    /** At or below this remaining time the service switches to [blockingPollIntervalSeconds]. */
+    val blockingLowBudgetThresholdSeconds: Long = 300,
     /** Usage lookback window for [`UsageStatsManager.queryEvents`]. */
     val blockingUsageLookbackSeconds: Long = 60,
     /**
@@ -42,6 +46,12 @@ data class AppConfig(
     val dailyCapOptionsMinutes: List<Int> = listOf(60, 120, 180, 240),
     val blockingNotificationId: Int = 1001,
     val blockingWarningNotificationId: Int = 1002,
+    /** 5-minute and 1-minute warning notifications are on until the user turns them off. */
+    val warningNotificationsEnabledByDefault: Boolean = true,
+
+    // --- Feedback (SPEC 6) ---
+    /** Haptic ticks on correct and wrong moves are on by default. */
+    val hapticsEnabledByDefault: Boolean = true,
 
     // --- Rewards (SPEC 3) ---
     val baseRewardMinutes: Int = 3,

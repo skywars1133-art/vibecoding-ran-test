@@ -118,4 +118,16 @@ class SettingsViewModel @Inject constructor(
             store.setBlockedCategory(category, blocked)
         }
     }
+
+    fun setWarningNotificationsEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            store.setWarningNotificationsEnabled(enabled)
+        }
+    }
+
+    fun setHapticsEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            store.setHapticsEnabled(enabled)
+        }
+    }
 }

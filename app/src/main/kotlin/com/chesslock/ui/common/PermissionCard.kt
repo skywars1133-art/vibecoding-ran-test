@@ -27,6 +27,8 @@ fun PermissionCard(
     @StringRes actionLabel: Int,
     onAction: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Recommended-only permissions stay usable when missing instead of looking like an error. */
+    optional: Boolean = false,
 ) {
     Surface(
         shape = RoundedCornerShape(12.dp),
@@ -49,13 +51,17 @@ fun PermissionCard(
                 )
                 Text(
                     text = stringResource(
-                        if (granted) R.string.settings_permission_granted else R.string.settings_permission_missing,
+                        when {
+                            granted -> R.string.settings_permission_granted
+                            optional -> R.string.settings_permission_recommended
+                            else -> R.string.settings_permission_missing
+                        },
                     ),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (granted) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.error
+                    color = when {
+                        granted -> MaterialTheme.colorScheme.primary
+                        optional -> MaterialTheme.colorScheme.onSurfaceVariant
+                        else -> MaterialTheme.colorScheme.error
                     },
                 )
             }

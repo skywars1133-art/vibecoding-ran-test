@@ -45,13 +45,17 @@ scripts/test-domain.sh
 5. The **Puzzle downloads** section shows the offline stock, the last download and the Wi-Fi-only switch. Tap
    **Download now** to fetch the current pack immediately; otherwise WorkManager refreshes it about once a day.
 6. Grant **Usage access**, **Display over other apps** and (optionally) **Notifications** from the protection banner or
-   Settings; the banner turns to "Protection is active" once the blocking service is running.
-7. Solve a puzzle to earn time, then open a blocked app after the budget runs out to see the block screen. The Home
+   Settings; the banner turns to "Protection is active" once the blocking service is running. Exempting ChessLock from
+   **battery optimization** is recommended so protection survives aggressive background limits; it is not required for
+   the "active" status.
+7. Under **Feedback**, turn haptic move feedback on or off; under **Privacy and ads**, read what stays on the device and
+   how the rewarded hint ads work. **Time warnings** toggles the 5-minute and 1-minute notifications.
+8. Solve a puzzle to earn time, then open a blocked app after the budget runs out to see the block screen. The Home
    countdown updates live while the blocking service charges blocked-app time.
-8. Tap **Stats** on Home (or in the puzzle top bar) for local-only statistics: ELO over time, overall and per-theme
+9. Tap **Stats** on Home (or in the puzzle top bar) for local-only statistics: ELO over time, overall and per-theme
    success rate, day streak, puzzles solved, time earned, and blocked-app time today/this week. Nothing is uploaded.
-9. Hints use AdMob's official **test** ad IDs in this phase, so no real ad is shown or billed. Hints need a network and
-   are disabled with an explanatory note while offline.
+10. Hints use AdMob's official **test** ad IDs in this phase, so no real ad is shown or billed. Hints need a network and
+    are disabled with an explanatory note while offline.
 
 ### Shareable test APK
 
@@ -206,8 +210,22 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
 - **Blocking is non-strict and permission-based.** A foreground service polls `UsageStatsManager` events (no
   `AccessibilityService`) and charges the one shared daily budget only while a blocked package is in the foreground.
   `TYPE_APPLICATION_OVERLAY` (granted through `SYSTEM_ALERT_WINDOW`) shows a full-screen Compose block screen when the
-  budget is empty. The service polls every 2 s, caps catch-up after a freeze at 10 s, flushes pending usage every 15 s,
-  and stops counting / hides the overlay while the screen is off.
+  budget is empty. Polling is adaptive (`PollingPolicy`): 2 s while at most `blockingLowBudgetThresholdSeconds` (5 min)
+  remain or the budget is empty, and a relaxed 5 s while there is plenty of time. The interval is logged only when it
+  changes, so a device log (`adb logcat -s BlockingService`) shows which cadence is active. The service caps catch-up
+  after a freeze at 10 s, flushes pending usage every 15 s, and stops counting / hides the overlay while the screen is
+  off.
+- **Battery exemption is recommended, not required.** Onboarding and Settings show a battery-optimization card that
+  opens the system exemption list (the Play-restricted direct-request dialog is deliberately avoided). It is marked
+  "Recommended" and does not gate the "Protection is active" status, which still depends on usage access, overlay and
+  the running service.
+- **Warning notifications and haptics are user choices.** `AppSettings.warningNotificationsEnabled` gates the 5/1-minute
+  notifications (the ongoing foreground-service notification remains), and `hapticsEnabled` gates the short move/error
+  vibration in the puzzle screen. Both persist in the `settings` DataStore and default to on.
+- **Privacy and ads is an in-app explainer.** Settings -> **Privacy and ads** states that ELO, puzzle history, budget and
+  app-usage history stay on the device, that usage access only identifies the foreground package, and that AdMob is the
+  only third party (rewarded hints only). It also records that this test build uses Google test ad units and that
+  production IDs plus the UMP consent form are release-prep work.
 - **Blocking precedence:** ChessLock, the launcher, phone/emergency, Settings, SystemUI, the installer and the
   permission controller are never blocked. An explicit "never block" override wins over an explicit "always block"
   override, which wins over the selected category. Categories default to Social, Games and Video/streaming; the
@@ -215,9 +233,10 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
 - **Category source:** `ApplicationInfo.category` plus a curated map of popular packages, because many apps leave the
   platform category unset and Android has no communication/shopping category values. `QUERY_ALL_PACKAGES` is declared
   for reliable metadata reads and the individual-apps picker; the Play policy declaration is release-prep work.
-- **Protection status is visible.** First run explains usage access, overlay and notification permissions and lets the
-  user continue without them; afterwards the puzzle screen and Settings show "Protection is not active" (or "App
-  blocking is off") with a shortcut to fix it. The status also reflects whether the blocking service is alive.
+- **Protection status is visible.** First run explains usage access, overlay, notification and battery-optimization
+  permissions and lets the user continue without them; afterwards the puzzle screen and Settings show "Protection is not
+  active" (or "App blocking is off") with a shortcut to fix it. The status also reflects whether the blocking service is
+  alive.
 - **Boot and process death:** `BootReceiver` starts the service after `BOOT_COMPLETED` and `MY_PACKAGE_REPLACED` when
   blocking is enabled. Android deliberately skips boot broadcasts for apps that were force-stopped until the user
   launches them again.
@@ -260,7 +279,9 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   implemented as **local-only statistics** (ELO history, success rate overall/per theme, streaks, solved count, earned
   time, blocked-app usage) with accounts/cloud/leaderboard deferred. The app compiles and all unit tests pass; the
   statistics migration and attempt recording were verified on the tablet. On top of that, the local settings now
-  include an in-app Light/Dark/System theme and a per-app blocking picker. Details are in `CHECKPOINT.md`.
+  include an in-app Light/Dark/System theme, a per-app blocking picker and the Phase 4 hardening bundle (adaptive
+  polling, battery-optimization guidance, warning-notification and haptics toggles, and the Privacy and ads explainer).
+  Details are in `CHECKPOINT.md`.
 
 ## Licenses
 | Item | License | Use |
