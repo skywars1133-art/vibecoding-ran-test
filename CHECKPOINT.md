@@ -18,7 +18,10 @@ Resume file. Update after every meaningful step and before any likely credit cut
   (SHA-256 `2A5F28568FF90528C512727C2DC2228A843523584B08D62C9F84F9FFC7865A46`). Then a launcher-identity bundle added
   a branded adaptive icon (Cburnett knight on a deep-green gradient, with an Android 13 monochrome variant) and a
   matching Android 12+ system splash plus a pre-12 launch window; release re-signed
-  (SHA-256 `1E80E0D163BB6205306013B4FB77FCA0D39D60A2781088F40173D424F1438B23`).
+  (SHA-256 `1E80E0D163BB6205306013B4FB77FCA0D39D60A2781088F40173D424F1438B23`). Then a shortcut bundle added
+  three static launcher shortcuts (Solve a puzzle, View statistics, Open settings) routed through the pure
+  `ShortcutDestination` enum; release re-signed
+  (SHA-256 `6E02BCB03261364CE9D98A57ECDE0D33B3D893ACBADAE566B372BD333CDEA763`).
 - Before that: Phase 4 protection and settings bundle - adaptive foreground polling (`PollingPolicy`: 2 s while <=5 min
   remain, relaxed 5 s otherwise), battery-optimization exemption guidance in onboarding and Settings (recommended, not
   required for "active"), a persistent 5/1-minute **Time warnings** toggle, a **Haptic feedback** toggle wired to puzzle
@@ -95,6 +98,28 @@ Resume file. Update after every meaningful step and before any likely credit cut
   `1E80E0D163BB6205306013B4FB77FCA0D39D60A2781088F40173D424F1438B23`) and installed over the debug build. Data
   survived (ELO and puzzle stock unchanged; budget showed `35:00` remaining), and the installed package has no
   debuggable flag.
+- Shortcut bundle (2026-11-14): `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease` with
+  JDK 21.0.11 gave **152 domain + 58 app tests (210 total); 0 failures, errors or skips**. New
+  `ShortcutDestinationTest` (4) checks every action maps back to its destination, unknown and `null` actions are
+  ignored, and the actions stay unique.
+  - **Registration:** `cmd shortcut get-shortcuts com.chesslock` lists all three (`puzzle`, `statistics`, `settings`)
+    targeting `com.chesslock/.MainActivity`, ranks 0-2, with the three branded icons. The first attempt printed only
+    `Success` because the `android.app.shortcuts` meta-data had been placed under `<application>`; Android only reads
+    it from the MAIN/LAUNCHER activity. It now sits inside the `MainActivity` element and the static shortcuts load.
+  - **Real long-press** (debug and release) on ChessLock in the app drawer shows ChessLock + **Puzzle / Štatistiky /
+    Nastavenia** above the Select / Add to home / Uninstall row, with three green circular shortcut icons (white glyph
+    on the brand-green `#116B4F` family). Tapping **Puzzle** opened the puzzle screen (ELO 1667, rating 1727), and
+    tapping **Štatistiky** opened Statistics (ELO 1667, 22 rated puzzles in the chart). Direct
+    `am start -a com.chesslock.shortcut.PUZZLE|STATISTICS|SETTINGS` calls route to the matching screen after a
+    force-stop, covering the cold-start `onCreate` path; the warm path is covered by `onNewIntent`.
+  - Shortcut labels follow the **system** locale (Slovak on this tablet) even when the app is set to English, which is
+    expected for static shortcuts; the destinations are language-independent.
+  - The `uiautomator dump` command fails with `ERROR: could not get idle state` while the popup is still animating;
+    `uiautomator dump --compressed` after ~8 s captures the popup reliably.
+- Release APK re-signed with the corrected manifest at `dist/ChessLock-0.1.0-test.apk` (v2/v3 verified, 10 826 904
+  bytes, SHA-256 `6E02BCB03261364CE9D98A57ECDE0D33B3D893ACBADAE566B372BD333CDEA763`), installed over the debug build.
+  Data survived (ELO 1667, puzzle stock and statistics unchanged) and the package has no debuggable flag. An
+  intermediate build with the misplaced meta-data (`7CCE735E...`) was never distributed.
 - The local date rolled over to 2026-11-14 after verification, so the next launch resets `earned_seconds`/`used_seconds`
   for the new day (the midnight reset is by design; ELO and puzzle stock are unaffected).
 - Phase 4 bundle (2026-11-13): ran `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease` with
@@ -363,10 +388,10 @@ Resume file. Update after every meaningful step and before any likely credit cut
   debug with data intact.
 
 ## Next step
-1. **Visual-polish, ring and launcher-identity bundles are complete and device-verified. Wait for user feedback before
-   the next bundle.** The only unverified item is the subjective feel of the haptic ticks (the switch and the settings
-   key were verified; no audio feedback exists yet). The themed-icon rendering path is present but was not toggled on
-   the test tablet.
+1. **Visual-polish, ring, launcher-identity and shortcut bundles are complete and device-verified. Wait for user
+   feedback before the next bundle.** The only unverified item is the subjective feel of the haptic ticks (the switch
+   and the settings key were verified; no audio feedback exists yet). The themed-icon rendering path is present but was
+   not toggled on the test tablet.
 2. Next Phase 4 candidates: a UMP consent SDK integration (needs a new Gradle dependency and real privacy-policy URL),
    production ad unit IDs, Play Data safety/privacy-policy prep, an `Entitlements` groundwork layer, and sounds (needs
    audio assets). Accounts/cloud/leaderboard remain deferred.

@@ -220,4 +220,12 @@
     <string name="privacy_ads_title">Reklamy a súhlas</string>
     <string name="privacy_ads_body">Nápovedy sú jediné reklamy v ChessLock. Sú to odmenené videá od Google AdMob a prehrajú sa len po kliknutí na Nápoveda. AdMob môže spracúvať tvoje reklamné ID a údaje o zariadení podľa vlastných zásad ochrany súkromia. Toto testovacie zostavenie používa testovacie reklamné jednotky Google; produkčné jednotky a formulár súhlasu UMP budú zapnuté pred vydaním.</string>
     <string name="privacy_note">Štatistiky a história používania aplikácií zostávajú v tomto zariadení. Nič sa neodosiela.</string>
+
+    <!-- Launcher shortcuts -->
+    <string name="shortcut_puzzle_short">Puzzle</string>
+    <string name="shortcut_puzzle_long">Vyriešiť puzzle</string>
+    <string name="shortcut_stats_short">Štatistiky</string>
+    <string name="shortcut_stats_long">Zobraziť štatistiky</string>
+    <string name="shortcut_settings_short">Nastavenia</string>
+    <string name="shortcut_settings_long">Otvoriť nastavenia</string>
 </resources>

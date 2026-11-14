@@ -1,5 +1,6 @@
 package com.chesslock
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,6 +11,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,8 +47,12 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var blockingController: BlockingServiceController
     @Inject lateinit var packScheduler: PuzzlePackScheduler
 
+    /** Set by a launcher shortcut and consumed once the main navigation is ready. */
+    private var pendingShortcut by mutableStateOf<ShortcutDestination?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        pendingShortcut = ShortcutDestination.fromAction(intent?.action)
         lifecycleScope.launch {
             val settings = settingsStore.settings.first()
             if (settings.blockingEnabled) blockingController.start()
@@ -79,12 +85,29 @@ class MainActivity : ComponentActivity() {
                             )
 
                             else -> {
-                                var showSettings by rememberSaveable { mutableStateOf(false) }
-                                var showStatistics by rememberSaveable { mutableStateOf(false) }
+                                var showSettings by rememberSaveable {
+                                    mutableStateOf(pendingShortcut == ShortcutDestination.SETTINGS)
+                                }
+                                var showStatistics by rememberSaveable {
+                                    mutableStateOf(pendingShortcut == ShortcutDestination.STATISTICS)
+                                }
                                 var showPermissions by rememberSaveable { mutableStateOf(false) }
                                 var showBlockedApps by rememberSaveable { mutableStateOf(false) }
-                                var showPuzzle by rememberSaveable { mutableStateOf(false) }
+                                var showPuzzle by rememberSaveable {
+                                    mutableStateOf(pendingShortcut == ShortcutDestination.PUZZLE)
+                                }
                                 var showPrivacy by rememberSaveable { mutableStateOf(false) }
+                                LaunchedEffect(pendingShortcut) {
+                                    val target = pendingShortcut ?: return@LaunchedEffect
+                                    // A shortcut always lands on its own top-level screen.
+                                    showSettings = target == ShortcutDestination.SETTINGS
+                                    showStatistics = target == ShortcutDestination.STATISTICS
+                                    showPuzzle = target == ShortcutDestination.PUZZLE
+                                    showPermissions = false
+                                    showBlockedApps = false
+                                    showPrivacy = false
+                                    pendingShortcut = null
+                                }
                                 when {
                                     showStatistics -> StatisticsScreen(
                                         onBack = { showStatistics = false },
@@ -128,6 +151,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        pendingShortcut = ShortcutDestination.fromAction(intent.action)
     }
 }
 

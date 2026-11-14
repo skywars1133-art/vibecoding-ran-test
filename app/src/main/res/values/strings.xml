@@ -219,4 +219,12 @@
     <string name="privacy_ads_title">Ads and consent</string>
     <string name="privacy_ads_body">Hints are the only ads in ChessLock. They are rewarded videos from Google AdMob and play only after you tap Hint. AdMob may process your advertising ID and device data under its own privacy policy. This test build uses Google test ad units; production ad units and the UMP consent form will be enabled before release.</string>
     <string name="privacy_note">Statistics and app-usage history stay on this device. Nothing is uploaded.</string>
+
+    <!-- Launcher shortcuts -->
+    <string name="shortcut_puzzle_short">Puzzle</string>
+    <string name="shortcut_puzzle_long">Solve a puzzle</string>
+    <string name="shortcut_stats_short">Stats</string>
+    <string name="shortcut_stats_long">View statistics</string>
+    <string name="shortcut_settings_short">Settings</string>
+    <string name="shortcut_settings_long">Open settings</string>
 </resources>
