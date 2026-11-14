@@ -12,7 +12,10 @@ Resume file. Update after every meaningful step and before any likely credit cut
   critical / empty), a richer puzzle header (info chips, hearts for the lives, framed board, animated solved card), a
   gradient ELO chart and a redesigned block screen. The overlay now also honours the saved theme and in-app language.
   206 tests pass; debug and signed release APKs rebuilt, and the release was installed over the debug build with all
-  app data intact.
+  app data intact. Follow-up (same day): the Home ring was reported as "not working" on the tablet; it rendered
+  correctly at partial budgets, so the 100%-full state was the problem. `BudgetRing` now sweeps from 0 to the target on
+  every change and draws twelve gauge ticks over the stroke, so a full ring still reads as a dial. Release rebuilt
+  (SHA-256 `2A5F28568FF90528C512727C2DC2228A843523584B08D62C9F84F9FFC7865A46`).
 - Before that: Phase 4 protection and settings bundle - adaptive foreground polling (`PollingPolicy`: 2 s while <=5 min
   remain, relaxed 5 s otherwise), battery-optimization exemption guidance in onboarding and Settings (recommended, not
   required for "active"), a persistent 5/1-minute **Time warnings** toggle, a **Haptic feedback** toggle wired to puzzle
@@ -60,6 +63,19 @@ Resume file. Update after every meaningful step and before any likely credit cut
     `#116B4F`; dark theme `#0F1512` background, badge `#93000A`/`#FFDAD6`, primary `#8AD6B7`.
   - The overlay previously always used the system locale and theme. It now renders in the in-app language and saved
     theme, verified in English while the device locale is Slovak, and in both Light and Dark.
+- Ring legibility follow-up (2026-11-14): `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease`
+  with JDK 21.0.11 kept all **206 tests green**. `BudgetRing` now uses `Animatable(0f)` + `LaunchedEffect` to sweep
+  0 -> target over 900 ms with `FastOutSlowInEasing`, and draws 12 radial gauge ticks (`contentColor` at 22% alpha,
+  2 dp, rounded caps) over the stroke band. Pixel checks on `R9TX902F92W`:
+  - 25% budget: arc covers 0-90 degrees in `#116B4F`, remaining track `#82C7AA`. Ticks darken the arc to `#0D5B43` at
+    30/90 degrees and the track to `#75B49A`/`#69A58D` at 180/270 degrees.
+  - 100% budget: the whole ring is `#116B4F` with the same tick marks (`#0D5B43` at 0/30/90/270 degrees), so the full
+    state no longer looks like a plain static circle.
+  - Confirmed identical output on the signed release build, then restored the budget to `30:00` remaining (`100%`) and
+    reinstalled the release over debug with ELO and stock intact.
+- Release APK re-signed at `dist/ChessLock-0.1.0-test.apk` (v2/v3 verified, 10 818 040 bytes, SHA-256
+  `2A5F28568FF90528C512727C2DC2228A843523584B08D62C9F84F9FFC7865A46`) and installed over the debug build; the
+  installed package is the release variant (no debuggable flag).
 - The local date rolled over to 2026-11-14 after verification, so the next launch resets `earned_seconds`/`used_seconds`
   for the new day (the midnight reset is by design; ELO and puzzle stock are unaffected).
 - Phase 4 bundle (2026-11-13): ran `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease` with
@@ -313,9 +329,15 @@ Resume file. Update after every meaningful step and before any likely credit cut
   debug and release APKs rebuilt; all device checks listed under Verification passed. The service logs one line when
   the poll interval changes, which made the adaptive cadence verifiable on the tablet (5 s at `30:00`, 2 s with an
   empty budget, block screen within ~4 s).
+- 2026-11-14: ring legibility follow-up after the user reported the Home budget ring "doesn't work" on the tablet.
+  Reproduced a 25% budget on debug and signed release builds: the arc was correct in both, so the complaint was the
+  full-budget state reading as a static circle. `BudgetRing` now starts at 0 and sweeps to the target with `Animatable`
+  (900 ms, `FastOutSlowInEasing`) and overlays 12 subtle gauge ticks, keeping a complete ring legible. Rebuilt and
+  re-signed the release (`2A5F2856...`), reinstalled over debug with data intact, and left the device at the normal
+  `30:00` / 100% budget. 206 tests pass.
 
 ## Next step
-1. **Phase 4 protection/settings bundle is complete, device-verified and committed. Wait for user feedback before the
+1. **Visual-polish bundle and the ring follow-up are complete and device-verified. Wait for user feedback before the
    next bundle.** The only unverified item is the subjective feel of the haptic ticks (the switch and the settings key
    were verified; no audio feedback exists yet).
 2. Next Phase 4 candidates: a UMP consent SDK integration (needs a new Gradle dependency and real privacy-policy URL),

@@ -210,7 +210,9 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
 - **One budget story across screens.** Pure `BudgetUrgency` (domain) classifies the remaining time against the same
   `warnAtSeconds` thresholds as the notifications: comfortable, warning (5 minutes), critical (1 minute) or empty. Home
   maps that to an animated ring, an urgency chip and an amber/red gradient; the ring, chip and percentages come from
-  the same state, so the visual warning always matches the notification. Puzzle feedback is a compact row of info chips
+  the same state, so the visual warning always matches the notification. The ring sweeps in from zero on each update
+  and carries twelve gauge ticks over the stroke, so even a full 100% budget reads as a gauge instead of a plain
+  circle. Puzzle feedback is a compact row of info chips
   (ELO, rating, side, live reward), hearts for the remaining lives, a framed board and an animated "puzzle solved" card;
   the ELO chart gets a soft gradient area fill.
 - **Individual app overrides.** Settings -> **Choose individual apps** lists launchable apps (critical system packages
