@@ -50,6 +50,8 @@ data class PuzzleUiState(
     val legalMoves: List<String> = emptyList(),
     val lastMove: String? = null,
     val livesLeft: Int = 0,
+    /** Lives a fresh puzzle starts with, so the UI can draw lost lives. */
+    val maxLives: Int = 0,
     val rewardSeconds: Long = 0,
     val elapsedSeconds: Long = 0,
     val freeSkipsUsedToday: Int = 0,
@@ -116,6 +118,7 @@ class PuzzleViewModel @Inject constructor(
                     legalMoves = nextPosition.legalMoves,
                     lastMove = openingMove,
                     livesLeft = nextSession.livesLeft,
+                    maxLives = config.livesPerPuzzle,
                     rewardSeconds = nextSession.currentRewardSeconds(),
                     freeSkipsUsedToday = player.freeSkipsUsedToday,
                     canSkip = SkipPolicy.availableSkip(player.freeSkipsUsedToday, 0, config) != null,

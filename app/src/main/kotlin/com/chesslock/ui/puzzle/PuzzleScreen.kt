@@ -4,6 +4,11 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,14 +18,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -35,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -185,33 +199,57 @@ fun PuzzleScreen(
                     onFixProtection = onFixProtection,
                 )
                 Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(stringResource(R.string.player_elo, state.playerElo))
-                    Text(stringResource(R.string.puzzle_rating, state.puzzleRating))
+                    InfoChip(
+                        text = stringResource(R.string.player_elo, state.playerElo),
+                        modifier = Modifier.weight(1f),
+                    )
+                    InfoChip(
+                        text = stringResource(R.string.puzzle_rating, state.puzzleRating),
+                        modifier = Modifier.weight(1f),
+                    )
                 }
-                Text(
-                    text = stringResource(
-                        if (state.playerIsWhite) R.string.side_white else R.string.side_black,
-                    ),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(stringResource(R.string.solving_time, formatClock(state.elapsedSeconds)))
-                ChessBoard(
-                    pieces = state.pieces,
-                    legalMoves = state.legalMoves,
-                    lastMove = state.lastMove,
-                    playerIsWhite = state.playerIsWhite,
-                    solved = state.solved,
-                    onMove = viewModel::onMove,
-                    pieceStyle = settings.pieceStyle,
-                    hintSourceSquare = state.hintSourceSquare,
-                    hintTargetSquare = state.hintTargetSquare,
-                    resetKey = state.puzzleId,
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth(),
-                )
+                ) {
+                    InfoChip(
+                        text = stringResource(
+                            if (state.playerIsWhite) R.string.side_white else R.string.side_black,
+                        ),
+                        container = MaterialTheme.colorScheme.secondaryContainer,
+                        content = MaterialTheme.colorScheme.onSecondaryContainer,
+                    )
+                    Text(
+                        text = stringResource(R.string.solving_time, formatClock(state.elapsedSeconds)),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Surface(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    ChessBoard(
+                        pieces = state.pieces,
+                        legalMoves = state.legalMoves,
+                        lastMove = state.lastMove,
+                        playerIsWhite = state.playerIsWhite,
+                        solved = state.solved,
+                        onMove = viewModel::onMove,
+                        pieceStyle = settings.pieceStyle,
+                        hintSourceSquare = state.hintSourceSquare,
+                        hintTargetSquare = state.hintTargetSquare,
+                        resetKey = state.puzzleId,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(6.dp),
+                    )
+                }
                 if (state.hintLevel > 0 && !state.solved) {
                     Text(
                         text = stringResource(
@@ -227,10 +265,28 @@ fun PuzzleScreen(
                 }
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(stringResource(R.string.lives, state.livesLeft))
-                    Text(stringResource(R.string.reward_time, formatClock(state.rewardSeconds)))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        LivesIndicator(
+                            livesLeft = state.livesLeft,
+                            maxLives = state.maxLives,
+                        )
+                        Text(
+                            text = stringResource(R.string.lives, state.livesLeft),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    InfoChip(
+                        text = stringResource(R.string.reward_time, formatClock(state.rewardSeconds)),
+                        container = MaterialTheme.colorScheme.primaryContainer,
+                        content = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
                 }
                 state.eloDelta?.let { delta ->
                     Text(
@@ -239,35 +295,47 @@ fun PuzzleScreen(
                     )
                 }
                 MoveStatusText(state.moveStatus)
-                if (state.solved) {
-                    Button(onClick = viewModel::loadPuzzle) {
-                        Text(stringResource(R.string.next_puzzle))
-                    }
-                } else {
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Button(
-                            enabled = hintEnabled,
-                            onClick = { showHintDialog = true },
-                        ) {
-                            Text(stringResource(R.string.hint_button))
+                AnimatedVisibility(
+                    visible = state.solved,
+                    enter = fadeIn(tween(220)) + scaleIn(initialScale = 0.92f, animationSpec = tween(220)),
+                    exit = fadeOut(tween(120)),
+                ) {
+                    SolvedCard(
+                        solvingTime = formatClock(state.elapsedSeconds),
+                        onNext = viewModel::loadPuzzle,
+                    )
+                }
+                AnimatedVisibility(
+                    visible = !state.solved,
+                    enter = fadeIn(tween(220)),
+                    exit = fadeOut(tween(120)),
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Button(
+                                enabled = hintEnabled,
+                                onClick = { showHintDialog = true },
+                            ) {
+                                Text(stringResource(R.string.hint_button))
+                            }
+                            Button(
+                                enabled = state.canSkip,
+                                onClick = viewModel::skipPuzzle,
+                            ) {
+                                Text(stringResource(R.string.skip_puzzle))
+                            }
                         }
-                        Button(
-                            enabled = state.canSkip,
-                            onClick = viewModel::skipPuzzle,
-                        ) {
-                            Text(stringResource(R.string.skip_puzzle))
+                        hintNote?.let { note ->
+                            Text(
+                                text = stringResource(note),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
-                    }
-                    hintNote?.let { note ->
-                        Text(
-                            text = stringResource(note),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    if (online && hintAvailable && adState is RewardedAdState.Unavailable) {
-                        TextButton(onClick = adManager::preload) {
-                            Text(stringResource(R.string.hint_retry_ad))
+                        if (online && hintAvailable && adState is RewardedAdState.Unavailable) {
+                            TextButton(onClick = adManager::preload) {
+                                Text(stringResource(R.string.hint_retry_ad))
+                            }
                         }
                     }
                 }
@@ -310,6 +378,89 @@ private fun Context.findActivity(): Activity? {
         current = current.baseContext
     }
     return current as? Activity
+}
+
+/** Compact label pill for ELO, rating, side to move and the live time reward. */
+@Composable
+private fun InfoChip(
+    text: String,
+    modifier: Modifier = Modifier,
+    container: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    content: Color = MaterialTheme.colorScheme.onSurface,
+) {
+    Surface(
+        shape = CircleShape,
+        color = container,
+        contentColor = content,
+        modifier = modifier,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+        )
+    }
+}
+
+/** Filled hearts for the lives still available, outlined hearts for the ones already lost. */
+@Composable
+private fun LivesIndicator(livesLeft: Int, maxLives: Int) {
+    val total = maxLives.coerceAtLeast(livesLeft).coerceAtLeast(1)
+    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+        repeat(total) { index ->
+            val alive = index < livesLeft
+            Icon(
+                imageVector = if (alive) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                contentDescription = null,
+                tint = if (alive) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.outlineVariant
+                },
+                modifier = Modifier.size(20.dp),
+            )
+        }
+    }
+}
+
+/** Celebratory card shown after the last correct move instead of the hint/skip actions. */
+@Composable
+private fun SolvedCard(solvingTime: String, onNext: () -> Unit) {
+    Surface(
+        shape = MaterialTheme.shapes.extraLarge,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(20.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                )
+                Text(
+                    text = stringResource(R.string.puzzle_solved),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            Text(
+                text = stringResource(R.string.solving_time, solvingTime),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Button(onClick = onNext, shape = MaterialTheme.shapes.large) {
+                Text(stringResource(R.string.next_puzzle))
+            }
+        }
+    }
 }
 
 @Composable

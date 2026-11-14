@@ -32,7 +32,7 @@ class HomeViewModel @Inject constructor(
         budgetStore.state,
         blockingController.running,
     ) { player, settings, budget, running ->
-        buildHomeUiState(player, settings, budget, running)
+        buildHomeUiState(player, settings, budget, running, config.warnAtSeconds)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -47,6 +47,7 @@ class HomeViewModel @Inject constructor(
             settings = AppSettings.defaults(config),
             budget = BudgetState(date = LocalDate.now()),
             protectionRunning = false,
+            warnAtSeconds = config.warnAtSeconds,
         ),
     )
 }

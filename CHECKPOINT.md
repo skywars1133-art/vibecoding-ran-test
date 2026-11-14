@@ -3,15 +3,20 @@
 Resume file. Update after every meaningful step and before any likely credit cutoff. A new session reads this first, then CLAUDE.md, SPEC.md, PHASES.md and the README "Decisions".
 
 ## Status
-- Date: 2026-11-13
-- Current phase: Phase 4 (hardening and release prep) — first local-only bundle implemented and device-verified;
-  awaiting user feedback
+- Date: 2026-11-14
+- Current phase: Phase 4 (hardening and release prep) - visual-polish bundle implemented and device-verified; awaiting
+  user feedback
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: Phase 4 protection and settings bundle — adaptive foreground polling (`PollingPolicy`: 2 s while
-  ≤5 min remain, relaxed 5 s otherwise), battery-optimization exemption guidance in onboarding and Settings (recommended,
-  not required for "active"), a persistent 5/1-minute **Time warnings** toggle, a **Haptic feedback** toggle wired to
-  puzzle moves, and a **Privacy and ads** explainer screen. 198 tests pass; debug and signed release APKs rebuilt, and
-  the release was installed over the debug build with all app data intact.
+- Last completed: visual-polish bundle - fixed ChessLock brand palette (no Material You dynamic colours), typography
+  and shapes, an animated Home budget ring with an urgency chip driven by pure `BudgetUrgency` (comfortable / warning /
+  critical / empty), a richer puzzle header (info chips, hearts for the lives, framed board, animated solved card), a
+  gradient ELO chart and a redesigned block screen. The overlay now also honours the saved theme and in-app language.
+  206 tests pass; debug and signed release APKs rebuilt, and the release was installed over the debug build with all
+  app data intact.
+- Before that: Phase 4 protection and settings bundle - adaptive foreground polling (`PollingPolicy`: 2 s while <=5 min
+  remain, relaxed 5 s otherwise), battery-optimization exemption guidance in onboarding and Settings (recommended, not
+  required for "active"), a persistent 5/1-minute **Time warnings** toggle, a **Haptic feedback** toggle wired to puzzle
+  moves, and a **Privacy and ads** explainer screen. 198 tests pass.
 - Before that: Home screen as the app root — big remaining-time card (limit/earned/used breakdown, progress bar),
   ELO and earned-today metrics, protection banner, and **Solve a puzzle** / **Stats** / **Settings** actions. The
   pre-existing blocked-app overcount was also fixed: the service compared `SystemClock.elapsedRealtime()` **milliseconds**
@@ -28,6 +33,35 @@ Resume file. Update after every meaningful step and before any likely credit cut
   (MVP, language selection, Cburnett default, four licensed SVG piece sets).
 
 ## Verification
+- Visual-polish bundle (2026-11-14): ran `:domain:test :app:testDebugUnitTest :app:assembleDebug` and
+  `:app:assembleRelease` with JDK 21.0.11. **152 domain tests + 54 app tests passed (206 total); 0 failures, errors or
+  skips.** `BudgetUrgencyTest` (7) covers the warning/critical boundaries, empty and negative budgets, unsorted and
+  missing threshold lists, and non-positive thresholds; `HomeStateTest` gained an urgency case fed by `config.warnAtSeconds`.
+- Release APK rebuilt and signed at `dist/ChessLock-0.1.0-test.apk` (v2/v3 verified, SHA-256
+  `2CC533CBE0F84AE0DFBA6F57607E4718EBCEC4CDEDFF305BA46DA4D0E52DC10D`, 10 818 040 bytes) and installed over the debug
+  build. Data survived: ELO **1612**, budget `35:00` remaining (`30:00` limit + `5:00` earned) and `1453` unsolved
+  puzzles at the time. Reopening the app after midnight rolled the day's budget over as designed; continued play had
+  raised ELO to 1660 by the final install. The installed package is the release variant (`run-as` reports "package not debuggable").
+- Visual checks on `R9TX902F92W` (2026-11-14):
+  - **Home hero ring** renders at 148 dp with the countdown centred. Light theme: mint card gradient (sampled
+    `#A2EECE` under the ring, fading to `#97E3C3`), ring `#116B4F`, countdown `#002117`. Dark
+    theme: `#00513B` base, mid-gradient `#115D46`, ring/text `#8AD6B7` / `#A6F2D2`. Metric tiles use
+    `surfaceContainerLow` with tinted icon badges.
+  - **Urgency states** were forced by temporarily rewriting `budget.preferences_pb` (valid DataStore proto; backup
+    restored immediately, and an empty budget writes no stats rows): `30:00` remaining showed **Plenty of time** (green),
+    `4:00` showed **Running low** with an amber gradient (observed `#724205 -> #865313`) and `#FFB95C` accent, `0:30`
+    showed **Almost out** in the error palette (`#980D13 -> #AB3730`, `#FFB4AB` accent), and `0:00` showed **No time
+    left** with an empty ring and the error palette.
+  - **Puzzle screen** shows the ELO and rating chips, the side chip, the solving timer, `Lives: 3` next to three filled
+    hearts and the live `Time reward` chip; the board sits in a rounded frame and Hint/Skip are visible while unsolved.
+  - **Statistics** ELO chart draws the gradient area fill under the line (dark theme: `#273A32` just below the line
+    fading to the card background `#18231E`).
+  - **Block screen** in English: light theme `#F5FBF7` background, error badge `#FFDAD6`/`#410002`, primary button
+    `#116B4F`; dark theme `#0F1512` background, badge `#93000A`/`#FFDAD6`, primary `#8AD6B7`.
+  - The overlay previously always used the system locale and theme. It now renders in the in-app language and saved
+    theme, verified in English while the device locale is Slovak, and in both Light and Dark.
+- The local date rolled over to 2026-11-14 after verification, so the next launch resets `earned_seconds`/`used_seconds`
+  for the new day (the midnight reset is by design; ELO and puzzle stock are unaffected).
 - Phase 4 bundle (2026-11-13): ran `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease` with
   JDK 21.0.11. **145 domain tests + 53 app tests passed (198 total); 0 failures, errors or skips.** The new
   `PollingPolicyTest` (5) covers the relaxed interval above the threshold, the switch at the threshold, empty/negative

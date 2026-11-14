@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.content.res.Configuration
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
@@ -13,6 +14,7 @@ import androidx.core.app.ServiceCompat
 import com.chesslock.data.AppSettings
 import com.chesslock.data.BudgetStore
 import com.chesslock.data.SettingsStore
+import com.chesslock.data.ThemeMode
 import com.chesslock.domain.blocking.BlockPolicy
 import com.chesslock.domain.blocking.BlockRules
 import com.chesslock.domain.blocking.PollingPolicy
@@ -214,7 +216,7 @@ class BlockingService : Service() {
         }
 
         if (blocked && remaining == 0L) {
-            overlay.show()
+            overlay.show(darkTheme = overlayDarkTheme(settings), language = settings.language)
         } else {
             overlay.hide()
         }
@@ -235,6 +237,18 @@ class BlockingService : Service() {
             limitSeconds = settings.dailyLimitSeconds,
             capSeconds = settings.dailyCapSeconds,
         )
+
+    /** Mirrors MainActivity's theme choice, but the service has no Activity to ask. */
+    private fun overlayDarkTheme(settings: AppSettings): Boolean = when (settings.themeMode) {
+        ThemeMode.SYSTEM -> {
+            val nightMode = resources.configuration.uiMode and
+                Configuration.UI_MODE_NIGHT_MASK
+            nightMode == Configuration.UI_MODE_NIGHT_YES
+        }
+
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
 
     private suspend fun flushUsage() {
         val seconds = meter.takeUnflushed()

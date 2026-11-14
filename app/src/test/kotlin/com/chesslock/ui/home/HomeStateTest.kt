@@ -3,6 +3,7 @@ package com.chesslock.ui.home
 import com.chesslock.data.AppSettings
 import com.chesslock.data.PlayerState
 import com.chesslock.domain.budget.BudgetState
+import com.chesslock.domain.budget.BudgetUrgency
 import com.chesslock.domain.config.AppConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -84,6 +85,22 @@ class HomeStateTest {
         assertEquals(0L, state.totalSeconds)
         assertEquals(0L, state.remainingSeconds)
         assertEquals(0f, state.remainingFraction)
+    }
+
+    @Test
+    fun `urgency follows the warning thresholds`() {
+        fun stateFor(usedSeconds: Long) = buildHomeUiState(
+            player = player,
+            settings = settings,
+            budget = BudgetState(date = today, usedSeconds = usedSeconds),
+            protectionRunning = true,
+            warnAtSeconds = listOf(300L, 60L),
+        )
+
+        assertEquals(BudgetUrgency.COMFORTABLE, stateFor(usedSeconds = 0L).urgency)
+        assertEquals(BudgetUrgency.WARNING, stateFor(usedSeconds = 1_600L).urgency)
+        assertEquals(BudgetUrgency.CRITICAL, stateFor(usedSeconds = 1_760L).urgency)
+        assertEquals(BudgetUrgency.EMPTY, stateFor(usedSeconds = 1_800L).urgency)
     }
 
     @Test

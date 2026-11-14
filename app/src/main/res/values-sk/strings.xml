@@ -9,6 +9,11 @@
     <string name="home_elo_label">ELO</string>
     <string name="home_solve">Vyriešiť úlohu</string>
     <string name="home_no_time">Nezostal žiadny čas. Vyrieš úlohu a získaj viac.</string>
+    <string name="home_urgency_comfortable">Dosť času</string>
+    <string name="home_urgency_warning">Málo času</string>
+    <string name="home_urgency_critical">Takmer vyčerpané</string>
+    <string name="home_urgency_empty">Žiadny čas</string>
+    <string name="home_remaining_share">Zostáva %1$d %% dnešného rozpočtu</string>
     <string name="home_local_note">Tvoj rozpočet, štatistiky a používanie aplikácií zostávajú v tomto zariadení.</string>
     <string name="puzzle_title">Šachová úloha</string>
     <string name="puzzle_rating">Hodnotenie úlohy: %1$d</string>

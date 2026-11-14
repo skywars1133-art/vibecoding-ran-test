@@ -9,6 +9,11 @@
     <string name="home_elo_label">ELO</string>
     <string name="home_solve">Solve a puzzle</string>
     <string name="home_no_time">No time left. Solve a puzzle to earn more.</string>
+    <string name="home_urgency_comfortable">Plenty of time</string>
+    <string name="home_urgency_warning">Running low</string>
+    <string name="home_urgency_critical">Almost out</string>
+    <string name="home_urgency_empty">No time left</string>
+    <string name="home_remaining_share">%1$d%% of today\'s budget left</string>
     <string name="home_local_note">Your budget, statistics and app usage stay on this device.</string>
     <string name="puzzle_title">Chess puzzle</string>
     <string name="puzzle_rating">Puzzle rating: %1$d</string>

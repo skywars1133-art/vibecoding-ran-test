@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -269,6 +270,8 @@ private fun EloChart(points: List<EloPoint>, modifier: Modifier = Modifier) {
     val lineColor = MaterialTheme.colorScheme.primary
     val gridColor = MaterialTheme.colorScheme.outlineVariant
     val dotColor = MaterialTheme.colorScheme.primary
+    val fillTop = lineColor.copy(alpha = 0.22f)
+    val fillBottom = lineColor.copy(alpha = 0f)
     Canvas(modifier) {
         if (points.isEmpty()) return@Canvas
         val inset = 10.dp.toPx()
@@ -296,15 +299,30 @@ private fun EloChart(points: List<EloPoint>, modifier: Modifier = Modifier) {
         fun y(value: Int): Float =
             inset + usableHeight * (1f - (value - min).toFloat() / range)
 
-        val path = Path().apply {
+        val line = Path().apply {
             points.forEachIndexed { index, point ->
                 val px = x(index)
                 val py = y(point.elo)
                 if (index == 0) moveTo(px, py) else lineTo(px, py)
             }
         }
+        // Soft area under the line keeps the card from looking empty without hiding the grid.
+        val area = Path().apply {
+            addPath(line)
+            lineTo(x(points.lastIndex), size.height - inset)
+            lineTo(x(0), size.height - inset)
+            close()
+        }
         drawPath(
-            path = path,
+            path = area,
+            brush = Brush.verticalGradient(
+                colors = listOf(fillTop, fillBottom),
+                startY = inset,
+                endY = size.height - inset,
+            ),
+        )
+        drawPath(
+            path = line,
             color = lineColor,
             style = Stroke(
                 width = 2.dp.toPx(),

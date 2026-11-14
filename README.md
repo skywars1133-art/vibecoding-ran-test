@@ -51,7 +51,8 @@ scripts/test-domain.sh
 7. Under **Feedback**, turn haptic move feedback on or off; under **Privacy and ads**, read what stays on the device and
    how the rewarded hint ads work. **Time warnings** toggles the 5-minute and 1-minute notifications.
 8. Solve a puzzle to earn time, then open a blocked app after the budget runs out to see the block screen. The Home
-   countdown updates live while the blocking service charges blocked-app time.
+   ring, remaining share and urgency chip follow the same thresholds as the notifications (green, amber at 5 minutes,
+   red at 1 minute) and update live while the blocking service charges blocked-app time.
 9. Tap **Stats** on Home (or in the puzzle top bar) for local-only statistics: ELO over time, overall and per-theme
    success rate, day streak, puzzles solved, time earned, and blocked-app time today/this week. Nothing is uploaded.
 10. Hints use AdMob's official **test** ad IDs in this phase, so no real ad is shown or billed. Hints need a network and
@@ -200,8 +201,18 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   switches immediately without restarting the activity. Notification and foreground-service text still follows the
   system locale because they are built outside the composition.
 - **Theme is in-app.** Settings offers System default, Light and Dark, stored in the `settings` DataStore. The root
-  `ChessLockTheme` receives the resolved dark/light flag, so switching is immediate and survives restarts. Android 12+
-  keeps Material You dynamic colors for both modes; older devices use the built-in Material 3 schemes.
+  `ChessLockTheme` receives the resolved dark/light flag, so switching is immediate and survives restarts. Both modes
+  use a fixed ChessLock brand palette - deep board green, warm amber for time that is running low and clay red for a
+  lost life or an empty budget - instead of Material You dynamic colours, so the app keeps one identity on every
+  device. Typography is the system font (no bundled font file) with heavier display weights for the countdown, and all
+  cards and buttons share rounded 16-28 dp shapes. The overlay block screen resolves the same saved theme and in-app
+  language, because the service has no Activity to inherit them from.
+- **One budget story across screens.** Pure `BudgetUrgency` (domain) classifies the remaining time against the same
+  `warnAtSeconds` thresholds as the notifications: comfortable, warning (5 minutes), critical (1 minute) or empty. Home
+  maps that to an animated ring, an urgency chip and an amber/red gradient; the ring, chip and percentages come from
+  the same state, so the visual warning always matches the notification. Puzzle feedback is a compact row of info chips
+  (ELO, rating, side, live reward), hearts for the remaining lives, a framed board and an animated "puzzle solved" card;
+  the ELO chart gets a soft gradient area fill.
 - **Individual app overrides.** Settings -> **Choose individual apps** lists launchable apps (critical system packages
   are excluded), supports case-insensitive search over labels and package names, and sets one of three states:
   Use categories, Always block or Never block. The two package sets already consumed by `BlockPolicy` are persisted in

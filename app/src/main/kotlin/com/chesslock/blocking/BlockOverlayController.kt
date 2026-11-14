@@ -20,7 +20,9 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.chesslock.MainActivity
+import com.chesslock.data.AppLanguage
 import com.chesslock.ui.blocking.BlockScreen
+import com.chesslock.ui.common.ProvideAppLanguage
 import com.chesslock.ui.theme.ChessLockTheme
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -39,7 +41,7 @@ class BlockOverlayController @Inject constructor(
 
     fun canShow(): Boolean = BlockingPermissions.canDrawOverlays(context)
 
-    fun show() {
+    fun show(darkTheme: Boolean, language: AppLanguage) {
         if (showing) return
         showing = true
         mainHandler.post {
@@ -55,17 +57,21 @@ class BlockOverlayController @Inject constructor(
                 setViewTreeViewModelStoreOwner(lifecycleOwner)
                 setViewTreeSavedStateRegistryOwner(lifecycleOwner)
                 setContent {
-                    ChessLockTheme {
-                        BlockScreen(
-                            onSolvePuzzle = {
-                                openApp()
-                                hide()
-                            },
-                            onGoHome = {
-                                goHome()
-                                hide()
-                            },
-                        )
+                    ChessLockTheme(darkTheme = darkTheme) {
+                        // The service has no Activity, so the in-app language choice has to be
+                        // applied here too; otherwise the overlay would use the device locale.
+                        ProvideAppLanguage(language) {
+                            BlockScreen(
+                                onSolvePuzzle = {
+                                    openApp()
+                                    hide()
+                                },
+                                onGoHome = {
+                                    goHome()
+                                    hide()
+                                },
+                            )
+                        }
                     }
                 }
             }

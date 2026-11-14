@@ -3,6 +3,7 @@ package com.chesslock.ui.home
 import com.chesslock.data.AppSettings
 import com.chesslock.data.PlayerState
 import com.chesslock.domain.budget.BudgetState
+import com.chesslock.domain.budget.BudgetUrgency
 import com.chesslock.domain.budget.TimeBudget
 
 /** Everything the home screen shows, derived from the persisted stores. */
@@ -15,6 +16,7 @@ data class HomeUiState(
     val usedSeconds: Long,
     val blockingEnabled: Boolean,
     val protectionRunning: Boolean,
+    val urgency: BudgetUrgency = BudgetUrgency.EMPTY,
 ) {
     val hasTimeLeft: Boolean get() = remainingSeconds > 0L
 
@@ -33,17 +35,20 @@ fun buildHomeUiState(
     settings: AppSettings,
     budget: BudgetState,
     protectionRunning: Boolean,
+    warnAtSeconds: List<Long> = emptyList(),
 ): HomeUiState {
     val limit = settings.dailyLimitSeconds
     val cap = settings.dailyCapSeconds
+    val remaining = TimeBudget.remainingSeconds(budget, limit, cap)
     return HomeUiState(
         elo = player.elo,
-        remainingSeconds = TimeBudget.remainingSeconds(budget, limit, cap),
+        remainingSeconds = remaining,
         totalSeconds = TimeBudget.totalSeconds(budget, limit, cap),
         limitSeconds = limit,
         earnedSeconds = budget.earnedSeconds,
         usedSeconds = budget.usedSeconds,
         blockingEnabled = settings.blockingEnabled,
         protectionRunning = protectionRunning,
+        urgency = BudgetUrgency.forRemaining(remaining, warnAtSeconds),
     )
 }
