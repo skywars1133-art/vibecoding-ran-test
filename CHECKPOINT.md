@@ -15,7 +15,10 @@ Resume file. Update after every meaningful step and before any likely credit cut
   app data intact. Follow-up (same day): the Home ring was reported as "not working" on the tablet; it rendered
   correctly at partial budgets, so the 100%-full state was the problem. `BudgetRing` now sweeps from 0 to the target on
   every change and draws twelve gauge ticks over the stroke, so a full ring still reads as a dial. Release rebuilt
-  (SHA-256 `2A5F28568FF90528C512727C2DC2228A843523584B08D62C9F84F9FFC7865A46`).
+  (SHA-256 `2A5F28568FF90528C512727C2DC2228A843523584B08D62C9F84F9FFC7865A46`). Then a launcher-identity bundle added
+  a branded adaptive icon (Cburnett knight on a deep-green gradient, with an Android 13 monochrome variant) and a
+  matching Android 12+ system splash plus a pre-12 launch window; release re-signed
+  (SHA-256 `1E80E0D163BB6205306013B4FB77FCA0D39D60A2781088F40173D424F1438B23`).
 - Before that: Phase 4 protection and settings bundle - adaptive foreground polling (`PollingPolicy`: 2 s while <=5 min
   remain, relaxed 5 s otherwise), battery-optimization exemption guidance in onboarding and Settings (recommended, not
   required for "active"), a persistent 5/1-minute **Time warnings** toggle, a **Haptic feedback** toggle wired to puzzle
@@ -76,6 +79,22 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - Release APK re-signed at `dist/ChessLock-0.1.0-test.apk` (v2/v3 verified, 10 818 040 bytes, SHA-256
   `2A5F28568FF90528C512727C2DC2228A843523584B08D62C9F84F9FFC7865A46`) and installed over the debug build; the
   installed package is the release variant (no debuggable flag).
+- Launcher-identity bundle (2026-11-14): `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease`
+  with JDK 21.0.11 kept **206 tests green** (resource-only changes, no new logic). Added
+  `drawable/ic_launcher_background|foreground`, `mipmap-anydpi-v26|v33/ic_launcher(_round)`, `values/colors.xml`,
+  `drawable/splash_legacy.xml`, a `values-v31/themes.xml` splash theme and `android:icon`/`roundIcon` in the manifest.
+  Device checks on `R9TX902F92W`:
+  - **Launcher icon** in the app drawer: a 78x78 px green tile (`#116B4F`-family gradient) centred in the 158 px cell
+    with the white knight inside. The app-info header shows the same green mark at 39x39 px.
+  - **Cold-start splash** (debug and release): the first captured frame is a full brand-green `#116B4F` field with a
+    centred white knight measuring 224x226 px (debug) / 220x218 px (release) at the 1200x1920 screen centre, followed
+    by Home. `am start` immediately followed by `screencap` reliably caught it.
+  - **Themed icon**: the v33 variants expose the same foreground as `monochrome`; the device's themed-icon setting was
+    left unchanged, so only the standard icon was visually checked.
+- Release APK re-signed at `dist/ChessLock-0.1.0-test.apk` (v2/v3 verified, 10 822 584 bytes, SHA-256
+  `1E80E0D163BB6205306013B4FB77FCA0D39D60A2781088F40173D424F1438B23`) and installed over the debug build. Data
+  survived (ELO and puzzle stock unchanged; budget showed `35:00` remaining), and the installed package has no
+  debuggable flag.
 - The local date rolled over to 2026-11-14 after verification, so the next launch resets `earned_seconds`/`used_seconds`
   for the new day (the midnight reset is by design; ELO and puzzle stock are unaffected).
 - Phase 4 bundle (2026-11-13): ran `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease` with
@@ -335,11 +354,19 @@ Resume file. Update after every meaningful step and before any likely credit cut
   (900 ms, `FastOutSlowInEasing`) and overlays 12 subtle gauge ticks, keeping a complete ring legible. Rebuilt and
   re-signed the release (`2A5F2856...`), reinstalled over debug with data intact, and left the device at the normal
   `30:00` / 100% budget. 206 tests pass.
+- 2026-11-14: launcher-identity bundle. The manifest previously declared no icon, so Android showed its generic
+  placeholder. Added a branded adaptive icon (deep-green gradient background + white Cburnett knight, safe-zone
+  centred), an Android 13 monochrome variant for themed icons, and a matching splash: the Android 12+ system splash
+  uses the icon on a brand-green field, and the pre-12 window background is a green layer-list with the knight. This
+  removes the plain white launch frame and gives the app a consistent mark in the launcher, recents and splash.
+  Resource-only change; 206 tests still pass. Release re-signed (`1E80E0D1...`, 10 822 584 bytes) and installed over
+  debug with data intact.
 
 ## Next step
-1. **Visual-polish bundle and the ring follow-up are complete and device-verified. Wait for user feedback before the
-   next bundle.** The only unverified item is the subjective feel of the haptic ticks (the switch and the settings key
-   were verified; no audio feedback exists yet).
+1. **Visual-polish, ring and launcher-identity bundles are complete and device-verified. Wait for user feedback before
+   the next bundle.** The only unverified item is the subjective feel of the haptic ticks (the switch and the settings
+   key were verified; no audio feedback exists yet). The themed-icon rendering path is present but was not toggled on
+   the test tablet.
 2. Next Phase 4 candidates: a UMP consent SDK integration (needs a new Gradle dependency and real privacy-policy URL),
    production ad unit IDs, Play Data safety/privacy-policy prep, an `Entitlements` groundwork layer, and sounds (needs
    audio assets). Accounts/cloud/leaderboard remain deferred.

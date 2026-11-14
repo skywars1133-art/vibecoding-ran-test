@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.ChessLock" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.ChessLock" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Shown while the Compose tree inflates, before the splash APIs take over on Android 12+. -->
+        <item name="android:windowBackground">@drawable/splash_legacy</item>
+    </style>
 </resources>

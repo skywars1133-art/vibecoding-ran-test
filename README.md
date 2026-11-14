@@ -207,6 +207,11 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   device. Typography is the system font (no bundled font file) with heavier display weights for the countdown, and all
   cards and buttons share rounded 16-28 dp shapes. The overlay block screen resolves the same saved theme and in-app
   language, because the service has no Activity to inherit them from.
+- **One identity from the launcher in.** The app icon is an adaptive icon with a deep-green gradient background and
+  the Cburnett knight silhouette, plus an Android 13 monochrome variant for themed icons. The same mark fills the
+  Android 12+ system splash and the pre-12 launch window, so the first frame matches the app instead of a generic
+  Android icon. The knight artwork comes from the BSD-licensed set already used on the board; no new asset licence is
+  involved.
 - **One budget story across screens.** Pure `BudgetUrgency` (domain) classifies the remaining time against the same
   `warnAtSeconds` thresholds as the notifications: comfortable, warning (5 minutes), critical (1 minute) or empty. Home
   maps that to an animated ring, an urgency chip and an amber/red gradient; the ring, chip and percentages come from

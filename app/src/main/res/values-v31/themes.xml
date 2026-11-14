@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ChessLock" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Android 12+ system splash: brand-green field with the ChessLock knight icon. -->
+        <item name="android:windowSplashScreenBackground">@color/brand_deep_green</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="android:windowBackground">@drawable/splash_legacy</item>
+    </style>
+</resources>

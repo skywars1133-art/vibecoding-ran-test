@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Launcher icon and splash colours. The Compose palette lives in ui/theme/Color.kt. -->
+    <color name="brand_deep_green">#FF116B4F</color>
+    <color name="brand_deep_green_dark">#FF0B4A36</color>
+</resources>
