@@ -16,7 +16,6 @@ import com.chesslock.data.PlayerStore
 import com.chesslock.data.SettingsStore
 import com.chesslock.domain.budget.BudgetUrgency
 import com.chesslock.domain.config.AppConfig
-import com.chesslock.ui.common.formatClock
 import com.chesslock.ui.common.withAppLanguage
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -156,7 +155,7 @@ object BudgetWidgetUpdater {
 
     private fun buildRemoteViews(context: Context, snapshot: WidgetSnapshot): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_budget)
-        views.setTextViewText(R.id.widget_time, formatClock(snapshot.remainingSeconds))
+        views.setTextViewText(R.id.widget_time, remainingText(context, snapshot.remainingSeconds))
         views.setTextViewText(R.id.widget_elo, context.getString(R.string.widget_elo_value, snapshot.elo))
 
         val captionRes = when (snapshot.urgency) {
@@ -188,6 +187,18 @@ object BudgetWidgetUpdater {
         views.setOnClickPendingIntent(R.id.widget_root, pending)
         return views
     }
+
+    /** Minute-granularity clock: `29 min` below an hour, `1 h 12 min` above it. */
+    private fun remainingText(context: Context, remainingSeconds: Long): String =
+        when (val time = widgetTimeOf(remainingSeconds)) {
+            is WidgetTime.Minutes -> context.getString(R.string.widget_time_minutes, time.minutes)
+            is WidgetTime.Hours ->
+                if (time.minutes == 0) {
+                    context.getString(R.string.widget_time_hours, time.hours)
+                } else {
+                    context.getString(R.string.widget_time_hours_minutes, time.hours, time.minutes)
+                }
+        }
 
     private const val TAG = "BudgetWidget"
 }

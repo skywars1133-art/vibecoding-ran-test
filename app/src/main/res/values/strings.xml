@@ -233,5 +233,8 @@
     <string name="widget_description">Today\'s remaining ChessLock time at a glance.</string>
     <string name="widget_elo_label">ELO</string>
     <string name="widget_elo_value">ELO %1$d</string>
-    <string name="widget_preview_time">--:--</string>
+    <string name="widget_preview_time">-- min</string>
+    <string name="widget_time_minutes">%1$d min</string>
+    <string name="widget_time_hours">%1$d h</string>
+    <string name="widget_time_hours_minutes">%1$d h %2$d min</string>
 </resources>

@@ -39,9 +39,9 @@ scripts/test-domain.sh
 2. The app opens on **Home** with today's remaining time, a daily-limit/earned/used breakdown, your ELO and the
    **Solve a puzzle** button. A protection banner above the card shows whether blocking is actually active.
 3. Add the **Time budget** widget (long-press an empty area on the home screen -> **Widgets** -> **ChessLock**). The
-   3x2 card shows today's remaining time, the urgency caption (amber at 5 minutes, red at 1 minute), a progress bar and
-   your ELO. It repaints on every budget/ELO/limit change and once a minute (midnight rollover included), and opens
-   Home when tapped.
+   3x2 card shows today's remaining time in whole minutes (`29 min`, `1 h 12 min`), the urgency caption (amber at
+   5 minutes, red at 1 minute), a progress bar and your ELO. It repaints on every budget/ELO/limit change and once a
+   minute (midnight rollover included), and opens Home when tapped.
 4. Long-press the ChessLock icon in the launcher for shortcuts to **Solve a puzzle**, **View statistics** and **Open
    settings**. Each opens its own screen directly, even when the app was not running.
 5. Open **Settings** to choose the app language (System default / English / Slovak), the theme (System default / Light /
@@ -231,7 +231,9 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   tick, and the chain re-arms itself before rendering; the widget's 30-minute `updatePeriodMillis` stays as the
   platform fallback, while `BootReceiver` and app launch restart the chain after a reboot or a force-stop. A repeating
   alarm was rejected because it gets a batching window of up to 45 s; the chained one-shot measured about 21 s. The
-  card follows the in-app language through a non-Compose localized context, and tapping it opens Home.
+  clock is deliberately minute-granular (`29 min`, `1 h 12 min`): `widgetTimeOf` floors to whole minutes, counts a
+  partial final minute as one so it never reads `0 min` while time is left, and drops the minutes part at a whole
+  hour. The card follows the in-app language through a non-Compose localized context, and tapping it opens Home.
 - **One budget story across screens.** Pure `BudgetUrgency` (domain) classifies the remaining time against the same
   `warnAtSeconds` thresholds as the notifications: comfortable, warning (5 minutes), critical (1 minute) or empty. Home
   maps that to an animated ring, an urgency chip and an amber/red gradient; the ring, chip and percentages come from

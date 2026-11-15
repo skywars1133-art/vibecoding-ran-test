@@ -101,4 +101,37 @@ class WidgetSnapshotTest {
     fun `non-positive interval never divides by zero`() {
         assertEquals(6L, nextWidgetTickAt(nowMillis = 5L, intervalMillis = 0L))
     }
+
+    @Test
+    fun `remaining time is shown in whole minutes`() {
+        assertEquals(WidgetTime.Minutes(29), widgetTimeOf(1_790L))
+        assertEquals(WidgetTime.Minutes(30), widgetTimeOf(1_800L))
+        assertEquals(WidgetTime.Minutes(1), widgetTimeOf(60L))
+        assertEquals(WidgetTime.Minutes(59), widgetTimeOf(3_599L))
+    }
+
+    @Test
+    fun `a partial final minute still reads as one minute`() {
+        assertEquals(WidgetTime.Minutes(1), widgetTimeOf(59L))
+        assertEquals(WidgetTime.Minutes(1), widgetTimeOf(1L))
+        assertEquals(WidgetTime.Minutes(0), widgetTimeOf(0L))
+    }
+
+    @Test
+    fun `an exact hour has no minutes part`() {
+        assertEquals(WidgetTime.Hours(hours = 1, minutes = 0), widgetTimeOf(3_600L))
+        assertEquals(WidgetTime.Hours(hours = 2, minutes = 0), widgetTimeOf(7_200L))
+        assertEquals(WidgetTime.Hours(hours = 4, minutes = 0), widgetTimeOf(14_400L))
+    }
+
+    @Test
+    fun `hours and minutes combine for long budgets`() {
+        assertEquals(WidgetTime.Hours(hours = 1, minutes = 11), widgetTimeOf(4_319L))
+        assertEquals(WidgetTime.Hours(hours = 2, minutes = 1), widgetTimeOf(7_265L))
+    }
+
+    @Test
+    fun `negative remaining time clamps to zero`() {
+        assertEquals(WidgetTime.Minutes(0), widgetTimeOf(-30L))
+    }
 }

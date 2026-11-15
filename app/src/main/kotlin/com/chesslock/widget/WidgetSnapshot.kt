@@ -43,6 +43,27 @@ fun buildWidgetSnapshot(
 }
 
 /**
+ * Remaining time at the granularity the widget shows. Whole minutes: `29 min`, `1 h 12 min` or
+ * `2 h`. A partial minute still counts as one, so the card never reads `0 min` while time is left.
+ */
+sealed interface WidgetTime {
+    data class Minutes(val minutes: Int) : WidgetTime
+    data class Hours(val hours: Int, val minutes: Int) : WidgetTime
+}
+
+fun widgetTimeOf(remainingSeconds: Long): WidgetTime {
+    val seconds = remainingSeconds.coerceAtLeast(0L)
+    val totalMinutes = if (seconds == 0L) 0L else maxOf(1L, seconds / 60L)
+    val hours = totalMinutes / 60L
+    val minutes = totalMinutes % 60L
+    return if (hours == 0L) {
+        WidgetTime.Minutes(minutes.toInt())
+    } else {
+        WidgetTime.Hours(hours.toInt(), minutes.toInt())
+    }
+}
+
+/**
  * First refresh tick strictly after [nowMillis], aligned to [intervalMillis] boundaries. Aligning to
  * the wall clock means a 60 s interval fires near :00 of every minute instead of 60 s after the
  * widget happened to be added. Pure so the scheduling edge cases are unit-tested.

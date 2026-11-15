@@ -26,8 +26,9 @@ Resume file. Update after every meaningful step and before any likely credit cut
   budget/ELO/limit/language writes plus the platform 30-minute tick, follows the in-app language and opens Home on tap;
   release re-signed (SHA-256 `904D6F36347DF7730C3CCCAEE5B338A469A91E655940884E21E4AEDA7E6D2095`, 10 847 720 bytes).
   Follow-up at the user's request: the widget now refreshes **every minute** through a chained, minute-aligned
-  one-shot `AlarmManager.RTC` alarm instead of relying on the 30-minute platform tick; release re-signed (SHA-256
-  `11C68AC662FE26714D8D8A15AC758E863248F7CC138A7937F970D01C82636D04`, 10 847 720 bytes). 219 tests pass.
+  one-shot `AlarmManager.RTC` alarm instead of relying on the 30-minute platform tick, and shows the remaining time in
+  **whole minutes** (`29 min`, `1 h 29 min`) instead of `mm:ss`; release re-signed (SHA-256
+  `F83CFE907541B98BB186DA4FDE0F9274142A9835A4C39975E34B1FF98FB49B51`, 10 847 720 bytes). 224 tests pass.
 - Before that: Phase 4 protection and settings bundle - adaptive foreground polling (`PollingPolicy`: 2 s while <=5 min
   remain, relaxed 5 s otherwise), battery-optimization exemption guidance in onboarding and Settings (recommended, not
   required for "active"), a persistent 5/1-minute **Time warnings** toggle, a **Haptic feedback** toggle wired to puzzle
@@ -169,9 +170,22 @@ Resume file. Update after every meaningful step and before any likely credit cut
     timestamp untouched, i.e. installs do not rewrite the language. No code path writes a language without
     `SettingsStore.setLanguage`.
   - Release APK re-signed at `dist/ChessLock-0.1.0-test.apk` (v2/v3 verified, 10 847 720 bytes, SHA-256
-    `11C68AC662FE26714D8D8A15AC758E863248F7CC138A7937F970D01C82636D04`), installed over the debug build and
+    `F83CFE907541B98BB186DA4FDE0F9274142A9835A4C39975E34B1FF98FB49B51`), installed over the debug build and
     non-debuggable. Data survived (ELO 1667, limit `30:00`, used `0:10` -> `29:50`), the widget stayed on home page 2
     with the Slovak caption `Dnes zostáva`, and the minute alarm was scheduled after the install.
+- Minute-granularity display (2026-11-15, same user request): the widget clock now shows whole minutes instead of
+  `mm:ss`. `widgetTimeOf` (5 new tests) returns `Minutes(29)` for `29:50`, `Hours(1, 11)` for
+  `1:11:59`, an exact `Hours(1, 0)` for a whole hour and never `0 min` while any time is left (a partial final minute
+  counts as one). Strings `widget_time_minutes`/`widget_time_hours`/`widget_time_hours_minutes` cover EN and SK (same
+  units in both) and the picker preview changed from `--:--` to `-- min`.
+  - **Device:** the card read `29 min` for the `29:50` budget. Raising the daily limit to 90 min rendered
+    `1 h 29 min`, which fit the card without clipping (text bounds `485-687` px inside the ~910 px card); the limit was
+    restored to 30 min and the card returned to `29 min`. The minute tick and the Slovak caption were unaffected.
+  - Build with JDK 21.0.11 gave **152 domain + 72 app tests (224 total); 0 failures, errors or skips** (5 new
+    `widgetTimeOf` cases). Release re-signed, 10 847 720 bytes, SHA-256
+    `F83CFE907541B98BB186DA4FDE0F9274142A9835A4C39975E34B1FF98FB49B51`; aapt2 confirms the new string in the APK,
+    the installed package is non-debuggable, the widget reads `29 min` after the release install and the minute alarm
+    is scheduled.
 - Phase 4 bundle (2026-11-13): ran `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease` with
   JDK 21.0.11. **145 domain tests + 53 app tests passed (198 total); 0 failures, errors or skips.** The new
   `PollingPolicyTest` (5) covers the relaxed interval above the threshold, the switch at the threshold, empty/negative
@@ -455,10 +469,16 @@ Resume file. Update after every meaningful step and before any likely credit cut
   force-stop via the new suspend `BudgetWidgetUpdater.refreshIfPlaced`, and `onDisabled` cancels it when the last widget
   goes away. 219 tests pass (152 domain + 67 app); release re-signed (`1D14B9AE...`, 10 847 720 bytes) and installed
   over debug with ELO, budget and the widget intact.
+- 2026-11-15: minute-granularity widget clock. The card now shows `29 min` (and `1 h 29 min`, `2 h`) instead of
+  `29:50`. The pure `widgetTimeOf` (5 tests) floors to whole minutes, keeps a partial final minute at `1 min`, and
+  splits out whole hours; EN/SK string resources carry the units and the picker preview is `-- min`. Device-verified:
+  `29 min` for a 29:50 budget, `1 h 29 min` at a 90 min limit without clipping, then back to `29 min` after restoring
+  30 min. 224 tests pass (152 domain + 72 app); release re-signed (`F83CFE90...`, 10 847 720 bytes) and installed over
+  debug with data, widget and the minute alarm intact.
 
 ## Next step
-1. **Visual-polish, ring, launcher-identity, shortcut and widget bundles (including the per-minute refresh) are
-   complete and device-verified. Wait for user feedback before the next bundle.** The only unverified item is the
+1. **Visual-polish, ring, launcher-identity, shortcut and widget bundles (minute refresh and minute-granularity
+   clock) are complete and device-verified. Wait for user feedback before the next bundle.** The only unverified item is the
    subjective feel of the haptic ticks (the switch and the settings key were verified; no audio feedback exists yet).
    The themed-icon rendering path is present but was not toggled on the test tablet. Widget strings follow the in-app
    language, but its picker label follows the system locale like the static shortcuts.
