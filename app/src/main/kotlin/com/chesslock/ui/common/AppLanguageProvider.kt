@@ -50,6 +50,21 @@ fun ProvideAppLanguage(
     )
 }
 
+/**
+ * Non-Compose counterpart of [ProvideAppLanguage] for code that has no composition, such as the
+ * home-screen widget. Returns a context whose resources use the chosen language, or the receiver
+ * itself for [AppLanguage.SYSTEM].
+ */
+fun Context.withAppLanguage(language: AppLanguage): Context {
+    val tag = language.languageTag ?: return this
+    val locale = Locale.forLanguageTag(tag)
+    val localizedConfiguration = Configuration(resources.configuration).apply {
+        setLocale(locale)
+        setLayoutDirection(locale)
+    }
+    return createConfigurationContext(localizedConfiguration)
+}
+
 private class LocalizedResourcesContext(
     base: Context,
     private val localizedResources: Resources,

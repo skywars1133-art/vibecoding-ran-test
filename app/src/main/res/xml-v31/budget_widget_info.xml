@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ adds a live preview and cell-based sizing to the widget picker. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_description"
+    android:initialLayout="@layout/widget_budget"
+    android:minWidth="180dp"
+    android:minHeight="110dp"
+    android:previewLayout="@layout/widget_budget"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellHeight="2"
+    android:targetCellWidth="3"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen" />

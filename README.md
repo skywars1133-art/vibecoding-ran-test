@@ -38,26 +38,29 @@ scripts/test-domain.sh
    Or open the project in Android Studio and press Run.
 2. The app opens on **Home** with today's remaining time, a daily-limit/earned/used breakdown, your ELO and the
    **Solve a puzzle** button. A protection banner above the card shows whether blocking is actually active.
-3. Long-press the ChessLock icon in the launcher for shortcuts to **Solve a puzzle**, **View statistics** and **Open
+3. Add the **Time budget** widget (long-press an empty area on the home screen -> **Widgets** -> **ChessLock**). The
+   3x2 card shows today's remaining time, the urgency caption (amber at 5 minutes, red at 1 minute), a progress bar and
+   your ELO, refreshes on every budget/ELO/limit change and every 30 minutes, and opens Home when tapped.
+4. Long-press the ChessLock icon in the launcher for shortcuts to **Solve a puzzle**, **View statistics** and **Open
    settings**. Each opens its own screen directly, even when the app was not running.
-4. Open **Settings** to choose the app language (System default / English / Slovak), the theme (System default / Light /
+5. Open **Settings** to choose the app language (System default / English / Slovak), the theme (System default / Light /
    Dark), the daily limit, blocked categories, individual app overrides and piece style.
-5. Under **App blocking**, tap **Choose individual apps** to search installed apps and set **Use categories**, **Always
+6. Under **App blocking**, tap **Choose individual apps** to search installed apps and set **Use categories**, **Always
    block** or **Never block** per app. Phone, launcher and system settings stay allowed regardless.
-6. The **Puzzle downloads** section shows the offline stock, the last download and the Wi-Fi-only switch. Tap
+7. The **Puzzle downloads** section shows the offline stock, the last download and the Wi-Fi-only switch. Tap
    **Download now** to fetch the current pack immediately; otherwise WorkManager refreshes it about once a day.
-7. Grant **Usage access**, **Display over other apps** and (optionally) **Notifications** from the protection banner or
+8. Grant **Usage access**, **Display over other apps** and (optionally) **Notifications** from the protection banner or
    Settings; the banner turns to "Protection is active" once the blocking service is running. Exempting ChessLock from
    **battery optimization** is recommended so protection survives aggressive background limits; it is not required for
    the "active" status.
-8. Under **Feedback**, turn haptic move feedback on or off; under **Privacy and ads**, read what stays on the device and
+9. Under **Feedback**, turn haptic move feedback on or off; under **Privacy and ads**, read what stays on the device and
    how the rewarded hint ads work. **Time warnings** toggles the 5-minute and 1-minute notifications.
-9. Solve a puzzle to earn time, then open a blocked app after the budget runs out to see the block screen. The Home
-   ring, remaining share and urgency chip follow the same thresholds as the notifications (green, amber at 5 minutes,
-   red at 1 minute) and update live while the blocking service charges blocked-app time.
-10. Tap **Stats** on Home (or in the puzzle top bar) for local-only statistics: ELO over time, overall and per-theme
+10. Solve a puzzle to earn time, then open a blocked app after the budget runs out to see the block screen. The Home
+    ring, remaining share and urgency chip follow the same thresholds as the notifications (green, amber at 5 minutes,
+    red at 1 minute) and update live while the blocking service charges blocked-app time.
+11. Tap **Stats** on Home (or in the puzzle top bar) for local-only statistics: ELO over time, overall and per-theme
     success rate, day streak, puzzles solved, time earned, and blocked-app time today/this week. Nothing is uploaded.
-11. Hints use AdMob's official **test** ad IDs in this phase, so no real ad is shown or billed. Hints need a network and
+12. Hints use AdMob's official **test** ad IDs in this phase, so no real ad is shown or billed. Hints need a network and
     are disabled with an explanatory note while offline.
 
 ### Shareable test APK
@@ -218,6 +221,12 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   and **Open settings**. The three static shortcuts in `res/xml/shortcuts.xml` send a package-specific action, and
   `MainActivity` maps it through the pure `ShortcutDestination` enum on both `onCreate` and `onNewIntent`, so a shortcut
   opens its own top-level screen whether the app was cold or already running. Unknown actions fall back to Home.
+- **The budget is also on the home screen.** A 3x2 RemoteViews widget (`BudgetWidgetProvider`) shows the knight mark,
+  today's remaining time, a caption from the same urgency mapping as Home (green/amber/red), a thin progress bar and
+  the ELO. Its snapshot comes from the same pure budget arithmetic (`buildWidgetSnapshot`), so it can never disagree
+  with Home. It needs no permanent timer: `BudgetStore`, `PlayerStore` and `SettingsStore` request a render after every
+  write, and the platform's 30-minute `updatePeriodMillis` covers midnight rollover when the app is idle. The card
+  follows the in-app language through a non-Compose localized context, and tapping it opens Home.
 - **One budget story across screens.** Pure `BudgetUrgency` (domain) classifies the remaining time against the same
   `warnAtSeconds` thresholds as the notifications: comfortable, warning (5 minutes), critical (1 minute) or empty. Home
   maps that to an animated ring, an urgency chip and an amber/red gradient; the ring, chip and percentages come from

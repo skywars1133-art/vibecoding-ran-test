@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Launcher icon and splash colours. The Compose palette lives in ui/theme/Color.kt. -->
+    <!-- Launcher icon, splash and home-screen widget colours. Compose lives in ui/theme/Color.kt. -->
     <color name="brand_deep_green">#FF116B4F</color>
     <color name="brand_deep_green_dark">#FF0B4A36</color>
+    <!-- RemoteViews cannot read the Compose palette, so the widget repeats the few text colours it needs. -->
+    <color name="widget_muted">#CCFFFFFF</color>
+    <color name="widget_warning">#FFFFC46B</color>
+    <color name="widget_critical">#FFFFB4AB</color>
 </resources>

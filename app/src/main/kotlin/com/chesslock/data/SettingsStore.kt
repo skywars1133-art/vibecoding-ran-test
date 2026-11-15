@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.chesslock.domain.blocking.BlockCategory
 import com.chesslock.domain.config.AppConfig
+import com.chesslock.widget.BudgetWidgetUpdater
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -77,6 +78,7 @@ class SettingsStore @Inject constructor(
         context.settingsDataStore.edit { preferences ->
             preferences[languageKey] = language.storageKey
         }
+        BudgetWidgetUpdater.requestUpdate(context)
     }
 
     suspend fun setThemeMode(mode: ThemeMode) {
@@ -101,6 +103,7 @@ class SettingsStore @Inject constructor(
         context.settingsDataStore.edit { preferences ->
             preferences[dailyLimitKey] = minutes.coerceAtLeast(1)
         }
+        BudgetWidgetUpdater.requestUpdate(context)
     }
 
     suspend fun setDailyCapMinutes(minutes: Int?) {
@@ -111,6 +114,7 @@ class SettingsStore @Inject constructor(
                 preferences[dailyCapKey] = minutes.coerceAtLeast(1)
             }
         }
+        BudgetWidgetUpdater.requestUpdate(context)
     }
 
     suspend fun setBlockedCategory(category: BlockCategory, blocked: Boolean) {

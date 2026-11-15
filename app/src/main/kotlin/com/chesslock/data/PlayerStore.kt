@@ -9,6 +9,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.chesslock.domain.config.AppConfig
 import com.chesslock.domain.elo.EloCalculator
 import com.chesslock.domain.elo.EloResult
+import com.chesslock.widget.BudgetWidgetUpdater
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -78,6 +79,7 @@ class PlayerStore @Inject constructor(
             preferences[eloKey] = newElo
             preferences[ratedCountKey] = played + 1
         }
+        BudgetWidgetUpdater.requestUpdate(context)
         return EloUpdate(oldElo = oldElo, newElo = newElo)
     }
 
@@ -87,6 +89,7 @@ class PlayerStore @Inject constructor(
             preferences[eloKey] = elo.coerceIn(config.eloFloor, config.placementMaxRating)
             preferences[placementCompletedKey] = true
         }
+        BudgetWidgetUpdater.requestUpdate(context)
     }
 
     suspend fun consumeFreeSkip() {

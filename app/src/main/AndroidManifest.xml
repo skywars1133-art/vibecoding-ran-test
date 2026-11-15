@@ -65,6 +65,19 @@
             </intent-filter>
         </activity>
 
+        <!-- Home-screen budget widget (SPEC 1). Updates on budget writes and every 30 minutes. -->
+        <receiver
+            android:name=".widget.BudgetWidgetProvider"
+            android:exported="false"
+            android:label="@string/widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/budget_widget_info" />
+        </receiver>
+
         <service
             android:name=".blocking.BlockingService"
             android:exported="false"

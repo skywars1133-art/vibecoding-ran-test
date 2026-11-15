@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.chesslock.domain.budget.BudgetState
 import com.chesslock.domain.budget.TimeBudget
+import com.chesslock.widget.BudgetWidgetUpdater
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -47,6 +48,7 @@ class BudgetStore @Inject constructor(
             preferences.write(state)
             preferences[usedKey] = state.usedSeconds + seconds
         }
+        BudgetWidgetUpdater.requestUpdate(context)
         recordHistory { addUsageHistory(today, seconds) }
     }
 
@@ -64,6 +66,7 @@ class BudgetStore @Inject constructor(
             credited = earned.earnedSeconds - state.earnedSeconds
             preferences.write(earned)
         }
+        BudgetWidgetUpdater.requestUpdate(context)
         if (credited > 0L) recordHistory { addEarnedHistory(today, credited) }
     }
 

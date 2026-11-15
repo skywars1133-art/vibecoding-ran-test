@@ -3,9 +3,9 @@
 Resume file. Update after every meaningful step and before any likely credit cutoff. A new session reads this first, then CLAUDE.md, SPEC.md, PHASES.md and the README "Decisions".
 
 ## Status
-- Date: 2026-11-14
-- Current phase: Phase 4 (hardening and release prep) - visual-polish bundle implemented and device-verified; awaiting
-  user feedback
+- Date: 2026-11-15
+- Current phase: Phase 4 (hardening and release prep) - widget bundle implemented and device-verified; awaiting user
+  feedback
 - Plan: **approved by the user** (2026-11-02)
 - Last completed: visual-polish bundle - fixed ChessLock brand palette (no Material You dynamic colours), typography
   and shapes, an animated Home budget ring with an urgency chip driven by pure `BudgetUrgency` (comfortable / warning /
@@ -21,7 +21,10 @@ Resume file. Update after every meaningful step and before any likely credit cut
   (SHA-256 `1E80E0D163BB6205306013B4FB77FCA0D39D60A2781088F40173D424F1438B23`). Then a shortcut bundle added
   three static launcher shortcuts (Solve a puzzle, View statistics, Open settings) routed through the pure
   `ShortcutDestination` enum; release re-signed
-  (SHA-256 `6E02BCB03261364CE9D98A57ECDE0D33B3D893ACBADAE566B372BD333CDEA763`).
+  (SHA-256 `6E02BCB03261364CE9D98A57ECDE0D33B3D893ACBADAE566B372BD333CDEA763`). Then a home-screen widget bundle added
+  a 3x2 **Time budget** RemoteViews card (knight, remaining clock, urgency caption, progress bar, ELO) that refreshes on
+  budget/ELO/limit/language writes plus the platform 30-minute tick, follows the in-app language and opens Home on tap;
+  release re-signed (SHA-256 `904D6F36347DF7730C3CCCAEE5B338A469A91E655940884E21E4AEDA7E6D2095`, 10 847 720 bytes).
 - Before that: Phase 4 protection and settings bundle - adaptive foreground polling (`PollingPolicy`: 2 s while <=5 min
   remain, relaxed 5 s otherwise), battery-optimization exemption guidance in onboarding and Settings (recommended, not
   required for "active"), a persistent 5/1-minute **Time warnings** toggle, a **Haptic feedback** toggle wired to puzzle
@@ -122,6 +125,29 @@ Resume file. Update after every meaningful step and before any likely credit cut
   intermediate build with the misplaced meta-data (`7CCE735E...`) was never distributed.
 - The local date rolled over to 2026-11-14 after verification, so the next launch resets `earned_seconds`/`used_seconds`
   for the new day (the midnight reset is by design; ELO and puzzle stock are unaffected).
+- Widget bundle (2026-11-15): `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease` with
+  JDK 21.0.11 gave **152 domain + 64 app tests (216 total); 0 failures, errors or skips**. New `WidgetSnapshotTest`
+  (6) covers a full budget, earned/used arithmetic, the daily cap, over-use clamping to zero, a zero total and the
+  urgency thresholds.
+  - **Picker:** searching "chess" lists **ChessLock -> Časový rozpočet, 3x2** with a live preview (knight, `--:--`,
+    "Dnes zostáva") and the Slovak description. Tapping the preview shows the **Pridať** button; adding placed the card
+    on home page 2 without restarting the launcher.
+  - **Rendered output:** `uiautomator` reads `ChessLock / ELO 1667 / 35:00 / Dnes zostáva` inside the 436x300 px card.
+    Pixel sampling confirmed the deep board green (`17,108,79`) and a full-width white progress fill at y≈308 for a
+    100% budget.
+  - **Refresh paths:** raising the daily limit 30 -> 45 min changed the card from `35:00` to `50:00` without reopening
+    it (then restored 30 min). Browsing Chrome (a **Use categories** app) for 10 s changed `35:00` -> `34:50`, proving
+    `BudgetStore.addUsage` requests a render. ELO writes go through the same `requestUpdate` path.
+  - **Tap to open:** the card opens Home (`MainActivity` focused). The first tap after dropping the widget only leaves
+    the launcher's edit mode, which is platform behaviour.
+  - **Language:** switching the app to English changed the caption to "Time left today" immediately; switching back to
+    Slovak restored "Dnes zostáva". This needed a new non-Compose `withAppLanguage` helper plus a `setLanguage` update
+    hook, because widget text is built outside the Compose locale wrapper.
+  - **Midnight rollover:** the next morning Home and the widget both showed limit `30:00`, earned `0:00`, used `0:10`
+    -> `29:50`, i.e. the new day reset earned/used and the widget stayed in sync.
+  - Release APK re-signed at `dist/ChessLock-0.1.0-test.apk` (v2/v3 verified, 10 847 720 bytes, SHA-256
+    `904D6F36347DF7730C3CCCAEE5B338A469A91E655940884E21E4AEDA7E6D2095`), installed over the debug build. Data and the
+    placed widget survived (ELO 1667, limit 30:00); `run-as` reports "package not debuggable".
 - Phase 4 bundle (2026-11-13): ran `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease` with
   JDK 21.0.11. **145 domain tests + 53 app tests passed (198 total); 0 failures, errors or skips.** The new
   `PollingPolicyTest` (5) covers the relaxed interval above the threshold, the switch at the threshold, empty/negative
@@ -386,12 +412,24 @@ Resume file. Update after every meaningful step and before any likely credit cut
   removes the plain white launch frame and gives the app a consistent mark in the launcher, recents and splash.
   Resource-only change; 206 tests still pass. Release re-signed (`1E80E0D1...`, 10 822 584 bytes) and installed over
   debug with data intact.
+- 2026-11-15: home-screen widget bundle. Added a 3x2 **Time budget** widget (`BudgetWidgetProvider`) built from
+  `RemoteViews` only, with no new Gradle dependencies: deep-green gradient card, Cburnett knight, big remaining clock,
+  urgency caption from the shared `home_time_left`/`home_urgency_*` strings, thin progress bar and ELO. The pure
+  `WidgetSnapshot` (6 tests) reuses `TimeBudget` and `BudgetUrgency`, so the card can never disagree with Home.
+  `BudgetStore`, `PlayerStore` and `SettingsStore` request a render after their writes (usage, earned time, ELO, daily
+  limit/cap, language), and the platform's 30-minute `updatePeriodMillis` covers midnight rollover while idle. Widget
+  text follows the in-app language through a new non-Compose `Context.withAppLanguage` helper. Device-verified on the
+  tablet: exact picker preview, live 35:00 render, limit change 35:00->50:00, 10 s Chrome usage 35:00->34:50, tap opens
+  Home, English/Slovak switch updates the caption instantly, and next-morning rollover to 29:50 matched Home. 216 tests
+  pass (152 domain + 64 app); release re-signed (`904D6F36...`, 10 847 720 bytes) and installed over debug with data
+  and the widget intact.
 
 ## Next step
-1. **Visual-polish, ring, launcher-identity and shortcut bundles are complete and device-verified. Wait for user
-   feedback before the next bundle.** The only unverified item is the subjective feel of the haptic ticks (the switch
-   and the settings key were verified; no audio feedback exists yet). The themed-icon rendering path is present but was
-   not toggled on the test tablet.
+1. **Visual-polish, ring, launcher-identity, shortcut and widget bundles are complete and device-verified. Wait for
+   user feedback before the next bundle.** The only unverified item is the subjective feel of the haptic ticks (the
+   switch and the settings key were verified; no audio feedback exists yet). The themed-icon rendering path is present
+   but was not toggled on the test tablet. Widget strings follow the in-app language, but its picker label follows the
+   system locale like the static shortcuts.
 2. Next Phase 4 candidates: a UMP consent SDK integration (needs a new Gradle dependency and real privacy-policy URL),
    production ad unit IDs, Play Data safety/privacy-policy prep, an `Entitlements` groundwork layer, and sounds (needs
    audio assets). Accounts/cloud/leaderboard remain deferred.
