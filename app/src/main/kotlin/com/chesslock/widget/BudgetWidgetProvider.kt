@@ -1,11 +1,13 @@
 package com.chesslock.widget
 
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.widget.RemoteViews
 import com.chesslock.MainActivity
 import com.chesslock.R
@@ -20,6 +22,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -28,8 +31,8 @@ import kotlinx.coroutines.launch
 
 /**
  * Home-screen widget with today's remaining budget (SPEC 1). It refreshes on every budget, ELO or
- * limit write and on the platform's own 30-minute tick, so it also rolls over at midnight without
- * running a permanent timer. Tapping it opens Home.
+ * limit write and once a minute on the wall clock, so it rolls over at midnight and never shows a
+ * stale minute. Tapping it opens Home.
  */
 class BudgetWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(
@@ -37,18 +40,53 @@ class BudgetWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray,
     ) {
+        BudgetWidgetTicker.ensureScheduled(context)
+        render(context, appWidgetManager, appWidgetIds)
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        if (intent.action == BudgetWidgetTicker.ACTION_TICK) {
+            // Re-arm before rendering so a render failure cannot stop the chain.
+            BudgetWidgetTicker.ensureScheduled(context)
+            val manager = AppWidgetManager.getInstance(context) ?: return
+            val ids = manager.getAppWidgetIds(ComponentName(context, BudgetWidgetProvider::class.java))
+            if (ids.isEmpty()) {
+                BudgetWidgetTicker.cancel(context)
+            } else {
+                render(context, manager, ids)
+            }
+        }
+    }
+
+    override fun onEnabled(context: Context) {
+        BudgetWidgetTicker.ensureScheduled(context)
+        BudgetWidgetUpdater.requestUpdate(context)
+    }
+
+    override fun onDisabled(context: Context) {
+        BudgetWidgetTicker.cancel(context)
+    }
+
+    /** Renders asynchronously; `goAsync` keeps the broadcast alive until the last write lands. */
+    private fun render(context: Context, manager: AppWidgetManager, ids: IntArray) {
+        if (ids.isEmpty()) return
         val pending = goAsync()
         BudgetWidgetUpdater.scope.launch {
             try {
-                BudgetWidgetUpdater.update(context, appWidgetManager, appWidgetIds)
+                BudgetWidgetUpdater.update(context, manager, ids)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.w(TAG, "Widget render failed", e)
             } finally {
                 pending.finish()
             }
         }
     }
 
-    override fun onEnabled(context: Context) {
-        BudgetWidgetUpdater.requestUpdate(context)
+    private companion object {
+        const val TAG = "BudgetWidget"
     }
 }
 
@@ -73,6 +111,25 @@ object BudgetWidgetUpdater {
         val ids = manager.getAppWidgetIds(ComponentName(appContext, BudgetWidgetProvider::class.java))
         if (ids.isEmpty()) return
         scope.launch { update(appContext, manager, ids) }
+    }
+
+    /**
+     * Re-arms the minute tick and repaints once after a boot, an app update or a launch. Alarms do
+     * not survive a reboot or a force-stop, so this is what restarts the chain afterwards.
+     */
+    suspend fun refreshIfPlaced(context: Context) {
+        val appContext = context.applicationContext
+        try {
+            val manager = AppWidgetManager.getInstance(appContext) ?: return
+            val ids = manager.getAppWidgetIds(ComponentName(appContext, BudgetWidgetProvider::class.java))
+            if (ids.isEmpty()) return
+            BudgetWidgetTicker.ensureScheduled(appContext)
+            update(appContext, manager, ids)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w(TAG, "Widget refresh failed", e)
+        }
     }
 
     internal suspend fun update(
@@ -130,5 +187,54 @@ object BudgetWidgetUpdater {
         )
         views.setOnClickPendingIntent(R.id.widget_root, pending)
         return views
+    }
+
+    private const val TAG = "BudgetWidget"
+}
+
+/**
+ * Minute-aligned refresh. The platform floors `updatePeriodMillis` at 30 minutes, so a chained
+ * one-shot RTC alarm provides the finer cadence. RTC (not RTC_WAKEUP) never wakes the device; in
+ * Doze the tick is batched and delivered on the next wake, then the chain re-arms itself. A
+ * one-shot alarm is used instead of `setInexactRepeating` because repeating alarms get a batching
+ * window of up to 45 s even while the screen is on.
+ */
+internal object BudgetWidgetTicker {
+    const val ACTION_TICK = "com.chesslock.widget.action.TICK"
+
+    /** Schedules the next tick. Called from updates and again from the tick itself. */
+    fun ensureScheduled(context: Context) {
+        val appContext = context.applicationContext
+        val alarms = appContext.getSystemService(AlarmManager::class.java) ?: return
+        val intervalMs = widgetIntervalMillis(appContext)
+        alarms.set(
+            AlarmManager.RTC,
+            nextWidgetTickAt(System.currentTimeMillis(), intervalMs),
+            tickIntent(appContext),
+        )
+    }
+
+    /** Called when the last widget is removed so no alarm is left behind. */
+    fun cancel(context: Context) {
+        val appContext = context.applicationContext
+        val alarms = appContext.getSystemService(AlarmManager::class.java) ?: return
+        alarms.cancel(tickIntent(appContext))
+    }
+
+    private fun widgetIntervalMillis(context: Context): Long {
+        val config = EntryPointAccessors
+            .fromApplication(context, BudgetWidgetEntryPoint::class.java)
+            .config()
+        return config.widgetRefreshIntervalSeconds * 1_000L
+    }
+
+    private fun tickIntent(context: Context): PendingIntent {
+        val intent = Intent(context, BudgetWidgetProvider::class.java).setAction(ACTION_TICK)
+        return PendingIntent.getBroadcast(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
     }
 }

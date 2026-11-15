@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Android 12+ adds a live preview and cell-based sizing to the widget picker. -->
+<!-- Android 12+ adds a live preview and cell-based sizing to the widget picker. The 30-minute period
+     is only the safety net behind the provider's minute ticker. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/widget_description"
     android:initialLayout="@layout/widget_budget"

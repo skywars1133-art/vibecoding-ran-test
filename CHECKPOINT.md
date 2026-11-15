@@ -25,6 +25,9 @@ Resume file. Update after every meaningful step and before any likely credit cut
   a 3x2 **Time budget** RemoteViews card (knight, remaining clock, urgency caption, progress bar, ELO) that refreshes on
   budget/ELO/limit/language writes plus the platform 30-minute tick, follows the in-app language and opens Home on tap;
   release re-signed (SHA-256 `904D6F36347DF7730C3CCCAEE5B338A469A91E655940884E21E4AEDA7E6D2095`, 10 847 720 bytes).
+  Follow-up at the user's request: the widget now refreshes **every minute** through a chained, minute-aligned
+  one-shot `AlarmManager.RTC` alarm instead of relying on the 30-minute platform tick; release re-signed (SHA-256
+  `11C68AC662FE26714D8D8A15AC758E863248F7CC138A7937F970D01C82636D04`, 10 847 720 bytes). 219 tests pass.
 - Before that: Phase 4 protection and settings bundle - adaptive foreground polling (`PollingPolicy`: 2 s while <=5 min
   remain, relaxed 5 s otherwise), battery-optimization exemption guidance in onboarding and Settings (recommended, not
   required for "active"), a persistent 5/1-minute **Time warnings** toggle, a **Haptic feedback** toggle wired to puzzle
@@ -148,6 +151,27 @@ Resume file. Update after every meaningful step and before any likely credit cut
   - Release APK re-signed at `dist/ChessLock-0.1.0-test.apk` (v2/v3 verified, 10 847 720 bytes, SHA-256
     `904D6F36347DF7730C3CCCAEE5B338A469A91E655940884E21E4AEDA7E6D2095`), installed over the debug build. Data and the
     placed widget survived (ELO 1667, limit 30:00); `run-as` reports "package not debuggable".
+- Per-minute widget bundle (2026-11-15): `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease`
+  with JDK 21.0.11 gave **152 domain + 67 app tests (219 total); 0 failures, errors or skips**. New
+  `nextWidgetTickAt` (3) covers minute alignment, a tick landing exactly on the boundary, and a non-positive interval.
+  - **Cadence:** `setInexactRepeating` fired but got a batching window of up to 45 s; a chained one-shot
+    `set(RTC, nextMinute, ...)` measured a ~21 s window, so the ticker uses the one-shot chain, re-arming itself
+    before each render. `dumpsys alarm` showed `*alarm*:com.chesslock.widget.action.TICK`, `repeatInterval=0`, firing
+    at `10:02:16` and re-arming for `10:03:00`; the release build fired at `10:09:00` and re-armed for `10:10:00`.
+  - **Recovery:** `am force-stop` cleared the scheduled alarm (no pending batch). Installing over the app
+    (`ACTION_MY_PACKAGE_REPLACED`) then re-armed it at the next minute boundary (`10:12:00`) through
+    `BootReceiver` -> `BudgetWidgetUpdater.refreshIfPlaced`, which also repaints the card; `MainActivity` runs the
+    same call on launch for force-stopped installs. `onDisabled` cancels the chain when the last widget is removed.
+  - **Language anomaly resolved:** Home and the widget were showing English mid-session. `settings.preferences_pb`
+    held `app_language = english` and had a write timestamp after the previous release install, so it was an in-app
+    selection rather than an install reset. Selecting **Slovenčina** again stored `slovak`, and Home, Settings and the
+    widget switched immediately. Reinforcing it over a debug build and then the signed release left the 10:04 file
+    timestamp untouched, i.e. installs do not rewrite the language. No code path writes a language without
+    `SettingsStore.setLanguage`.
+  - Release APK re-signed at `dist/ChessLock-0.1.0-test.apk` (v2/v3 verified, 10 847 720 bytes, SHA-256
+    `11C68AC662FE26714D8D8A15AC758E863248F7CC138A7937F970D01C82636D04`), installed over the debug build and
+    non-debuggable. Data survived (ELO 1667, limit `30:00`, used `0:10` -> `29:50`), the widget stayed on home page 2
+    with the Slovak caption `Dnes zostáva`, and the minute alarm was scheduled after the install.
 - Phase 4 bundle (2026-11-13): ran `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease` with
   JDK 21.0.11. **145 domain tests + 53 app tests passed (198 total); 0 failures, errors or skips.** The new
   `PollingPolicyTest` (5) covers the relaxed interval above the threshold, the switch at the threshold, empty/negative
@@ -423,13 +447,21 @@ Resume file. Update after every meaningful step and before any likely credit cut
   Home, English/Slovak switch updates the caption instantly, and next-morning rollover to 29:50 matched Home. 216 tests
   pass (152 domain + 64 app); release re-signed (`904D6F36...`, 10 847 720 bytes) and installed over debug with data
   and the widget intact.
+- 2026-11-15: per-minute widget refresh. The widget no longer waits for the platform's 30-minute tick: a chained,
+  minute-aligned one-shot `AlarmManager.RTC` alarm (`BudgetWidgetTicker`, `AppConfig.widgetRefreshIntervalSeconds = 60`)
+  re-arms before each render, never wakes the device, and lets Doze batch the tick. `setInexactRepeating` was measured
+  first and dropped because its batching window reached 45 s versus ~21 s for the one-shot. `nextWidgetTickAt` (3
+  tests) keeps the tick on the minute boundary. `BootReceiver` and `MainActivity` restart the chain after a reboot or a
+  force-stop via the new suspend `BudgetWidgetUpdater.refreshIfPlaced`, and `onDisabled` cancels it when the last widget
+  goes away. 219 tests pass (152 domain + 67 app); release re-signed (`1D14B9AE...`, 10 847 720 bytes) and installed
+  over debug with ELO, budget and the widget intact.
 
 ## Next step
-1. **Visual-polish, ring, launcher-identity, shortcut and widget bundles are complete and device-verified. Wait for
-   user feedback before the next bundle.** The only unverified item is the subjective feel of the haptic ticks (the
-   switch and the settings key were verified; no audio feedback exists yet). The themed-icon rendering path is present
-   but was not toggled on the test tablet. Widget strings follow the in-app language, but its picker label follows the
-   system locale like the static shortcuts.
+1. **Visual-polish, ring, launcher-identity, shortcut and widget bundles (including the per-minute refresh) are
+   complete and device-verified. Wait for user feedback before the next bundle.** The only unverified item is the
+   subjective feel of the haptic ticks (the switch and the settings key were verified; no audio feedback exists yet).
+   The themed-icon rendering path is present but was not toggled on the test tablet. Widget strings follow the in-app
+   language, but its picker label follows the system locale like the static shortcuts.
 2. Next Phase 4 candidates: a UMP consent SDK integration (needs a new Gradle dependency and real privacy-policy URL),
    production ad unit IDs, Play Data safety/privacy-policy prep, an `Entitlements` groundwork layer, and sounds (needs
    audio assets). Accounts/cloud/leaderboard remain deferred.

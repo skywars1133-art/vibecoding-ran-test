@@ -41,3 +41,13 @@ fun buildWidgetSnapshot(
         urgency = BudgetUrgency.forRemaining(remaining, warnAtSeconds),
     )
 }
+
+/**
+ * First refresh tick strictly after [nowMillis], aligned to [intervalMillis] boundaries. Aligning to
+ * the wall clock means a 60 s interval fires near :00 of every minute instead of 60 s after the
+ * widget happened to be added. Pure so the scheduling edge cases are unit-tested.
+ */
+fun nextWidgetTickAt(nowMillis: Long, intervalMillis: Long): Long {
+    val interval = intervalMillis.coerceAtLeast(1L)
+    return nowMillis - nowMillis % interval + interval
+}

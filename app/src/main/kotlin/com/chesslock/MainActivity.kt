@@ -36,6 +36,7 @@ import com.chesslock.ui.settings.PrivacyScreen
 import com.chesslock.ui.settings.SettingsScreen
 import com.chesslock.ui.stats.StatisticsScreen
 import com.chesslock.ui.theme.ChessLockTheme
+import com.chesslock.widget.BudgetWidgetUpdater
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -60,6 +61,8 @@ class MainActivity : ComponentActivity() {
             // itself skips when the last successful pack is less than 24 hours old).
             packScheduler.ensureScheduled()
             packScheduler.requestImmediateSync(force = false)
+            // Alarms are cleared by a force-stop; this restarts the widget's minute tick.
+            BudgetWidgetUpdater.refreshIfPlaced(this@MainActivity)
         }
         setContent {
             val mainViewModel: MainViewModel = hiltViewModel()

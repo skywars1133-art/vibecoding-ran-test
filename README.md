@@ -40,7 +40,8 @@ scripts/test-domain.sh
    **Solve a puzzle** button. A protection banner above the card shows whether blocking is actually active.
 3. Add the **Time budget** widget (long-press an empty area on the home screen -> **Widgets** -> **ChessLock**). The
    3x2 card shows today's remaining time, the urgency caption (amber at 5 minutes, red at 1 minute), a progress bar and
-   your ELO, refreshes on every budget/ELO/limit change and every 30 minutes, and opens Home when tapped.
+   your ELO. It repaints on every budget/ELO/limit change and once a minute (midnight rollover included), and opens
+   Home when tapped.
 4. Long-press the ChessLock icon in the launcher for shortcuts to **Solve a puzzle**, **View statistics** and **Open
    settings**. Each opens its own screen directly, even when the app was not running.
 5. Open **Settings** to choose the app language (System default / English / Slovak), the theme (System default / Light /
@@ -224,9 +225,13 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
 - **The budget is also on the home screen.** A 3x2 RemoteViews widget (`BudgetWidgetProvider`) shows the knight mark,
   today's remaining time, a caption from the same urgency mapping as Home (green/amber/red), a thin progress bar and
   the ELO. Its snapshot comes from the same pure budget arithmetic (`buildWidgetSnapshot`), so it can never disagree
-  with Home. It needs no permanent timer: `BudgetStore`, `PlayerStore` and `SettingsStore` request a render after every
-  write, and the platform's 30-minute `updatePeriodMillis` covers midnight rollover when the app is idle. The card
-  follows the in-app language through a non-Compose localized context, and tapping it opens Home.
+  with Home. `BudgetStore`, `PlayerStore` and `SettingsStore` request a render after every write, and a chained,
+  minute-aligned one-shot `AlarmManager.RTC` alarm (`BudgetWidgetTicker`, interval from
+  `AppConfig.widgetRefreshIntervalSeconds`) keeps the clock current. RTC never wakes the device, Doze just batches the
+  tick, and the chain re-arms itself before rendering; the widget's 30-minute `updatePeriodMillis` stays as the
+  platform fallback, while `BootReceiver` and app launch restart the chain after a reboot or a force-stop. A repeating
+  alarm was rejected because it gets a batching window of up to 45 s; the chained one-shot measured about 21 s. The
+  card follows the in-app language through a non-Compose localized context, and tapping it opens Home.
 - **One budget story across screens.** Pure `BudgetUrgency` (domain) classifies the remaining time against the same
   `warnAtSeconds` thresholds as the notifications: comfortable, warning (5 minutes), critical (1 minute) or empty. Home
   maps that to an animated ring, an urgency chip and an amber/red gradient; the ring, chip and percentages come from

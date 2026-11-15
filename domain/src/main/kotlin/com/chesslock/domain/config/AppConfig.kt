@@ -16,6 +16,11 @@ data class AppConfig(
     val dailyCapMinutes: Int? = null,
     /** Remaining-time thresholds (seconds) at which the user is warned: 5 min, 1 min. */
     val warnAtSeconds: List<Long> = listOf(300L, 60L),
+    /**
+     * Home-screen widget re-render cadence, so the remaining-time minute stays current. A minute is
+     * also the platform floor for repeating alarms.
+     */
+    val widgetRefreshIntervalSeconds: Long = 60,
 
     // --- Blocking (SPEC 1) ---
     val blockingEnabledByDefault: Boolean = true,

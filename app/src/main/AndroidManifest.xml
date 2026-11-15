@@ -65,7 +65,8 @@
             </intent-filter>
         </activity>
 
-        <!-- Home-screen budget widget (SPEC 1). Updates on budget writes and every 30 minutes. -->
+        <!-- Home-screen budget widget (SPEC 1). Refreshes on budget writes and every minute; the
+             declared 30-minute period is only the platform fallback. -->
         <receiver
             android:name=".widget.BudgetWidgetProvider"
             android:exported="false"

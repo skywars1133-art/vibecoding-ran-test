@@ -81,4 +81,24 @@ class WidgetSnapshotTest {
         assertEquals(BudgetUrgency.CRITICAL, snapshot(usedSeconds = 1_740L).urgency)
         assertEquals(BudgetUrgency.COMFORTABLE, snapshot(usedSeconds = 1_439L).urgency)
     }
+
+    @Test
+    fun `tick aligns to the next minute boundary`() {
+        val minute = 60_000L
+
+        assertEquals(60_000L, nextWidgetTickAt(nowMillis = 1L, intervalMillis = minute))
+        assertEquals(60_000L, nextWidgetTickAt(nowMillis = 59_999L, intervalMillis = minute))
+        assertEquals(120_000L, nextWidgetTickAt(nowMillis = 60_001L, intervalMillis = minute))
+    }
+
+    @Test
+    fun `a tick on the boundary waits for the next one`() {
+        assertEquals(60_000L, nextWidgetTickAt(nowMillis = 0L, intervalMillis = 60_000L))
+        assertEquals(120_000L, nextWidgetTickAt(nowMillis = 60_000L, intervalMillis = 60_000L))
+    }
+
+    @Test
+    fun `non-positive interval never divides by zero`() {
+        assertEquals(6L, nextWidgetTickAt(nowMillis = 5L, intervalMillis = 0L))
+    }
 }

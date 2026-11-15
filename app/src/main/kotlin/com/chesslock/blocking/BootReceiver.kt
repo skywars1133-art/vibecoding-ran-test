@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.chesslock.data.SettingsStore
+import com.chesslock.widget.BudgetWidgetUpdater
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +25,7 @@ class BootReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 if (settingsStore.settings.first().blockingEnabled) controller.start()
+                BudgetWidgetUpdater.refreshIfPlaced(context)
             } finally {
                 pendingResult.finish()
             }
