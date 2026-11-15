@@ -254,7 +254,10 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   remain or the budget is empty, and a relaxed 5 s while there is plenty of time. The interval is logged only when it
   changes, so a device log (`adb logcat -s BlockingService`) shows which cadence is active. The service caps catch-up
   after a freeze at 10 s, flushes pending usage every 15 s, and stops counting / hides the overlay while the screen is
-  off.
+  off. On the tablet the block screen appeared 1.4 s after opening a blocked app with an empty budget and was gone
+  2.3 s after the Home key, i.e. within one poll tick. **Known limitation:** detection is foreground-only and the block
+  screen is one full-display overlay, so in split-screen a blocked app that is *not* focused stays visible in its half
+  until it is focused again; it then gets the overlay within one poll interval.
 - **Battery exemption is recommended, not required.** Onboarding and Settings show a battery-optimization card that
   opens the system exemption list (the Play-restricted direct-request dialog is deliberately avoided). It is marked
   "Recommended" and does not gate the "Protection is active" status, which still depends on usage access, overlay and

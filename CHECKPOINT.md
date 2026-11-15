@@ -28,7 +28,11 @@ Resume file. Update after every meaningful step and before any likely credit cut
   Follow-up at the user's request: the widget now refreshes **every minute** through a chained, minute-aligned
   one-shot `AlarmManager.RTC` alarm instead of relying on the 30-minute platform tick, and shows the remaining time in
   **whole minutes** (`29 min`, `1 h 29 min`) instead of `mm:ss`; release re-signed (SHA-256
-  `F83CFE907541B98BB186DA4FDE0F9274142A9835A4C39975E34B1FF98FB49B51`, 10 847 720 bytes). 224 tests pass.
+  `F83CFE907541B98BB186DA4FDE0F9274142A9835A4C39975E34B1FF98FB49B51`, 10 847 720 bytes). 224 tests pass. Then a Phase 4
+  edge-case pass verified the empty-budget overlay and its **Domov** escape (1.4 s to show, 2.3 s to hide), and a real
+  reboot brought `BlockingService`, the protection notification, the widget, the shortcuts and the minute alarm back
+  without opening the app; split-screen could not be built through adb on this firmware and is documented as a
+  foreground-only detection limitation.
 - Before that: Phase 4 protection and settings bundle - adaptive foreground polling (`PollingPolicy`: 2 s while <=5 min
   remain, relaxed 5 s otherwise), battery-optimization exemption guidance in onboarding and Settings (recommended, not
   required for "active"), a persistent 5/1-minute **Time warnings** toggle, a **Haptic feedback** toggle wired to puzzle
@@ -186,6 +190,34 @@ Resume file. Update after every meaningful step and before any likely credit cut
     `F83CFE907541B98BB186DA4FDE0F9274142A9835A4C39975E34B1FF98FB49B51`; aapt2 confirms the new string in the APK,
     the installed package is non-debuggable, the widget reads `29 min` after the release install and the minute alarm
     is scheduled.
+- Phase 4 edge-case pass (2026-11-15, on `R9TX902F92W`): the debug budget was temporarily rewritten to `used_seconds =
+  1900` (backup kept, restored afterwards) so the empty-budget path could be exercised with Chrome forced to
+  **Always block**.
+  - **Zero-budget overlay:** the launcher showed `0:00` / `Žiadny čas`, and opening Chrome put the block screen in
+    front (`mCurrentFocus=Window{... ChessLock block screen}` with `mFocusedApp=com.android.chrome/...`). The overlay
+    window measured 1200x1848 (`fillxfill`, `ty=APPLICATION_OVERLAY`), i.e. it covers the whole display, not a split
+    half. A `uiautomator` dump read `Čas vypršal`, the explainer, **Vyriešiť úlohu** and **Domov**.
+  - **Escape hatch:** tapping **Domov** moved focus to the launcher and the overlay window went away
+    (`dumpsys window windows | grep -c 'ChessLock block screen'` = 0), so an empty budget never traps the user.
+  - **Switching latency** (measured on-device with a `date +%s%3N` loop polling `dumpsys window windows`): the overlay
+    appeared **1.37 s** after tapping the Chrome icon and was gone **2.27 s** after the HOME key. Both are inside the
+    active 2 s poll interval plus dumpsys latency, so the block screen tracks app switches without a visible window of
+    unprotected use.
+  - **Split-screen: not reproducible through adb on this firmware.** `cmd activity move-task` is gone on this Android
+    16 build (`Unknown command: move-task`), and `am start --windowingMode 3` / `4` leaves the second app fullscreen
+    with the first task merely hidden, so no genuine two-pane split could be built. The behaviour that follows from
+    the verified facts is documented as a known limitation: because the overlay is a single full-display
+    `APPLICATION_OVERLAY`, a genuine split would be fully covered while a blocked app holds focus, but detection is
+    foreground-only, so a blocked app left in an unfocused half stays visible until it is focused again and then gets
+    the overlay within one poll interval.
+  - **Reboot (10:45):** after `adb reboot`, with the app never opened, `BlockingService` was running as a foreground
+    service (`uidState: RCVR`, i.e. started by `BootReceiver`) with the protection notification id 1001; the launcher
+    re-registered the widget and updated it on unlock (page 2 read `29 min`, `ELO 1667`, `Dnes zostáva`); the TICK
+    alarm fired at 10:46:00 and re-armed for 10:47:00; the three static shortcuts were back; `SYSTEM_ALERT_WINDOW`
+    stayed `allow` and the battery whitelist entry survived. `logcat` logged `Poll interval is now 5s` at 29:30
+    remaining, matching `PollingPolicy`.
+  - **Data restored:** `budget.preferences_pb` copied back from the backup (Home `29:30`, used `0:30`), Chrome put
+    back on **By category**, and the signed release reinstalled over the debug build.
 - Phase 4 bundle (2026-11-13): ran `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease` with
   JDK 21.0.11. **145 domain tests + 53 app tests passed (198 total); 0 failures, errors or skips.** The new
   `PollingPolicyTest` (5) covers the relaxed interval above the threshold, the switch at the threshold, empty/negative
@@ -475,13 +507,24 @@ Resume file. Update after every meaningful step and before any likely credit cut
   `29 min` for a 29:50 budget, `1 h 29 min` at a 90 min limit without clipping, then back to `29 min` after restoring
   30 min. 224 tests pass (152 domain + 72 app); release re-signed (`F83CFE90...`, 10 847 720 bytes) and installed over
   debug with data, widget and the minute alarm intact.
+- 2026-11-15: Phase 4 edge-case pass. With a temporarily emptied budget and Chrome forced to **Always block**, the
+  block screen covered the full 1200x1848 display, **Domov** returned to the launcher and removed it, and switching
+  took 1.4 s to show / 2.3 s to hide (one poll tick). A real reboot, without opening the app, brought back
+  `BlockingService` as a foreground service from `BootReceiver`, the protection notification, a repainted widget
+  (`29 min`), the static shortcuts, the overlay permission, the battery whitelist entry and the re-armed minute alarm
+  (fired 10:46, re-armed 10:47); the log showed the 5 s relaxed interval at 29:30 remaining. Split-screen could not be
+  built via adb (`move-task` is unavailable and `--windowingMode 3/4` leaves the app fullscreen), so the
+  foreground-only detection limitation is documented instead. The synthetic budget was restored to `0:30` used,
+  Chrome put back on **By category**, and the release reinstalled over debug.
 
 ## Next step
 1. **Visual-polish, ring, launcher-identity, shortcut and widget bundles (minute refresh and minute-granularity
-   clock) are complete and device-verified. Wait for user feedback before the next bundle.** The only unverified item is the
-   subjective feel of the haptic ticks (the switch and the settings key were verified; no audio feedback exists yet).
-   The themed-icon rendering path is present but was not toggled on the test tablet. Widget strings follow the in-app
-   language, but its picker label follows the system locale like the static shortcuts.
+   clock) plus the Phase 4 edge-case pass are complete and device-verified. Wait for user feedback before the next
+   bundle.** Remaining gaps, all documented: split-screen behaviour could not be exercised (adb cannot form a split on
+   this firmware; foreground-only detection is the known limitation), the subjective feel of the haptic ticks is
+   unverified (the switch and the settings key were checked; no audio feedback exists yet), the themed-icon rendering
+   path was not toggled on the test tablet, and widget/shortcut picker labels follow the system locale rather than the
+   in-app language.
 2. Next Phase 4 candidates: a UMP consent SDK integration (needs a new Gradle dependency and real privacy-policy URL),
    production ad unit IDs, Play Data safety/privacy-policy prep, an `Entitlements` groundwork layer, and sounds (needs
    audio assets). Accounts/cloud/leaderboard remain deferred.
