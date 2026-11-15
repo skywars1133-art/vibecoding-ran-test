@@ -32,7 +32,9 @@ Resume file. Update after every meaningful step and before any likely credit cut
   edge-case pass verified the empty-budget overlay and its **Domov** escape (1.4 s to show, 2.3 s to hide), and a real
   reboot brought `BlockingService`, the protection notification, the widget, the shortcuts and the minute alarm back
   without opening the app; split-screen could not be built through adb on this firmware and is documented as a
-  foreground-only detection limitation.
+  foreground-only detection limitation. A follow-up pass then device-verified the 5- and 1-minute warning
+  notifications (fired exactly on the threshold tick, together with the 5 s -> 2 s cadence switch) and the screen-off
+  pause.
 - Before that: Phase 4 protection and settings bundle - adaptive foreground polling (`PollingPolicy`: 2 s while <=5 min
   remain, relaxed 5 s otherwise), battery-optimization exemption guidance in onboarding and Settings (recommended, not
   required for "active"), a persistent 5/1-minute **Time warnings** toggle, a **Haptic feedback** toggle wired to puzzle
@@ -218,6 +220,24 @@ Resume file. Update after every meaningful step and before any likely credit cut
     remaining, matching `PollingPolicy`.
   - **Data restored:** `budget.preferences_pb` copied back from the backup (Home `29:30`, used `0:30`), Chrome put
     back on **By category**, and the signed release reinstalled over the debug build.
+- Warning/cadence/screen-off pass (2026-11-15, same session): the budget file was rewritten to `used = 1497`
+  (5:03 remaining) and then `used = 1737` (1:03), with Chrome on **Always block** and the debug build installed.
+  - **5-minute warning:** while Chrome was charged, the service logged `Poll interval is now 2s` at 10:52:37 — the
+    same tick that crossed 5:00 — and posted notification id **1002** on channel `blocking_warnings` (importance 4,
+    `AUTO_CANCEL`, category `reminder`) with title `Čas sa kráti` and text
+    `Pre blokované aplikácie zostáva 5 min. Vyrieš úlohu a získaj viac.`
+  - **1-minute warning:** after a second rewrite to 1:03 remaining, the same id was updated at 10:53:26 with
+    `... zostáva 1 min ...`. Both warnings appeared **only** while a blocked app was actually being charged, as
+    designed.
+  - **Screen off:** with Chrome in front and 14:30 left, the screen was switched off (`mWakefulness=Dozing`). The
+    overlay window was gone (count 0) and the persisted `used_seconds` stayed at 930 across two reads ~90 s apart, so
+    no time is charged while the screen is off. After `KEYCODE_WAKEUP` charging resumed (930 -> 950 s) and no overlay
+    appeared because time remained.
+  - **Rounding convention:** the ongoing protection notification rounds remaining time **up** (`zostáva 15 min` at
+    14:10) so a warning never understates the minutes left; Home stays exact (`14:10`) and the widget floors
+    (`14 min`) as requested. Documented so the three surfaces are deliberate, not accidental.
+  - Device left clean: budget restored to `29:30` (used `0:30`), Chrome back on **By category**, release reinstalled
+    (non-debuggable, widget `29 min`, `ELO 1667`, service foreground with id 1001, TICK armed for 11:00).
 - Phase 4 bundle (2026-11-13): ran `:domain:test :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease` with
   JDK 21.0.11. **145 domain tests + 53 app tests passed (198 total); 0 failures, errors or skips.** The new
   `PollingPolicyTest` (5) covers the relaxed interval above the threshold, the switch at the threshold, empty/negative
@@ -516,6 +536,13 @@ Resume file. Update after every meaningful step and before any likely credit cut
   built via adb (`move-task` is unavailable and `--windowingMode 3/4` leaves the app fullscreen), so the
   foreground-only detection limitation is documented instead. The synthetic budget was restored to `0:30` used,
   Chrome put back on **By category**, and the release reinstalled over debug.
+- 2026-11-15: warning, cadence and screen-off pass. With 5:03 left and Chrome forced to **Always block**, the 5-minute
+  notification (id 1002, channel `blocking_warnings`, high importance) fired on the tick that crossed 5:00, and the
+  service logged the 5 s -> 2 s cadence switch at the same moment; a second run from 1:03 updated the same notification
+  with the 1-minute text. Both fired only while a blocked app was charged. With the screen off (`Dozing`) the block
+  overlay was removed and `used_seconds` stayed at 930 s across ~90 s; waking resumed charging (930 -> 950 s) with no
+  overlay. Noted the intended rounding split: Home exact, widget floors, notifications round up. Budget restored to
+  `29:30`, Chrome back on **By category**, release reinstalled.
 
 ## Next step
 1. **Visual-polish, ring, launcher-identity, shortcut and widget bundles (minute refresh and minute-granularity

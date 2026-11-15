@@ -264,7 +264,11 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   the running service.
 - **Warning notifications and haptics are user choices.** `AppSettings.warningNotificationsEnabled` gates the 5/1-minute
   notifications (the ongoing foreground-service notification remains), and `hapticsEnabled` gates the short move/error
-  vibration in the puzzle screen. Both persist in the `settings` DataStore and default to on.
+  vibration in the puzzle screen. Both persist in the `settings` DataStore and default to on. A warning fires only when
+  a blocked app is actually being charged and the remaining time crosses one of `config.warnAtSeconds` (`5 min`, then
+  `1 min`); it arrives on the high-importance `blocking_warnings` channel and is cancelled when the toggle is switched
+  off. Remaining time is rounded **up** in notifications (`15 min` at 14:10) so a warning never understates what is
+  left, while Home stays exact and the widget floors — a deliberate split between the three surfaces.
 - **Privacy and ads is an in-app explainer.** Settings -> **Privacy and ads** states that ELO, puzzle history, budget and
   app-usage history stay on the device, that usage access only identifies the foreground package, and that AdMob is the
   only third party (rewarded hints only). It also records that this test build uses Google test ad units and that
