@@ -581,8 +581,9 @@ Resume file. Update after every meaningful step and before any likely credit cut
   (`Nápoveda: pohni zvýrazneným kameňom.`). That run exposed a pre-existing UI lag: the live reward chip kept the
   pre-hint value until the next move, so `grantHint()` now also writes
   `rewardSeconds = currentSession.currentRewardSeconds()`. Release re-signed after the fix (`176A9342...`,
-  10 847 720 bytes); the tablet dropped off adb again before that build could be installed, so the chip update is
-  still device-unverified. README gained a **Premium (planned)** section with the three proposals (ad-free hints,
+  10 847 720 bytes) and installed on the tablet: hinting a `6:00` puzzle updated the live chip to `3:00` immediately,
+  with the level-1 hint text shown. Home, widget, notification 1001 and the TICK alarm were re-checked after that
+  install. README gained a **Premium (planned)** section with the three proposals (ad-free hints,
   extra skips, advanced statistics) and the Billing integration notes. Payments remain intentionally unimplemented.
 
 ## Next step
@@ -592,9 +593,8 @@ Resume file. Update after every meaningful step and before any likely credit cut
    documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
    detection is the known limitation), the subjective feel of the haptic ticks is unverified (the switch and the
    settings key were checked; no audio feedback exists yet), the themed-icon rendering path was not toggled on the test
-   tablet, widget/shortcut picker labels follow the system locale rather than the in-app language, and the
-   `Entitlements` bundle was device-checked (install, Home, widget, notification, TICK, free-tier ad path) except for
-   the reward-chip update added afterwards, because the tablet dropped off adb before that build was installed.
+   tablet, widget/shortcut picker labels follow the system locale rather than the in-app language. The
+   `Entitlements` bundle and the reward-chip update are fully device-verified.
 2. Next Phase 4 candidates: a UMP consent SDK integration (needs a new Gradle dependency and real privacy-policy URL),
    production ad unit IDs, Play Data safety/privacy-policy prep, Play Billing implementation behind
    `EntitlementsRepository.update(...)`, and sounds (needs audio assets). Accounts/cloud/leaderboard remain deferred.
