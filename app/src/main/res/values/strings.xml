@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">ChessLock</string>
-    <string name="home_placeholder">Earn time by solving chess puzzles</string>
     <string name="home_time_left">Time left today</string>
     <string name="home_daily_limit">Daily limit</string>
     <string name="home_earned_today">Earned today</string>
@@ -104,7 +103,6 @@
     <string name="settings_apps_button">Choose individual apps</string>
     <string name="settings_apps_title">Individual apps</string>
     <string name="settings_apps_search">Search apps</string>
-    <string name="settings_apps_loading">Loading apps…</string>
     <string name="settings_apps_empty">No apps match your search.</string>
     <string name="settings_apps_override_default">Use categories</string>
     <string name="settings_apps_override_always">Always block</string>
@@ -139,7 +137,7 @@
 
     <!-- Puzzle downloads (SPEC 2, Phase 2) -->
     <string name="settings_puzzles_section">Puzzle downloads</string>
-    <string name="settings_puzzles_description">About once a day, ChessLock downloads a pack of %1$d puzzles matched to your rating. Packs stay available offline.</string>
+    <string name="settings_puzzles_description" tools:ignore="PluralsCandidate">About once a day, ChessLock downloads a pack of %1$d puzzles matched to your rating. Packs stay available offline.</string>
     <string name="settings_puzzles_stock">Unsolved puzzles in the offline stock: %1$d</string>
     <string name="settings_puzzles_stock_loading">Unsolved puzzles in the offline stock: …</string>
     <string name="settings_puzzles_last_sync">Last download: %1$s</string>

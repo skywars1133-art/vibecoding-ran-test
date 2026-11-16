@@ -6,7 +6,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.chesslock.MainActivity
@@ -26,7 +25,6 @@ class BlockingNotifications @Inject constructor(
     private val manager = NotificationManagerCompat.from(context)
 
     fun createChannels() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val protection = NotificationChannel(
             CHANNEL_PROTECTION,
             context.getString(R.string.blocking_channel_protection),
@@ -74,11 +72,14 @@ class BlockingNotifications @Inject constructor(
     }
 
     fun updateProtection(remainingSeconds: Long, usageAccessGranted: Boolean, overlayGranted: Boolean) {
-        runCatching {
+        // POST_NOTIFICATIONS can be revoked at any time, so a rejected notify must never crash the service.
+        try {
             manager.notify(
                 config.blockingNotificationId,
                 buildProtection(remainingSeconds, usageAccessGranted, overlayGranted),
             )
+        } catch (_: SecurityException) {
+            // Permission revoked while running: keep blocking, just skip the update.
         }
     }
 
@@ -97,7 +98,11 @@ class BlockingNotifications @Inject constructor(
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .build()
-        runCatching { manager.notify(config.blockingWarningNotificationId, notification) }
+        try {
+            manager.notify(config.blockingWarningNotificationId, notification)
+        } catch (_: SecurityException) {
+            // Permission revoked while running: a missing warning is not fatal.
+        }
     }
 
     fun cancelWarning() {

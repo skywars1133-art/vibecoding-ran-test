@@ -3,9 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- App blocking (SPEC 1). Usage stats and overlays are granted by the user in system settings. -->
-    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
-    <!-- Needed to read ApplicationInfo.category and to list apps in the blocker picker. -->
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <!-- PACKAGE_USAGE_STATS is an appop-style permission granted manually via Special access, not a
+         system-only signature permission, so the Play/Android lint warning does not apply here. -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+    <!-- Core functionality: the blocker must show and classify every installed app. Play requires a
+         QUERY_ALL_PACKAGES declaration for this use case, so the broad query is intentional. -->
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
@@ -28,6 +35,8 @@
     <application
         android:name=".ChessLockApp"
         android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"

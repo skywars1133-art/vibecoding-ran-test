@@ -18,6 +18,7 @@ Requirements: JDK 17+, Android Studio (or the Android SDK).
 ./gradlew :domain:test          # unit tests for all rules (ELO, rewards, lives, hints, skips, budget)
 ./gradlew :app:testDebugUnitTest # chess rules and mating alternatives
 ./gradlew :app:assembleDebug    # Android app (needs the Android SDK; set sdk.dir in local.properties)
+./gradlew :app:lintDebug        # must stay at 0 errors / 0 warnings before a release build
 ```
 
 No network or Android SDK (for example a locked-down sandbox)? The pure-Kotlin domain tests still run with the
@@ -312,6 +313,13 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
 - **Usage history is best-effort.** `BudgetStore` mirrors its usage/earned writes into `usage_days`, but a statistics
   failure is logged and never changes the budget result. The screen uses the larger of today's history row and the live
   budget, so usage recorded before the stats table existed is not shown as zero. All date handling uses the local date.
+- **Lint and Play readiness.** `:app:lintDebug` reports no issues. `PACKAGE_USAGE_STATS` and
+  `QUERY_ALL_PACKAGES` keep their required declarations with `tools:ignore` plus a written justification
+  (both are core to blocking and app classification), notification posts catch a revoked
+  `POST_NOTIFICATIONS` at runtime instead of crashing, and cloud backup/device transfer are explicitly
+  excluded on every API level (`data_extraction_rules.xml` on Android 12+, `backup_rules.xml` below it).
+  The bundle keeps every locale in the base module because the in-app language switch changes the locale
+  at runtime. Both broad permissions still need their Play Console declarations and data-safety answers.
 - **Min SDK 26** (java.time without desugaring, notification channels).
 - **Dependency versions** in `gradle/libs.versions.toml` are a resolved compatible set (AGP 8.7.3, Kotlin 2.0.21,
   KSP 2.0.21-1.0.28, Hilt 2.52, Compose BOM 2024.10.01, AdMob 23.6.0, AndroidSVG 1.4, WorkManager 2.9.1,

@@ -42,11 +42,11 @@ fun ChessBoard(
     playerIsWhite: Boolean,
     solved: Boolean,
     onMove: (String) -> Unit,
+    modifier: Modifier = Modifier,
     pieceStyle: PieceStyle = PieceStyle.DEFAULT,
     hintSourceSquare: String? = null,
     hintTargetSquare: String? = null,
     resetKey: Any? = null,
-    modifier: Modifier = Modifier,
 ) {
     var selectedSquare by remember(resetKey, lastMove, solved) {
         mutableStateOf<String?>(null)

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">ChessLock</string>
-    <string name="home_placeholder">Získaj čas riešením šachových úloh</string>
     <string name="home_time_left">Dnes zostáva</string>
     <string name="home_daily_limit">Denný limit</string>
     <string name="home_earned_today">Získané dnes</string>
@@ -104,7 +103,6 @@
     <string name="settings_apps_button">Vybrať jednotlivé aplikácie</string>
     <string name="settings_apps_title">Jednotlivé aplikácie</string>
     <string name="settings_apps_search">Hľadať aplikácie</string>
-    <string name="settings_apps_loading">Načítavajú sa aplikácie…</string>
     <string name="settings_apps_empty">Žiadne aplikácie nezodpovedajú hľadaniu.</string>
     <string name="settings_apps_override_default">Podľa kategórií</string>
     <string name="settings_apps_override_always">Vždy blokovať</string>
@@ -139,7 +137,7 @@
 
     <!-- Puzzle downloads (SPEC 2, Phase 2) -->
     <string name="settings_puzzles_section">Sťahovanie úloh</string>
-    <string name="settings_puzzles_description">Približne raz za deň ChessLock stiahne balík %1$d úloh podľa tvojej výkonnosti. Balíky zostávajú dostupné offline.</string>
+    <string name="settings_puzzles_description" tools:ignore="PluralsCandidate">Približne raz za deň ChessLock stiahne balík %1$d úloh podľa tvojej výkonnosti. Balíky zostávajú dostupné offline.</string>
     <string name="settings_puzzles_stock">Nevyriešené úlohy v lokálnej zásobe: %1$d</string>
     <string name="settings_puzzles_stock_loading">Nevyriešené úlohy v lokálnej zásobe: …</string>
     <string name="settings_puzzles_last_sync">Posledné stiahnutie: %1$s</string>
@@ -201,6 +199,7 @@
     <plurals name="stats_streak_days">
         <item quantity="one">%1$d deň</item>
         <item quantity="few">%1$d dni</item>
+        <item quantity="many">%1$d dňa</item>
         <item quantity="other">%1$d dní</item>
     </plurals>
     <string name="stats_solved_title">Vyriešené úlohy</string>

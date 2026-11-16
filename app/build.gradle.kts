@@ -45,6 +45,14 @@ android {
         compose = true
         buildConfig = true
     }
+
+    bundle {
+        language {
+            // The in-app language switch changes the locale at runtime, so every locale must ship
+            // in the base module instead of being split per language by the bundle.
+            enableSplit = false
+        }
+    }
 }
 
 kotlin {

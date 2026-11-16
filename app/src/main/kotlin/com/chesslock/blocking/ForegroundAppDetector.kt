@@ -1,5 +1,6 @@
 package com.chesslock.blocking
 
+import android.annotation.SuppressLint
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
@@ -19,6 +20,9 @@ class ForegroundAppDetector @Inject constructor(
 ) {
     fun hasUsageAccess(): Boolean = BlockingPermissions.hasUsageAccess(context)
 
+    // ACTIVITY_RESUMED is API 29+ but is the same inlined int as MOVE_TO_FOREGROUND (API 21), so the
+    // comparison is safe on every supported release; MOVE_TO_FOREGROUND covers API 26-28 anyway.
+    @SuppressLint("InlinedApi")
     fun foregroundPackage(nowMillis: Long = System.currentTimeMillis()): String? {
         if (!hasUsageAccess()) return null
         val usageStats = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
