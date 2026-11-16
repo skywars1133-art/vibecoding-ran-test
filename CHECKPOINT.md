@@ -574,10 +574,16 @@ Resume file. Update after every meaningful step and before any likely credit cut
   hints through `onHintWithoutAd()` (re-checking the entitlement so the free tier can never skip the ad); `PuzzleScreen`
   enables Hint without network/ad only when premium and hides the ad-retry note on that path. Four entitlement tests,
   one `SkipPolicy` premium test and two repository tests were added: **231 tests** (157 domain + 74 app), lint clean.
-  Release re-signed (`6A494DD9...`, 10 847 720 bytes, v2/v3, dex contains `EntitlementsRepository`/`PremiumFeature`);
-  the tablet dropped off adb during the install check, so the on-device pass is still pending. README gained a
-  **Premium (planned)** section with the three proposals (ad-free hints, extra skips, advanced statistics) and the
-  Billing integration notes. Payments remain intentionally unimplemented.
+  Release re-signed (`6A494DD9...`, 10 847 720 bytes, v2/v3, dex contains `EntitlementsRepository`/`PremiumFeature`).
+  On-device pass (`R9TX902F92W`, data kept): Home `30:00` / `ELO 1942`, widget `30 min` / `ELO 1942` / `Dnes zostáva`,
+  service foreground as id 1001, TICK alarm armed for the next minute. The free tier still requires the ad: tapping
+  Hint opened the confirmation dialog, and the ad actually ran to `Odmena je udelená`, granting the level-1 hint
+  (`Nápoveda: pohni zvýrazneným kameňom.`). That run exposed a pre-existing UI lag: the live reward chip kept the
+  pre-hint value until the next move, so `grantHint()` now also writes
+  `rewardSeconds = currentSession.currentRewardSeconds()`. Release re-signed after the fix (`176A9342...`,
+  10 847 720 bytes); the tablet dropped off adb again before that build could be installed, so the chip update is
+  still device-unverified. README gained a **Premium (planned)** section with the three proposals (ad-free hints,
+  extra skips, advanced statistics) and the Billing integration notes. Payments remain intentionally unimplemented.
 
 ## Next step
 1. **Visual-polish, ring, launcher-identity, shortcut and widget bundles (minute refresh and minute-granularity
@@ -586,8 +592,9 @@ Resume file. Update after every meaningful step and before any likely credit cut
    documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
    detection is the known limitation), the subjective feel of the haptic ticks is unverified (the switch and the
    settings key were checked; no audio feedback exists yet), the themed-icon rendering path was not toggled on the test
-   tablet, widget/shortcut picker labels follow the system locale rather than the in-app language, and the Entitlements
-   bundle's on-device install check is pending because the tablet dropped off adb mid-session.
+   tablet, widget/shortcut picker labels follow the system locale rather than the in-app language, and the
+   `Entitlements` bundle was device-checked (install, Home, widget, notification, TICK, free-tier ad path) except for
+   the reward-chip update added afterwards, because the tablet dropped off adb before that build was installed.
 2. Next Phase 4 candidates: a UMP consent SDK integration (needs a new Gradle dependency and real privacy-policy URL),
    production ad unit IDs, Play Data safety/privacy-policy prep, Play Billing implementation behind
    `EntitlementsRepository.update(...)`, and sounds (needs audio assets). Accounts/cloud/leaderboard remain deferred.

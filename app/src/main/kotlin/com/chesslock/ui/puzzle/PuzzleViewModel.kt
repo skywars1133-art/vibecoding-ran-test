@@ -257,6 +257,8 @@ class PuzzleViewModel @Inject constructor(
                     hintSourceSquare = highlight?.sourceSquare,
                     hintTargetSquare = highlight?.targetSquare,
                     hintAvailability = currentSession.hintAvailability(hintsUsedToday),
+                    // The hint halves the payout; show that immediately instead of after the next move.
+                    rewardSeconds = currentSession.currentRewardSeconds(),
                 )
             } catch (e: CancellationException) {
                 throw e
