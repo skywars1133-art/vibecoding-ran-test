@@ -136,11 +136,15 @@ fun PuzzleScreen(
         }
     }
     val hintAvailable = state.hintAvailability == HintAvailability.AVAILABLE
-    val hintEnabled = !state.solved && hintAvailable && online && adState is RewardedAdState.Ready
+    // Premium hints need neither a network nor a loaded ad.
+    val hintNeedsAd = state.hintsRequireAd
+    val hintEnabled = !state.solved && hintAvailable &&
+        (!hintNeedsAd || (online && adState is RewardedAdState.Ready))
     val hintNote = when {
         state.solved -> null
         state.hintAvailability == HintAvailability.DAILY_LIMIT -> R.string.hint_daily_limit
         state.hintAvailability == HintAvailability.LEVEL_REACHED -> R.string.hint_level_reached
+        !hintNeedsAd -> null
         !online -> R.string.hint_offline
         adState is RewardedAdState.Loading -> R.string.hint_ad_loading
         adState is RewardedAdState.Unavailable -> R.string.hint_ad_unavailable
@@ -314,7 +318,13 @@ fun PuzzleScreen(
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             Button(
                                 enabled = hintEnabled,
-                                onClick = { showHintDialog = true },
+                                onClick = {
+                                    if (state.hintsRequireAd) {
+                                        showHintDialog = true
+                                    } else {
+                                        viewModel.onHintWithoutAd()
+                                    }
+                                },
                             ) {
                                 Text(stringResource(R.string.hint_button))
                             }
@@ -332,7 +342,9 @@ fun PuzzleScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                        if (online && hintAvailable && adState is RewardedAdState.Unavailable) {
+                        if (state.hintsRequireAd && online && hintAvailable &&
+                            adState is RewardedAdState.Unavailable
+                        ) {
                             TextButton(onClick = adManager::preload) {
                                 Text(stringResource(R.string.hint_retry_ad))
                             }

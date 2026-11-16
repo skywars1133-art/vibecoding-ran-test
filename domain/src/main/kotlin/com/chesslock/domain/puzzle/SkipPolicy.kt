@@ -1,6 +1,8 @@
 package com.chesslock.domain.puzzle
 
 import com.chesslock.domain.config.AppConfig
+import com.chesslock.domain.entitlements.EntitlementRules
+import com.chesslock.domain.entitlements.Entitlements
 
 enum class SkipKind {
     /** Uses up one of the daily free skips. */
@@ -18,9 +20,10 @@ object SkipPolicy {
         freeSkipsUsedToday: Int,
         elapsedOnPuzzleSeconds: Long,
         config: AppConfig = AppConfig.DEFAULT,
+        entitlements: Entitlements = Entitlements.FREE,
     ): SkipKind? = when {
         elapsedOnPuzzleSeconds >= config.skipUnlockAfterMinutes * 60L -> SkipKind.TIMEOUT
-        freeSkipsUsedToday < config.freeSkipsPerDay -> SkipKind.FREE
+        freeSkipsUsedToday < EntitlementRules.freeSkipsPerDay(config, entitlements) -> SkipKind.FREE
         else -> null
     }
 }

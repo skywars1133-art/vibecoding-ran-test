@@ -4,8 +4,8 @@ Resume file. Update after every meaningful step and before any likely credit cut
 
 ## Status
 - Date: 2026-11-16
-- Current phase: Phase 4 (hardening and release prep) - widget bundle implemented and device-verified; awaiting user
-  feedback
+- Current phase: Phase 4 (hardening and release prep) - lint/Play-readiness cleanup and monetization groundwork
+  (`Entitlements`) are complete; awaiting user feedback
 - Plan: **approved by the user** (2026-11-02)
 - Last completed: visual-polish bundle - fixed ChessLock brand palette (no Material You dynamic colours), typography
   and shapes, an animated Home budget ring with an urgency chip driven by pure `BudgetUrgency` (comfortable / warning /
@@ -40,7 +40,13 @@ Resume file. Update after every meaningful step and before any likely credit cut
   API level, bundle language splits are disabled for the runtime locale switch, the adaptive icon moved to
   `mipmap-anydpi` with a monochrome tag, and dead SDK checks, unused strings and `Modifier` ordering were fixed. 224
   tests pass; release re-signed (SHA-256 `0013D8A7CF0C062AE4BC5FDBF6B0380DCC065EBD6754A35572A3E012FF471900`,
-  10 847 720 bytes).
+  10 847 720 bytes). Then Phase 4's monetization groundwork landed: a pure `PremiumFeature`/`Entitlements`/
+  `EntitlementRules` model in `:domain`, a Hilt `EntitlementsRepository` (StateFlow, always FREE, the single future
+  Billing hook), a `SkipPolicy` entitlement parameter and premium-aware hint gating in `PuzzleViewModel`/`PuzzleScreen`
+  (free tier still requires the rewarded ad). No Billing dependency or product ID exists. **231 tests pass** (157 domain
+  + 74 app); lint stays at **No issues found**; release re-signed
+  (SHA-256 `6A494DD9868AD0CB3D0FBD0B1BAE53E661B8746AF29F88D833F42E7DD81A961F`, 10 847 720 bytes) and its dex contains
+  the new classes.
 - Before that: Phase 4 protection and settings bundle - adaptive foreground polling (`PollingPolicy`: 2 s while <=5 min
   remain, relaxed 5 s otherwise), battery-optimization exemption guidance in onboarding and Settings (recommended, not
   required for "active"), a persistent 5/1-minute **Time warnings** toggle, a **Haptic feedback** toggle wired to puzzle
@@ -560,18 +566,31 @@ Resume file. Update after every meaningful step and before any likely credit cut
   debug and device-checked: Home `30:00`, widget `30 min` / `ELO 1942`, id 1001 foreground, TICK armed, per-app picker
   with Chrome on **By category**, and an emptied budget still produced the block overlay over Chrome within one tick.
   Budget file restored afterwards.
+- 2026-11-16: monetization groundwork (PHASES Phase 4). Added `PremiumFeature` (`AD_FREE_HINTS`, `EXTRA_SKIPS`), an
+  immutable `Entitlements` snapshot and pure `EntitlementRules` in `:domain`; `AppConfig.premiumExtraSkipsPerDay = 3`;
+  `SkipPolicy.availableSkip` takes an optional `Entitlements` (default FREE) and reads the premium skip allowance from
+  `EntitlementRules`; `EntitlementsRepository` is a Hilt singleton `StateFlow` whose `update()` is the only hook a
+  future Play Billing client needs. `PuzzleViewModel` collects the flow, exposes `hintsRequireAd` and grants premium
+  hints through `onHintWithoutAd()` (re-checking the entitlement so the free tier can never skip the ad); `PuzzleScreen`
+  enables Hint without network/ad only when premium and hides the ad-retry note on that path. Four entitlement tests,
+  one `SkipPolicy` premium test and two repository tests were added: **231 tests** (157 domain + 74 app), lint clean.
+  Release re-signed (`6A494DD9...`, 10 847 720 bytes, v2/v3, dex contains `EntitlementsRepository`/`PremiumFeature`);
+  the tablet dropped off adb during the install check, so the on-device pass is still pending. README gained a
+  **Premium (planned)** section with the three proposals (ad-free hints, extra skips, advanced statistics) and the
+  Billing integration notes. Payments remain intentionally unimplemented.
 
 ## Next step
 1. **Visual-polish, ring, launcher-identity, shortcut and widget bundles (minute refresh and minute-granularity
-   clock), the Phase 4 edge-case/warning/screen-off pass and the lint/Play-readiness cleanup are complete and
-   device-verified. Wait for user feedback before the next bundle.** Remaining gaps, all documented: split-screen
-   behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only detection is the known
-   limitation), the subjective feel of the haptic ticks is unverified (the switch and the settings key were checked; no
-   audio feedback exists yet), the themed-icon rendering path was not toggled on the test tablet, and widget/shortcut
-   picker labels follow the system locale rather than the in-app language.
+   clock), the Phase 4 edge-case/warning/screen-off pass, the lint/Play-readiness cleanup and the `Entitlements`
+   monetization groundwork are complete. Wait for user feedback before the next bundle.** Remaining gaps, all
+   documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
+   detection is the known limitation), the subjective feel of the haptic ticks is unverified (the switch and the
+   settings key were checked; no audio feedback exists yet), the themed-icon rendering path was not toggled on the test
+   tablet, widget/shortcut picker labels follow the system locale rather than the in-app language, and the Entitlements
+   bundle's on-device install check is pending because the tablet dropped off adb mid-session.
 2. Next Phase 4 candidates: a UMP consent SDK integration (needs a new Gradle dependency and real privacy-policy URL),
-   production ad unit IDs, Play Data safety/privacy-policy prep, an `Entitlements` groundwork layer, and sounds (needs
-   audio assets). Accounts/cloud/leaderboard remain deferred.
+   production ad unit IDs, Play Data safety/privacy-policy prep, Play Billing implementation behind
+   `EntitlementsRepository.update(...)`, and sounds (needs audio assets). Accounts/cloud/leaderboard remain deferred.
 3. Optional pending Phase 1 device check: reconnect/unlock the old phone `CIYDDIMV5D5XNFUS`, launch the app once,
    reboot, unlock, and confirm `BlockingService` starts automatically. Also exercise the block-screen buttons and
    permission dialogs manually (adb input injection is blocked on that device).

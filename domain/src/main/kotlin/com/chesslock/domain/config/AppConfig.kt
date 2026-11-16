@@ -75,6 +75,8 @@ data class AppConfig(
 
     // --- Skips (SPEC 3) ---
     val freeSkipsPerDay: Int = 1,
+    /** Extra free skips added by the premium EXTRA_SKIPS entitlement (SPEC 3b). */
+    val premiumExtraSkipsPerDay: Int = 3,
     /** After this long on one puzzle the player may skip regardless of free skips. */
     val skipUnlockAfterMinutes: Int = 20,
     /** UI tick used by the solving timer and time-based skip availability. */

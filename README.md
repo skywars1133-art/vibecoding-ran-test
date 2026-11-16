@@ -297,6 +297,14 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   (`AppConfig.dailyHintLimit`); offline devices show an explanatory note and disable the button. The next ad is
   preloaded after the previous one closes. Phase 1 uses AdMob's official test app and rewarded-unit IDs; production IDs
   and UMP consent are Phase 4 work.
+- **Premium features sit behind an `Entitlements` seam.** `domain/.../entitlements/Entitlements.kt` defines
+  `PremiumFeature` (`AD_FREE_HINTS`, `EXTRA_SKIPS`), an immutable `Entitlements` snapshot and the pure
+  `EntitlementRules` that turn it into gameplay limits. `EntitlementsRepository` is the single source of truth (a
+  `StateFlow`, always `FREE` today) and is the only thing a future Play Billing client has to call. `SkipPolicy` takes
+  the snapshot as an optional parameter, so the premium skip allowance comes from `EntitlementRules` instead of
+  scattered checks; `PuzzleViewModel` collects the flow, exposes `hintsRequireAd`, and grants a hint from
+  `onHintWithoutAd()` only after re-checking the entitlement, so a mis-wired UI can never hand out free hints on the
+  free tier. No payment code, dependency or product ID exists yet. See **Premium (planned)** below.
 - **Statistics are local-only for now.** Accounts, cloud sync and the leaderboard are deferred at the user's request;
   the statistics screen reads Room and DataStore on the device and uploads nothing. Room v2 adds append-only
   `attempts` and per-day `usage_days`; `MIGRATION_1_2` only creates the new tables/indices, so existing puzzles and
@@ -336,7 +344,36 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   statistics migration and attempt recording were verified on the tablet. On top of that, the local settings now
   include an in-app Light/Dark/System theme, a per-app blocking picker and the Phase 4 hardening bundle (adaptive
   polling, battery-optimization guidance, warning-notification and haptics toggles, and the Privacy and ads explainer).
-  Details are in `CHECKPOINT.md`.
+  Phase 4's monetization groundwork is in place as the `Entitlements` layer described above; blocking itself stays
+  free. Details are in `CHECKPOINT.md`.
+
+### Premium (planned)
+
+Payments are deliberately **not implemented**. The groundwork only defines what a future one-time "Premium" purchase
+can unlock; the app always runs on `Entitlements.FREE`.
+
+Proposals, cheapest to build first:
+
+1. **Ad-free hints** (`PremiumFeature.AD_FREE_HINTS`) - Hint is granted immediately, without a rewarded ad and without
+   a network. The Hint button already bypasses the ad dialog and the ad-retry note when this entitlement is present.
+2. **Extra skips** (`PremiumFeature.EXTRA_SKIPS`) - the daily free-skip allowance grows by
+   `AppConfig.premiumExtraSkipsPerDay` (3 today). `SkipPolicy` already reads the raised limit from `EntitlementRules`.
+3. **Advanced statistics** (not modelled yet) - for example an hourly usage heatmap, a longer ELO history or a CSV
+   export. It would be one more `PremiumFeature` value plus one `EntitlementRules` gate; the screen would read the
+   snapshot like the puzzle screen does.
+
+Billing integration notes:
+
+- Add Play Billing (`com.android.billingclient:billing-ktx`) with a single non-consumable product (e.g. `premium`).
+- Keep `BillingClient` in the app module. After a purchase, a restore or a re-query, it calls
+  `EntitlementsRepository.update(Entitlements(setOf(...)))` and nothing else - no feature code changes.
+- Acknowledge the purchase, cache the snapshot (DataStore) so premium survives offline, and re-run
+  `queryPurchasesAsync` on launch to pick up refunds and revocations.
+- `EntitlementsRepository` is injected through Hilt, so every consumer already observes the flow.
+- Premium must never gate blocking itself: the blocker stays free, so the app never holds a user's device hostage.
+- Play Console work: declare the product, answer the new Data safety questions (Billing collects purchase history;
+  no app-usage data is sent), and handle refunds/revocations via the re-query.
+- Tests to add with Billing: purchase acknowledgement, restore, and a premium -> free downgrade after a refund.
 
 ## Licenses
 | Item | License | Use |

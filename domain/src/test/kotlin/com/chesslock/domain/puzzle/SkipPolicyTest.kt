@@ -1,6 +1,8 @@
 package com.chesslock.domain.puzzle
 
 import com.chesslock.domain.config.AppConfig
+import com.chesslock.domain.entitlements.Entitlements
+import com.chesslock.domain.entitlements.PremiumFeature
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -33,5 +35,13 @@ class SkipPolicyTest {
         assertEquals(SkipKind.FREE, SkipPolicy.availableSkip(2, 0, custom))
         assertNull(SkipPolicy.availableSkip(3, 299, custom))
         assertEquals(SkipKind.TIMEOUT, SkipPolicy.availableSkip(3, 300, custom))
+    }
+
+    @Test
+    fun premiumEntitlementRaisesTheDailySkipAllowance() {
+        val premium = Entitlements(setOf(PremiumFeature.EXTRA_SKIPS))
+        assertEquals(SkipKind.FREE, SkipPolicy.availableSkip(1, 0, config, premium))
+        assertEquals(SkipKind.FREE, SkipPolicy.availableSkip(3, 0, config, premium))
+        assertNull(SkipPolicy.availableSkip(4, 0, config, premium))
     }
 }

@@ -8,10 +8,12 @@ import com.chesslock.chess.ChesslibMateChecker
 import com.chesslock.data.PlayerStore
 import com.chesslock.data.PuzzleRepository
 import com.chesslock.data.BudgetStore
+import com.chesslock.data.EntitlementsRepository
 import com.chesslock.data.SettingsStore
 import com.chesslock.data.StatisticsStore
 import com.chesslock.domain.config.AppConfig
 import com.chesslock.domain.elo.EloResult
+import com.chesslock.domain.entitlements.EntitlementRules
 import com.chesslock.domain.puzzle.HintAvailability
 import com.chesslock.domain.puzzle.MoveResult
 import com.chesslock.domain.puzzle.PuzzleProgress
@@ -26,6 +28,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -63,6 +66,8 @@ data class PuzzleUiState(
     val hintSourceSquare: String? = null,
     val hintTargetSquare: String? = null,
     val hintAvailability: HintAvailability = HintAvailability.AVAILABLE,
+    /** False only for a premium entitlement: then Hint is granted without a rewarded ad. */
+    val hintsRequireAd: Boolean = true,
 )
 
 @HiltViewModel
@@ -72,6 +77,7 @@ class PuzzleViewModel @Inject constructor(
     private val budgetStore: BudgetStore,
     private val settingsStore: SettingsStore,
     private val statisticsStore: StatisticsStore,
+    private val entitlementsRepository: EntitlementsRepository,
     private val config: AppConfig,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(PuzzleUiState(playerElo = config.eloStart))
@@ -85,6 +91,21 @@ class PuzzleViewModel @Inject constructor(
 
     init {
         loadPuzzle()
+        // Billing can publish a new snapshot at any time; keep the hint/skip rules in sync.
+        viewModelScope.launch {
+            entitlementsRepository.state.collect { entitlements ->
+                val current = mutableState.value
+                mutableState.value = current.copy(
+                    hintsRequireAd = EntitlementRules.hintsRequireAd(entitlements),
+                    canSkip = SkipPolicy.availableSkip(
+                        current.freeSkipsUsedToday,
+                        current.elapsedSeconds,
+                        config,
+                        entitlements,
+                    ) != null,
+                )
+            }
+        }
     }
 
     fun loadPuzzle() {
@@ -102,6 +123,7 @@ class PuzzleViewModel @Inject constructor(
                 val nextPosition = ChessPosition(puzzle.fen)
                 val nextProgress = PuzzleProgress(puzzle, ChesslibMateChecker(puzzle.fen))
                 val nextSession = PuzzleSession(puzzle.rating, config)
+                val entitlements = entitlementsRepository.state.value
                 val openingMove = nextProgress.start()
                 check(nextPosition.play(openingMove)) { "Puzzle ${puzzle.id} has an illegal opening move" }
 
@@ -121,9 +143,15 @@ class PuzzleViewModel @Inject constructor(
                     maxLives = config.livesPerPuzzle,
                     rewardSeconds = nextSession.currentRewardSeconds(),
                     freeSkipsUsedToday = player.freeSkipsUsedToday,
-                    canSkip = SkipPolicy.availableSkip(player.freeSkipsUsedToday, 0, config) != null,
+                    canSkip = SkipPolicy.availableSkip(
+                        player.freeSkipsUsedToday,
+                        0,
+                        config,
+                        entitlements,
+                    ) != null,
                     hintsUsedToday = player.hintsUsedToday,
                     hintAvailability = nextSession.hintAvailability(player.hintsUsedToday),
+                    hintsRequireAd = EntitlementRules.hintsRequireAd(entitlements),
                 )
                 startTimer(puzzle.id)
             } catch (e: CancellationException) {
@@ -148,7 +176,12 @@ class PuzzleViewModel @Inject constructor(
                 val elapsed = current.elapsedSeconds + config.puzzleTimerTickSeconds
                 mutableState.value = current.copy(
                     elapsedSeconds = elapsed,
-                    canSkip = SkipPolicy.availableSkip(current.freeSkipsUsedToday, elapsed, config) != null,
+                    canSkip = SkipPolicy.availableSkip(
+                        current.freeSkipsUsedToday,
+                        elapsed,
+                        config,
+                        entitlementsRepository.state.value,
+                    ) != null,
                 )
             }
         }
@@ -163,6 +196,7 @@ class PuzzleViewModel @Inject constructor(
             current.freeSkipsUsedToday,
             current.elapsedSeconds,
             config,
+            entitlementsRepository.state.value,
         ) ?: return
 
         moveInProgress = true
@@ -193,6 +227,19 @@ class PuzzleViewModel @Inject constructor(
      * caller must not grant anything when the ad fails, is skipped or the player closes it early.
      */
     fun onAdRewardEarned() {
+        grantHint()
+    }
+
+    /**
+     * Premium path: the AD_FREE_HINTS entitlement replaces the ad. The entitlement is re-checked
+     * here so a mis-wired UI can never hand out a free hint on the free tier.
+     */
+    fun onHintWithoutAd() {
+        if (EntitlementRules.hintsRequireAd(entitlementsRepository.state.value)) return
+        grantHint()
+    }
+
+    private fun grantHint() {
         val currentSession = session ?: return
         val currentProgress = progress ?: return
         val current = mutableState.value
