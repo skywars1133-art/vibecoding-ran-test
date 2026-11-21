@@ -64,28 +64,25 @@ scripts/test-domain.sh
     success rate, day streak, puzzles solved, time earned, and blocked-app time today/this week. Nothing is uploaded.
 12. Hints use AdMob's official **test** ad IDs in this phase, so no real ad is shown or billed. Hints need a network and
     are disabled with an explanatory note while offline.
-13. Tap **Ranking** on Home for the global board and your own position. Until a Firebase config is added it is a clearly
-    labelled local preview with sample rows; nothing is uploaded.
+13. Tap **Ranking** on Home for the global board and your own position. The first open signs in anonymously, uploads
+    your ELO and rated-puzzle count, and shows your rank even when it is outside the top 20.
 
-### Firebase leaderboard (setup in progress)
+### Firebase leaderboard
 
-The ranking rules, repository seam and EN/SK UI are already in the app. The local preview keeps every build green
-while the Firebase project is created; the Firebase Auth/Firestore implementation comes once the config exists.
+The app uses the Firebase project configured in `app/google-services.json` (gitignored), with Anonymous Auth and
+Cloud Firestore.
 
-1. In the [Firebase console](https://console.firebase.google.com), create a project named `ChessLock` with Google
-   Analytics disabled.
-2. Add an Android app with package **`com.chesslock`**. Optionally register this SHA-1, which belongs to the local
-   debug keystore used by the test APK too:
-   `A1:98:A8:25:29:70:6A:E7:66:C3:69:44:67:AA:B3:53:B3:C9:0A:5E`.
-3. Download `google-services.json` and save it as `app/google-services.json`. It is gitignored.
-4. Enable **Authentication → Sign-in method → Anonymous**.
-5. Create **Firestore Database** in Production mode, preferably in `europe-west`.
-6. Tell me when the file is in place: the next bundle adds the Firebase dependencies, Anonymous Auth, the Firestore
-   repository, `firestore.rules`, and swaps the local bindings.
-
-Ranking uses anonymous authentication, so it belongs to this install and is lost after uninstall until an account link
-is added. Only nickname, ELO and rated-puzzle count are eligible for upload; blocking state, app-usage history and
-attempt history are not part of the leaderboard model and never leave the device.
+- Sign-in is anonymous and has no UI. The ranking identity belongs to this install and is lost after uninstall until
+  an account link is added.
+- Each player owns `leaderboard/{uid}`, containing exactly `nickname` (a default such as `Player-4F2` until an
+  editable profile exists), `elo` and `ratedPuzzlesPlayed`. Opening Ranking refreshes that row and reloads the board.
+- **Deploy the rules before first use:** copy `firestore.rules` from the repository root into Firebase console →
+  Firestore Database → Rules and click Publish (or run `firebase deploy --only firestore:rules`). Production mode's
+  default rules deny all reads and writes, so Ranking shows an error until the rules are live.
+- Firebase BOM is pinned to `33.16.0`: newer BOMs ship Kotlin metadata that the project's Kotlin 2.0.21 compiler
+  cannot read.
+- Only nickname, ELO and rated-puzzle count are uploaded. Blocking state, app-usage history, settings and attempt
+  history are not part of the leaderboard model and never leave the device.
 
 ### Shareable test APK
 

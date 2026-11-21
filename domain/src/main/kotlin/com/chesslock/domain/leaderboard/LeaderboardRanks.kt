@@ -14,6 +14,16 @@ object LeaderboardRanks {
         return if (isValidNickname(cleaned, config)) cleaned else config.leaderboardDefaultNickname
     }
 
+    /**
+     * Default display name until an editable nickname profile exists: the configured base plus a
+     * short, stable suffix from the anonymous id so two installs are distinguishable.
+     */
+    fun defaultNickname(playerId: String, config: AppConfig): String {
+        val suffix = playerId.filter { it.isLetterOrDigit() }.takeLast(3)
+        val base = config.leaderboardDefaultNickname
+        return normalizeNickname(if (suffix.isEmpty()) base else "$base-$suffix", config)
+    }
+
     fun isValidNickname(raw: String, config: AppConfig): Boolean {
         val cleaned = raw.trim().replace(Regex("\\s+"), " ")
         if (cleaned.length !in config.leaderboardNicknameMinLength..config.leaderboardNicknameMaxLength) {

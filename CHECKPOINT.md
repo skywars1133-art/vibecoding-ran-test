@@ -600,19 +600,32 @@ Resume file. Update after every meaningful step and before any likely credit cut
   Ranking screen is still device-unverified. README now lists the Firebase console steps; no data leaves the device in
   this bundle.
 
+- 2026-11-21: Firebase ranking, part 2 (live backend). The user created the Firebase project, so
+  `app/google-services.json` now exists (project `cheock-ebf84`, package `com.chesslock`, no OAuth client). Added the
+  Firebase BOM/auth/firestore dependencies plus `kotlinx-coroutines-play-services`; BOM pinned to `33.16.0` because
+  `35.2.0` ships Kotlin metadata 2.4.0, which the project's Kotlin 2.0.21 compiler rejects. Implemented
+  `FirebaseLeaderboardIdentity` (Anonymous Auth, stable `Player-xyz` nickname via pure `LeaderboardRanks.defaultNickname`)
+  and `FirebaseLeaderboardRepository` (`leaderboard/{uid}`, only nickname/ELO/rated count, whole-collection read so the
+  pure ranking rules stay identical), with a testable `LeaderboardFirestoreMapper`. Hilt bindings now point at Firebase;
+  local implementations remain for tests/fallback. Added `firestore.rules` with per-uid writes, field allow-list,
+  nickname/ELO bounds and auth-required reads; the user must publish it in the console before first use (Production
+  mode defaults to deny-all). Gate: **249 tests** (167 domain + 82 app), lint clean, debug + release green. Signed test
+  APK `C6DB7A44...` (13 486 012 bytes, v2/v3) contains Firebase classes. No device was connected, so the live
+  leaderboard is still device-unverified.
+
 ## Next step
-1. **All earlier bundles and the config-independent leaderboard layer are complete. Wait for user feedback before the
-   next bundle.** Remaining gaps, all
+1. **All earlier bundles and both Firebase ranking bundles are complete. Wait for user feedback before the next
+   bundle.** Remaining gaps, all
    documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
    detection is the known limitation), the subjective feel of the haptic ticks is unverified (the switch and the
    settings key were checked; no audio feedback exists yet), the themed-icon rendering path was not toggled on the test
    tablet, widget/shortcut picker labels follow the system locale rather than the in-app language. The
    `Entitlements` bundle and the reward-chip update are fully device-verified.
-2. Next: once `app/google-services.json` exists, add the Firebase BOM/auth/firestore dependencies, enable the
-   google-services plugin, implement Anonymous Auth + Firestore behind the existing repository seam, add
-   `firestore.rules`, swap the Hilt bindings, device-verify and stop for feedback. Other Phase 4 candidates remain a
-   UMP consent SDK (new dependency + real privacy-policy URL), production ad unit IDs, Play Data safety prep, Play
-   Billing behind `EntitlementsRepository.update(...)` and sounds (needs audio assets). Payments stay unimplemented.
+2. Next: publish `firestore.rules` in the Firebase console if not done yet, then connect the tablet and verify the live
+   Ranking screen (anonymous sign-in, own row uploaded, top list and my rank loaded) before any further work. Other
+   Phase 4 candidates remain a UMP consent SDK (new dependency + real privacy-policy URL), production ad unit IDs,
+   Play Data safety prep, Play Billing behind `EntitlementsRepository.update(...)` and sounds (needs audio assets).
+   Payments stay unimplemented.
 3. Optional pending Phase 1 device check: reconnect/unlock the old phone `CIYDDIMV5D5XNFUS`, launch the app once,
    reboot, unlock, and confirm `BlockingService` starts automatically. Also exercise the block-screen buttons and
    permission dialogs manually (adb input injection is blocked on that device).

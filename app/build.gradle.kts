@@ -108,5 +108,11 @@ dependencies {
     implementation(libs.play.services.ads)
     implementation(libs.androidsvg)
 
+    // Anonymous Auth + Firestore back the ranking only. All other app data stays local.
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.kotlinx.coroutines.play.services)
+
     testImplementation(libs.junit)
 }

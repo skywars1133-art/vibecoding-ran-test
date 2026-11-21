@@ -103,4 +103,15 @@ class LeaderboardRanksTest {
         )
         assertFalse(LeaderboardRanks.isValidNickname("<script>", config))
     }
+
+    @Test
+    fun defaultNicknameIsStableAndDistinguishablePerPlayer() {
+        val first = LeaderboardRanks.defaultNickname("abcdef123456", config)
+        val second = LeaderboardRanks.defaultNickname("zzzzzz999999", config)
+
+        assertEquals("Player-456", first)
+        assertEquals("Player-999", second)
+        assertEquals(first, LeaderboardRanks.defaultNickname("abcdef123456", config))
+        assertTrue(LeaderboardRanks.isValidNickname(first, config))
+    }
 }
