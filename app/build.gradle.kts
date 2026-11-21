@@ -8,6 +8,12 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
+// The google-services plugin requires app/google-services.json. Keep the build working while the
+// Firebase project is being created; the Firebase runtime dependencies are added with the config.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
     namespace = "com.chesslock"
     compileSdk = 35
@@ -28,6 +34,8 @@ android {
             "ADMOB_REWARDED_UNIT_ID",
             "\"ca-app-pub-3940256099942544/5224354917\"",
         )
+        // Drives the "local preview" note and, later, the Firebase repository binding.
+        buildConfigField("boolean", "FIREBASE_CONFIGURED", file("google-services.json").exists().toString())
     }
 
     buildTypes {
@@ -44,6 +52,11 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    lint {
+        // Dependency pins are deliberate and verified; only report real code/resource issues.
+        disable += setOf("GradleDependency", "AndroidGradlePluginVersion")
     }
 
     bundle {

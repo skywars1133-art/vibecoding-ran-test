@@ -71,6 +71,7 @@ fun HomeScreen(
     onSolve: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenStatistics: () -> Unit,
+    onOpenLeaderboard: () -> Unit,
     onFixProtection: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
@@ -101,6 +102,9 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
+                    TextButton(onClick = onOpenLeaderboard) {
+                        Text(stringResource(R.string.leaderboard_open))
+                    }
                     TextButton(onClick = onOpenStatistics) {
                         Text(stringResource(R.string.stats_open))
                     }

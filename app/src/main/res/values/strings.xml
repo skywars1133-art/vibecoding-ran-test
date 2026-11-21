@@ -208,6 +208,21 @@
     <string name="stats_usage_week">This week: %1$s</string>
     <string name="stats_local_note">Statistics and app-usage history stay on this device. Nothing is uploaded.</string>
 
+    <!-- Global leaderboard (cloud ranking) -->
+    <string name="leaderboard_open">Ranking</string>
+    <string name="leaderboard_title">Global ranking</string>
+    <string name="leaderboard_refresh">Refresh</string>
+    <string name="leaderboard_error">The ranking could not be loaded. Check your connection and try again.</string>
+    <string name="leaderboard_my_rank">Your rank: %1$s</string>
+    <string name="leaderboard_my_entry">%1$s · ELO %2$d</string>
+    <string name="leaderboard_unranked">not ranked yet</string>
+    <string name="leaderboard_rank">#%1$d</string>
+    <string name="leaderboard_entries" tools:ignore="PluralsCandidate">%1$d players</string>
+    <string name="leaderboard_rated" tools:ignore="PluralsCandidate">%1$d rated puzzles</string>
+    <string name="leaderboard_empty">No ranked players yet.</string>
+    <string name="leaderboard_local_preview">Local preview — nothing is uploaded yet.</string>
+    <string name="leaderboard_privacy">Only your nickname and chess rating are shared with the ranking. App usage stays on this device.</string>
+
     <!-- Privacy and ads (SPEC 5, SPEC 7) -->
     <string name="privacy_title">Privacy and ads</string>
     <string name="privacy_local_title">Your data stays on this device</string>

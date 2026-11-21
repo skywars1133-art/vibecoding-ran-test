@@ -586,18 +586,33 @@ Resume file. Update after every meaningful step and before any likely credit cut
   install. README gained a **Premium (planned)** section with the three proposals (ad-free hints,
   extra skips, advanced statistics) and the Billing integration notes. Payments remain intentionally unimplemented.
 
+- 2026-11-21: Firebase ranking, part 1 (config-independent layer). The user chose Anonymous Auth and leaderboard-only
+  scope and is creating the Firebase project; `app/google-services.json` is still absent. Added pure
+  `LeaderboardEntry`/`RankedEntry`/`LeaderboardSnapshot` and `LeaderboardRanks` in `:domain`: deterministic sort
+  (ELO desc, rated puzzles desc, stable player id), top-N truncation, "my rank" resolved from the full board, nickname
+  normalisation/validation, and bounds in `AppConfig`. Added the `LeaderboardRepository`/`LeaderboardIdentity` seam,
+  a `LocalLeaderboardRepository` preview with sample rows, Hilt bindings, `LeaderboardViewModel`, a Compose
+  `LeaderboardScreen` reachable from Home, and EN/SK strings. `BuildConfig.FIREBASE_CONFIGURED` plus a conditional
+  google-services plugin apply keep builds green without the JSON; Firebase runtime dependencies are deliberately not
+  added yet, because an unconfigured FirebaseInitProvider can crash app startup. Lint's dependency-version detectors
+  are disabled since the pins are intentional. Gate: **245 tests** (166 domain + 79 app), lint clean, debug and release
+  green. Signed test APK rebuilt (`E5C82103...`, 10 868 200 bytes, v2/v3); the tablet was not connected, so the new
+  Ranking screen is still device-unverified. README now lists the Firebase console steps; no data leaves the device in
+  this bundle.
+
 ## Next step
-1. **Visual-polish, ring, launcher-identity, shortcut and widget bundles (minute refresh and minute-granularity
-   clock), the Phase 4 edge-case/warning/screen-off pass, the lint/Play-readiness cleanup and the `Entitlements`
-   monetization groundwork are complete. Wait for user feedback before the next bundle.** Remaining gaps, all
+1. **All earlier bundles and the config-independent leaderboard layer are complete. Wait for user feedback before the
+   next bundle.** Remaining gaps, all
    documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
    detection is the known limitation), the subjective feel of the haptic ticks is unverified (the switch and the
    settings key were checked; no audio feedback exists yet), the themed-icon rendering path was not toggled on the test
    tablet, widget/shortcut picker labels follow the system locale rather than the in-app language. The
    `Entitlements` bundle and the reward-chip update are fully device-verified.
-2. Next Phase 4 candidates: a UMP consent SDK integration (needs a new Gradle dependency and real privacy-policy URL),
-   production ad unit IDs, Play Data safety/privacy-policy prep, Play Billing implementation behind
-   `EntitlementsRepository.update(...)`, and sounds (needs audio assets). Accounts/cloud/leaderboard remain deferred.
+2. Next: once `app/google-services.json` exists, add the Firebase BOM/auth/firestore dependencies, enable the
+   google-services plugin, implement Anonymous Auth + Firestore behind the existing repository seam, add
+   `firestore.rules`, swap the Hilt bindings, device-verify and stop for feedback. Other Phase 4 candidates remain a
+   UMP consent SDK (new dependency + real privacy-policy URL), production ad unit IDs, Play Data safety prep, Play
+   Billing behind `EntitlementsRepository.update(...)` and sounds (needs audio assets). Payments stay unimplemented.
 3. Optional pending Phase 1 device check: reconnect/unlock the old phone `CIYDDIMV5D5XNFUS`, launch the app once,
    reboot, unlock, and confirm `BlockingService` starts automatically. Also exercise the block-screen buttons and
    permission dialogs manually (adb input injection is blocked on that device).

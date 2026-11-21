@@ -210,6 +210,21 @@
     <string name="stats_usage_week">Tento týždeň: %1$s</string>
     <string name="stats_local_note">Štatistiky a história používania aplikácií zostávajú v tomto zariadení. Nič sa neodosiela.</string>
 
+    <!-- Global leaderboard (cloud ranking) -->
+    <string name="leaderboard_open">Rebríček</string>
+    <string name="leaderboard_title">Celosvetový rebríček</string>
+    <string name="leaderboard_refresh">Obnoviť</string>
+    <string name="leaderboard_error">Rebríček sa nepodarilo načítať. Skontroluj pripojenie a skús to znova.</string>
+    <string name="leaderboard_my_rank">Tvoje miesto: %1$s</string>
+    <string name="leaderboard_my_entry">%1$s · ELO %2$d</string>
+    <string name="leaderboard_unranked">zatiaľ zaradený nie si</string>
+    <string name="leaderboard_rank">#%1$d</string>
+    <string name="leaderboard_entries" tools:ignore="PluralsCandidate">%1$d hráčov</string>
+    <string name="leaderboard_rated" tools:ignore="PluralsCandidate">%1$d ohodnotených úloh</string>
+    <string name="leaderboard_empty">Zatiaľ žiadni zaradení hráči.</string>
+    <string name="leaderboard_local_preview">Miestny náhľad — zatiaľ sa nič neodosiela.</string>
+    <string name="leaderboard_privacy">S rebríčkom sa zdieľa iba tvoja prezývka a šachové hodnotenie. Používanie aplikácií zostáva v zariadení.</string>
+
     <!-- Privacy and ads (SPEC 5, SPEC 7) -->
     <string name="privacy_title">Súkromie a reklamy</string>
     <string name="privacy_local_title">Tvoje údaje zostávajú v zariadení</string>

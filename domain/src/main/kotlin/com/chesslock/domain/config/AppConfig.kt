@@ -107,6 +107,14 @@ data class AppConfig(
     val placementStepDecay: Double = 0.75,
     val placementMaxRating: Int = 2800,
 
+    // --- Leaderboard (cloud ranking, SPEC 5) ---
+    /** Number of top rows shown on the ranking screen. */
+    val leaderboardTopLimit: Int = 20,
+    val leaderboardNicknameMinLength: Int = 3,
+    val leaderboardNicknameMaxLength: Int = 16,
+    /** Used until an editable nickname profile is added. */
+    val leaderboardDefaultNickname: String = "Player",
+
     // --- Adaptive puzzle selection (SPEC 2) ---
     /** Standard deviation of the random offset applied to the player's ELO ("mild variation"). */
     val selectionSigma: Int = 100,

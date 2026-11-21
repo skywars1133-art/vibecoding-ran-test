@@ -28,6 +28,7 @@ import com.chesslock.data.SettingsStore
 import com.chesslock.data.ThemeMode
 import com.chesslock.ui.common.ProvideAppLanguage
 import com.chesslock.ui.home.HomeScreen
+import com.chesslock.ui.leaderboard.LeaderboardScreen
 import com.chesslock.ui.onboarding.PermissionsScreen
 import com.chesslock.ui.placement.PlacementTestScreen
 import com.chesslock.ui.puzzle.PuzzleScreen
@@ -94,6 +95,7 @@ class MainActivity : ComponentActivity() {
                                 var showStatistics by rememberSaveable {
                                     mutableStateOf(pendingShortcut == ShortcutDestination.STATISTICS)
                                 }
+                                var showLeaderboard by rememberSaveable { mutableStateOf(false) }
                                 var showPermissions by rememberSaveable { mutableStateOf(false) }
                                 var showBlockedApps by rememberSaveable { mutableStateOf(false) }
                                 var showPuzzle by rememberSaveable {
@@ -106,12 +108,17 @@ class MainActivity : ComponentActivity() {
                                     showSettings = target == ShortcutDestination.SETTINGS
                                     showStatistics = target == ShortcutDestination.STATISTICS
                                     showPuzzle = target == ShortcutDestination.PUZZLE
+                                    showLeaderboard = false
                                     showPermissions = false
                                     showBlockedApps = false
                                     showPrivacy = false
                                     pendingShortcut = null
                                 }
                                 when {
+                                    showLeaderboard -> LeaderboardScreen(
+                                        onBack = { showLeaderboard = false },
+                                    )
+
                                     showStatistics -> StatisticsScreen(
                                         onBack = { showStatistics = false },
                                     )
@@ -145,6 +152,7 @@ class MainActivity : ComponentActivity() {
                                         onSolve = { showPuzzle = true },
                                         onOpenSettings = { showSettings = true },
                                         onOpenStatistics = { showStatistics = true },
+                                        onOpenLeaderboard = { showLeaderboard = true },
                                         onFixProtection = { showPermissions = true },
                                     )
                                 }
