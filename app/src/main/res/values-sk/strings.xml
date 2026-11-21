@@ -13,7 +13,7 @@
     <string name="home_urgency_critical">Takmer vyčerpané</string>
     <string name="home_urgency_empty">Žiadny čas</string>
     <string name="home_remaining_share">Zostáva %1$d %% dnešného rozpočtu</string>
-    <string name="home_local_note">Tvoj rozpočet, štatistiky a používanie aplikácií zostávajú v tomto zariadení.</string>
+    <string name="home_local_note">Tvoj rozpočet, štatistiky a používanie aplikácií zostávajú v tomto zariadení. Rebríček zdieľa iba tvoju prezývku a hodnotenie.</string>
     <string name="puzzle_title">Šachová úloha</string>
     <string name="puzzle_rating">Hodnotenie úlohy: %1$d</string>
     <string name="player_elo">ELO: %1$d</string>
@@ -151,7 +151,7 @@
 
     <!-- Permissions onboarding and protection status -->
     <string name="permissions_title">Chráň si pozornosť</string>
-    <string name="permissions_body">ChessLock potrebuje tieto systémové povolenia na blokovanie rušivých aplikácií. Nič neopúšťa tvoje zariadenie.</string>
+    <string name="permissions_body">ChessLock potrebuje tieto systémové povolenia na blokovanie rušivých aplikácií. Používanie aplikácií zostáva v zariadení; rebríček odosiela iba tvoje šachové hodnotenie a prezývku.</string>
     <string name="permissions_usage_description">Zistí, ktorá aplikácia je v popredí, aby čas čerpali len blokované aplikácie.</string>
     <string name="permissions_overlay_description">Zobrazí blokovaciu obrazovku nad blokovanou aplikáciou, keď vyprší čas.</string>
     <string name="permissions_notifications">Upozornenia</string>
@@ -208,7 +208,7 @@
     <string name="stats_usage_title">Blokované aplikácie</string>
     <string name="stats_usage_today">Dnes: %1$s</string>
     <string name="stats_usage_week">Tento týždeň: %1$s</string>
-    <string name="stats_local_note">Štatistiky a história používania aplikácií zostávajú v tomto zariadení. Nič sa neodosiela.</string>
+    <string name="stats_local_note">Štatistiky a história používania aplikácií zostávajú v tomto zariadení. Rebríček odosiela iba tvoju prezývku a ELO.</string>
 
     <!-- Global leaderboard (cloud ranking) -->
     <string name="leaderboard_open">Rebríček</string>
@@ -219,21 +219,31 @@
     <string name="leaderboard_my_entry">%1$s · ELO %2$d</string>
     <string name="leaderboard_unranked">zatiaľ zaradený nie si</string>
     <string name="leaderboard_rank">#%1$d</string>
-    <string name="leaderboard_entries" tools:ignore="PluralsCandidate">%1$d hráčov</string>
-    <string name="leaderboard_rated" tools:ignore="PluralsCandidate">%1$d ohodnotených úloh</string>
+    <plurals name="leaderboard_entries">
+        <item quantity="one">%1$d hráč</item>
+        <item quantity="few">%1$d hráči</item>
+        <item quantity="many">%1$d hráča</item>
+        <item quantity="other">%1$d hráčov</item>
+    </plurals>
+    <plurals name="leaderboard_rated">
+        <item quantity="one">%1$d ohodnotená úloha</item>
+        <item quantity="few">%1$d ohodnotené úlohy</item>
+        <item quantity="many">%1$d ohodnotenej úlohy</item>
+        <item quantity="other">%1$d ohodnotených úloh</item>
+    </plurals>
     <string name="leaderboard_empty">Zatiaľ žiadni zaradení hráči.</string>
     <string name="leaderboard_local_preview">Miestny náhľad — zatiaľ sa nič neodosiela.</string>
     <string name="leaderboard_privacy">S rebríčkom sa zdieľa iba tvoja prezývka a šachové hodnotenie. Používanie aplikácií zostáva v zariadení.</string>
 
     <!-- Privacy and ads (SPEC 5, SPEC 7) -->
     <string name="privacy_title">Súkromie a reklamy</string>
-    <string name="privacy_local_title">Tvoje údaje zostávajú v zariadení</string>
-    <string name="privacy_local_body">ChessLock ukladá ELO, históriu úloh, denný rozpočet a históriu používania aplikácií lokálne. Nemá žiadny účet a nič neodosiela.</string>
+    <string name="privacy_local_title">Súkromné údaje zostávajú v zariadení</string>
+    <string name="privacy_local_body">ChessLock ukladá ELO, históriu úloh, denný rozpočet a históriu používania aplikácií lokálne. Rebríček používa anonymnú identitu a odosiela iba tvoju prezývku, ELO a počet ohodnotených úloh. Všetko ostatné zostáva v zariadení.</string>
     <string name="privacy_usage_title">Údaje o používaní aplikácií</string>
     <string name="privacy_usage_body">Prístup k používaniu slúži len na zistenie, ktorá aplikácia je v popredí. ChessLock nečíta, čo robíš v iných aplikáciách, a údaje o používaní sa nikdy neposielajú reklamnej sieti ani serveru.</string>
     <string name="privacy_ads_title">Reklamy a súhlas</string>
     <string name="privacy_ads_body">Nápovedy sú jediné reklamy v ChessLock. Sú to odmenené videá od Google AdMob a prehrajú sa len po kliknutí na Nápoveda. AdMob môže spracúvať tvoje reklamné ID a údaje o zariadení podľa vlastných zásad ochrany súkromia. Toto testovacie zostavenie používa testovacie reklamné jednotky Google; produkčné jednotky a formulár súhlasu UMP budú zapnuté pred vydaním.</string>
-    <string name="privacy_note">Štatistiky a história používania aplikácií zostávajú v tomto zariadení. Nič sa neodosiela.</string>
+    <string name="privacy_note">Štatistiky a história používania aplikácií zostávajú v tomto zariadení. Rebríček odosiela iba tvoju prezývku a ELO.</string>
 
     <!-- Launcher shortcuts -->
     <string name="shortcut_puzzle_short">Puzzle</string>

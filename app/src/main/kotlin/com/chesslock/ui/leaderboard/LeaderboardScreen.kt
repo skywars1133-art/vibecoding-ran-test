@@ -25,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -133,7 +134,7 @@ private fun LeaderboardContent(
         }
 
         Text(
-            text = stringResource(R.string.leaderboard_entries, snapshot.totalPlayers),
+            text = pluralStringResource(R.plurals.leaderboard_entries, snapshot.totalPlayers, snapshot.totalPlayers),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -194,7 +195,11 @@ private fun RankRow(ranked: RankedEntry) {
                     fontWeight = FontWeight.Medium,
                 )
                 Text(
-                    text = stringResource(R.string.leaderboard_rated, ranked.entry.ratedPuzzlesPlayed),
+                    text = pluralStringResource(
+                        R.plurals.leaderboard_rated,
+                        ranked.entry.ratedPuzzlesPlayed,
+                        ranked.entry.ratedPuzzlesPlayed,
+                    ),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

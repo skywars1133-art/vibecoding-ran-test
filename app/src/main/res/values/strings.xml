@@ -13,7 +13,7 @@
     <string name="home_urgency_critical">Almost out</string>
     <string name="home_urgency_empty">No time left</string>
     <string name="home_remaining_share">%1$d%% of today\'s budget left</string>
-    <string name="home_local_note">Your budget, statistics and app usage stay on this device.</string>
+    <string name="home_local_note">Your budget, statistics and app usage stay on this device. Ranking shares only your nickname and rating.</string>
     <string name="puzzle_title">Chess puzzle</string>
     <string name="puzzle_rating">Puzzle rating: %1$d</string>
     <string name="player_elo">ELO: %1$d</string>
@@ -151,7 +151,7 @@
 
     <!-- Permissions onboarding and protection status -->
     <string name="permissions_title">Protect your focus</string>
-    <string name="permissions_body">ChessLock needs these system permissions to block distracting apps. Nothing leaves your device.</string>
+    <string name="permissions_body">ChessLock needs these system permissions to block distracting apps. App usage stays on your device; only the ranking uploads your chess rating and nickname.</string>
     <string name="permissions_usage_description">See which app is in the foreground so only blocked apps use your time.</string>
     <string name="permissions_overlay_description">Show the block screen on top of a blocked app when time runs out.</string>
     <string name="permissions_notifications">Notifications</string>
@@ -206,7 +206,7 @@
     <string name="stats_usage_title">Blocked apps</string>
     <string name="stats_usage_today">Today: %1$s</string>
     <string name="stats_usage_week">This week: %1$s</string>
-    <string name="stats_local_note">Statistics and app-usage history stay on this device. Nothing is uploaded.</string>
+    <string name="stats_local_note">Statistics and app-usage history stay on this device. Ranking uploads only your nickname and ELO.</string>
 
     <!-- Global leaderboard (cloud ranking) -->
     <string name="leaderboard_open">Ranking</string>
@@ -217,21 +217,27 @@
     <string name="leaderboard_my_entry">%1$s · ELO %2$d</string>
     <string name="leaderboard_unranked">not ranked yet</string>
     <string name="leaderboard_rank">#%1$d</string>
-    <string name="leaderboard_entries" tools:ignore="PluralsCandidate">%1$d players</string>
-    <string name="leaderboard_rated" tools:ignore="PluralsCandidate">%1$d rated puzzles</string>
+    <plurals name="leaderboard_entries">
+        <item quantity="one">%1$d player</item>
+        <item quantity="other">%1$d players</item>
+    </plurals>
+    <plurals name="leaderboard_rated">
+        <item quantity="one">%1$d rated puzzle</item>
+        <item quantity="other">%1$d rated puzzles</item>
+    </plurals>
     <string name="leaderboard_empty">No ranked players yet.</string>
     <string name="leaderboard_local_preview">Local preview — nothing is uploaded yet.</string>
     <string name="leaderboard_privacy">Only your nickname and chess rating are shared with the ranking. App usage stays on this device.</string>
 
     <!-- Privacy and ads (SPEC 5, SPEC 7) -->
     <string name="privacy_title">Privacy and ads</string>
-    <string name="privacy_local_title">Your data stays on this device</string>
-    <string name="privacy_local_body">ChessLock stores your ELO, puzzle history, daily budget and app-usage history locally. There is no account and nothing is uploaded.</string>
+    <string name="privacy_local_title">Private data stays on this device</string>
+    <string name="privacy_local_body">ChessLock stores your ELO, puzzle history, daily budget and app-usage history locally. The ranking uses an anonymous identity and uploads only your nickname, ELO and rated-puzzle count. Everything else stays on this device.</string>
     <string name="privacy_usage_title">App-usage data</string>
     <string name="privacy_usage_body">Usage access is used only to see which app is in the foreground. ChessLock never reads what you do inside other apps, and app-usage data is never sent to the ad SDK or any server.</string>
     <string name="privacy_ads_title">Ads and consent</string>
     <string name="privacy_ads_body">Hints are the only ads in ChessLock. They are rewarded videos from Google AdMob and play only after you tap Hint. AdMob may process your advertising ID and device data under its own privacy policy. This test build uses Google test ad units; production ad units and the UMP consent form will be enabled before release.</string>
-    <string name="privacy_note">Statistics and app-usage history stay on this device. Nothing is uploaded.</string>
+    <string name="privacy_note">Statistics and app-usage history stay on this device. The ranking uploads only your nickname and ELO.</string>
 
     <!-- Launcher shortcuts -->
     <string name="shortcut_puzzle_short">Puzzle</string>

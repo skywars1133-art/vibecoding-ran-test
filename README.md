@@ -60,8 +60,9 @@ scripts/test-domain.sh
 10. Solve a puzzle to earn time, then open a blocked app after the budget runs out to see the block screen. The Home
     ring, remaining share and urgency chip follow the same thresholds as the notifications (green, amber at 5 minutes,
     red at 1 minute) and update live while the blocking service charges blocked-app time.
-11. Tap **Stats** on Home (or in the puzzle top bar) for local-only statistics: ELO over time, overall and per-theme
-    success rate, day streak, puzzles solved, time earned, and blocked-app time today/this week. Nothing is uploaded.
+11. Tap **Stats** on Home (or in the puzzle top bar) for local statistics: ELO over time, overall and per-theme
+    success rate, day streak, puzzles solved, time earned, and blocked-app time today/this week. These stay on the
+    device; only the ranking uploads your ELO, rated-puzzle count and nickname.
 12. Hints use AdMob's official **test** ad IDs in this phase, so no real ad is shown or billed. Hints need a network and
     are disabled with an explanatory note while offline.
 13. Tap **Ranking** on Home for the global board and your own position. The first open signs in anonymously, uploads
@@ -324,8 +325,9 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   scattered checks; `PuzzleViewModel` collects the flow, exposes `hintsRequireAd`, and grants a hint from
   `onHintWithoutAd()` only after re-checking the entitlement, so a mis-wired UI can never hand out free hints on the
   free tier. No payment code, dependency or product ID exists yet. See **Premium (planned)** below.
-- **Statistics are local-only for now.** Accounts, cloud sync and the leaderboard are deferred at the user's request;
-  the statistics screen reads Room and DataStore on the device and uploads nothing. Room v2 adds append-only
+- **Statistics are local; only ranking is uploaded.** Cloud sync of attempts/settings/streaks is deferred at the
+  user's request: the statistics screen reads Room and DataStore on the device, while Ranking uploads only nickname,
+  ELO and rated-puzzle count to Firebase. Room v2 adds append-only
   `attempts` and per-day `usage_days`; `MIGRATION_1_2` only creates the new tables/indices, so existing puzzles and
   solved flags survive the upgrade.
 - **One row per attempt.** A LOSS is written when the third life is lost (the moment ELO changes). If the player keeps
@@ -358,9 +360,10 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   service and overlay, permissions onboarding and protection status, rewarded-ad hints, language and piece styles).
   Phase 2 is complete and device-verified (daily rating-band pack generation in GitHub Actions, WorkManager downloads
   with a Wi-Fi-only default, Room accumulation, solved-never-repeat, and the Settings stock/download UI). Phase 3 is
-  implemented as **local-only statistics** (ELO history, success rate overall/per theme, streaks, solved count, earned
-  time, blocked-app usage) with accounts/cloud/leaderboard deferred. The app compiles and all unit tests pass; the
-  statistics migration and attempt recording were verified on the tablet. On top of that, the local settings now
+  implemented as **local statistics** (ELO history, success rate overall/per theme, streaks, solved count, earned
+  time, blocked-app usage); cloud sync of that data remains deferred. The global Firebase leaderboard (Anonymous Auth +
+  Firestore, device-verified) was added afterwards. The app compiles and all unit tests pass; the statistics migration
+  and attempt recording were verified on the tablet. On top of that, the local settings now
   include an in-app Light/Dark/System theme, a per-app blocking picker and the Phase 4 hardening bundle (adaptive
   polling, battery-optimization guidance, warning-notification and haptics toggles, and the Privacy and ads explainer).
   Phase 4's monetization groundwork is in place as the `Entitlements` layer described above; blocking itself stays

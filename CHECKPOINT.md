@@ -613,19 +613,29 @@ Resume file. Update after every meaningful step and before any likely credit cut
   APK `C6DB7A44...` (13 486 012 bytes, v2/v3) contains Firebase classes. No device was connected, so the live
   leaderboard is still device-unverified.
 
+- 2026-11-21: leaderboard device verification + post-cloud privacy copy. The user confirmed the rules are published;
+  on `R9TX902F92W` the installed release APK loaded Ranking with anonymous sign-in as `Player-cE3`, ELO 2122,
+  `Your rank: #1`, one row (`127 rated puzzles`), and stayed correct after Refresh and back/reopen. Replaced every
+  "nothing is uploaded" claim in EN/SK Home, permissions, Stats and Privacy screens (plus README) with the accurate
+  split: nickname, ELO and rated-puzzle count go to the ranking; app usage, settings and attempts stay on-device.
+  Converted the two leaderboard counts to real EN/SK plurals (Slovak needs `one/few/many/other`), so the board now reads
+  `1 player` instead of `1 players`. Gate: **249 tests** (167 domain + 82 app), lint clean, debug + release green.
+  Re-signed APK `9035BD9E...` (13 486 012 bytes, v2/v3), installed over the previous build with data intact, and
+  re-checked Home, Ranking (`1 player`) and the Privacy and ads screen on the tablet. Reverted the temporary
+  `svc power stayon usb` (`stay_on_while_plugged_in=0`).
+
 ## Next step
-1. **All earlier bundles and both Firebase ranking bundles are complete. Wait for user feedback before the next
-   bundle.** Remaining gaps, all
+1. **All earlier bundles, both Firebase ranking bundles and the privacy-copy follow-up are complete and device-verified.
+   Wait for user feedback before the next bundle.** Remaining gaps, all
    documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
    detection is the known limitation), the subjective feel of the haptic ticks is unverified (the switch and the
    settings key were checked; no audio feedback exists yet), the themed-icon rendering path was not toggled on the test
    tablet, widget/shortcut picker labels follow the system locale rather than the in-app language. The
    `Entitlements` bundle and the reward-chip update are fully device-verified.
-2. Next: publish `firestore.rules` in the Firebase console if not done yet, then connect the tablet and verify the live
-   Ranking screen (anonymous sign-in, own row uploaded, top list and my rank loaded) before any further work. Other
-   Phase 4 candidates remain a UMP consent SDK (new dependency + real privacy-policy URL), production ad unit IDs,
-   Play Data safety prep, Play Billing behind `EntitlementsRepository.update(...)` and sounds (needs audio assets).
-   Payments stay unimplemented.
+2. Next (only after user feedback): the remaining Phase 4 candidates are a UMP consent SDK (new dependency + real
+   privacy-policy URL), production ad unit IDs, Play Data safety prep, Play Billing behind
+   `EntitlementsRepository.update(...)` and sounds (needs audio assets). Editable nicknames and cloud sync of
+   attempts/settings/streaks stay deferred at the user's request; payments stay unimplemented.
 3. Optional pending Phase 1 device check: reconnect/unlock the old phone `CIYDDIMV5D5XNFUS`, launch the app once,
    reboot, unlock, and confirm `BlockingService` starts automatically. Also exercise the block-screen buttons and
    permission dialogs manually (adb input injection is blocked on that device).
