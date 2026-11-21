@@ -130,4 +130,10 @@ class SettingsViewModel @Inject constructor(
             store.setHapticsEnabled(enabled)
         }
     }
+
+    fun setSoundsEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            store.setSoundsEnabled(enabled)
+        }
+    }
 }

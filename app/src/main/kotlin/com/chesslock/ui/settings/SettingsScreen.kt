@@ -306,6 +306,26 @@ fun SettingsScreen(
                     onCheckedChange = viewModel::setHapticsEnabled,
                 )
             }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.settings_sounds),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_sounds_description),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = settings.soundsEnabled,
+                    onCheckedChange = viewModel::setSoundsEnabled,
+                )
+            }
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             Text(

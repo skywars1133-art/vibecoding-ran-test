@@ -55,8 +55,9 @@ scripts/test-domain.sh
    Settings; the banner turns to "Protection is active" once the blocking service is running. Exempting ChessLock from
    **battery optimization** is recommended so protection survives aggressive background limits; it is not required for
    the "active" status.
-9. Under **Feedback**, turn haptic move feedback on or off; under **Privacy and ads**, read what stays on the device and
-   how the rewarded hint ads work. **Time warnings** toggles the 5-minute and 1-minute notifications.
+9. Under **Feedback**, turn haptic move feedback and the short puzzle sounds on or off independently; under **Privacy
+   and ads**, read what stays on the device and how the rewarded hint ads work. **Time warnings** toggles the 5-minute
+   and 1-minute notifications.
 10. Solve a puzzle to earn time, then open a blocked app after the budget runs out to see the block screen. The Home
     ring, remaining share and urgency chip follow the same thresholds as the notifications (green, amber at 5 minutes,
     red at 1 minute) and update live while the blocking service charges blocked-app time.
@@ -283,9 +284,10 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   opens the system exemption list (the Play-restricted direct-request dialog is deliberately avoided). It is marked
   "Recommended" and does not gate the "Protection is active" status, which still depends on usage access, overlay and
   the running service.
-- **Warning notifications and haptics are user choices.** `AppSettings.warningNotificationsEnabled` gates the 5/1-minute
-  notifications (the ongoing foreground-service notification remains), and `hapticsEnabled` gates the short move/error
-  vibration in the puzzle screen. Both persist in the `settings` DataStore and default to on. A warning fires only when
+- **Warning notifications, haptics and sounds are user choices.** `AppSettings.warningNotificationsEnabled` gates the
+  5/1-minute notifications (the ongoing foreground-service notification remains), `hapticsEnabled` gates the short
+  move/error vibration, and `soundsEnabled` gates four bundled CC0 clips (move, error, hint, solved) played through a
+  sonification `SoundPool`. All three persist in the `settings` DataStore and default to on. A warning fires only when
   a blocked app is actually being charged and the remaining time crosses one of `config.warnAtSeconds` (`5 min`, then
   `1 min`); it arrives on the high-importance `blocking_warnings` channel and is cancelled when the toggle is switched
   off. Remaining time is rounded **up** in notifications (`15 min` at 14:10) so a warning never understates what is
@@ -411,6 +413,7 @@ Billing integration notes:
 | Google Mobile Ads SDK (AdMob) | Google Mobile Ads SDK / Google APIs terms (proprietary) | Rewarded hint ads; official test IDs in Phase 1; production IDs and UMP consent in Phase 4 |
 | AndroidSVG | Apache-2.0 | Rasterizes the bundled SVG piece sets |
 | Cburnett chess pieces | BSD-3-Clause (also GFDL/GPL) | Default board artwork (`res/drawable/cburnett_*.xml`); see `THIRD_PARTY_NOTICES.md` |
+| SFXMint puzzle sounds | CC0 1.0 | Bundled feedback clips (`res/raw/sfx_*.ogg`); see `THIRD_PARTY_NOTICES.md` |
 | Chessnut chess pieces | Apache-2.0 | Bundled artwork (`assets/pieces/chessnut/`) |
 | Fantasy, Celtic, Spatial chess pieces | MIT | Bundled artwork (`assets/pieces/{fantasy,celtic,spatial}/`) |
 | System Unicode chess glyphs | No separate asset | Classic/Outline/Letters styles rendered as text |

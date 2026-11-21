@@ -131,6 +131,8 @@
     <string name="settings_feedback_section">Feedback</string>
     <string name="settings_haptics">Haptic feedback</string>
     <string name="settings_haptics_description">Vibrate briefly on correct and wrong moves.</string>
+    <string name="settings_sounds">Puzzle sounds</string>
+    <string name="settings_sounds_description">Short feedback sounds for moves, mistakes, hints and solved puzzles.</string>
     <string name="settings_privacy_section">Privacy and ads</string>
     <string name="settings_privacy_description">See what stays on this device and how rewarded ads work.</string>
     <string name="settings_privacy_open">Privacy and ads</string>

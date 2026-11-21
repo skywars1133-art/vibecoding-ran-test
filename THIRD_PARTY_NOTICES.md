@@ -119,3 +119,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+## SFXMint puzzle feedback sounds
+
+- **Source:** SFXMint (<https://sfxmint.com>), whose descriptions publish every sound as AI-generated and CC0. The
+  clips were located through these YouTube compilations (yt-dlp 2026.10.26 was used to extract their audio):
+  - Wooden User Interface Click 51 — <https://www.youtube.com/watch?v=_UDZUmK4ydw>
+  - Short UI Error 05 — <https://www.youtube.com/watch?v=6Vvmr88FLgQ>
+  - Bright Ascending Success Chime 10 — <https://www.youtube.com/watch?v=takSCGgXAV8>
+  - Soft Bell-Like Notification Chime 31 — <https://www.youtube.com/watch?v=Sj9Ei3dzFWs>
+- **License:** CC0 1.0 Universal (<https://creativecommons.org/publicdomain/zero/1.0/>), public-domain dedication.
+  Commercial use, modification and redistribution are allowed and attribution is not required; this notice records
+  provenance anyway.
+- **Files used:** `app/src/main/res/raw/sfx_move.ogg`, `sfx_wrong.ogg`, `sfx_solved.ogg` and `sfx_hint.ogg`.
+- **Modifications:** each cue was trimmed from its compilation with ffmpeg, given a 5 ms fade-in / 20 ms fade-out,
+  level-adjusted, converted to mono 44.1 kHz Vorbis (q4) and stored as an OGG resource. No other audio is bundled.
+

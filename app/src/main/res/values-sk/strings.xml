@@ -131,6 +131,8 @@
     <string name="settings_feedback_section">Odozva</string>
     <string name="settings_haptics">Haptická odozva</string>
     <string name="settings_haptics_description">Krátke zavibrovanie pri správnom a nesprávnom ťahu.</string>
+    <string name="settings_sounds">Zvuky úloh</string>
+    <string name="settings_sounds_description">Krátke zvuky pri ťahoch, chybách, nápovedách a vyriešení úlohy.</string>
     <string name="settings_privacy_section">Súkromie a reklamy</string>
     <string name="settings_privacy_description">Zisti, čo zostáva v zariadení a ako fungujú odmenené reklamy.</string>
     <string name="settings_privacy_open">Súkromie a reklamy</string>

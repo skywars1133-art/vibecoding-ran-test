@@ -83,6 +83,8 @@ data class AppSettings(
     val warningNotificationsEnabled: Boolean = true,
     /** Haptic ticks on puzzle moves (SPEC 6). */
     val hapticsEnabled: Boolean = true,
+    /** Short puzzle feedback sounds (bundled CC0 assets). */
+    val soundsEnabled: Boolean = true,
     /** The permissions onboarding is shown once; after that the status card covers missing grants. */
     val permissionsOnboardingSeen: Boolean = false,
 ) {
@@ -104,6 +106,7 @@ data class AppSettings(
             blockedCategories = config.defaultBlockedCategories,
             warningNotificationsEnabled = config.warningNotificationsEnabledByDefault,
             hapticsEnabled = config.hapticsEnabledByDefault,
+            soundsEnabled = config.soundsEnabledByDefault,
         )
     }
 }

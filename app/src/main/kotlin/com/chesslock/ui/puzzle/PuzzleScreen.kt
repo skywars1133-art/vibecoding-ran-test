@@ -64,6 +64,9 @@ import com.chesslock.ads.AdsEntryPoint
 import com.chesslock.ads.NetworkStatus
 import com.chesslock.ads.RewardedAdManager
 import com.chesslock.ads.RewardedAdState
+import com.chesslock.audio.GameSounds
+import com.chesslock.audio.SoundCue
+import com.chesslock.audio.SoundCues
 import com.chesslock.blocking.BlockingPermissions
 import com.chesslock.domain.puzzle.HintAvailability
 import com.chesslock.ui.blocking.ProtectionStatusBanner
@@ -87,6 +90,10 @@ fun PuzzleScreen(
     val protectionRunning by settingsViewModel.protectionRunning.collectAsState()
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
+    val sounds = remember(context.applicationContext) { GameSounds(context.applicationContext) }
+    DisposableEffect(sounds) {
+        onDispose { sounds.release() }
+    }
     val lifecycleOwner = LocalLifecycleOwner.current
     var permissionEpoch by remember { mutableIntStateOf(0) }
     var online by remember { mutableStateOf(NetworkStatus.isOnline(context)) }
@@ -124,8 +131,11 @@ fun PuzzleScreen(
         usageAccessGranted &&
         overlayGranted &&
         protectionRunning
-    // A short tick confirms a correct move; a heavier buzz marks a lost life (SPEC 6).
+    // A short tick and click confirm a correct move; a heavier buzz/error marks a lost life (SPEC 6).
     LaunchedEffect(state.moveStatus) {
+        if (settings.soundsEnabled) {
+            SoundCues.forMove(state.moveStatus)?.let(sounds::play)
+        }
         if (!settings.hapticsEnabled) return@LaunchedEffect
         when (state.moveStatus) {
             PuzzleMoveStatus.WRONG -> haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -134,6 +144,12 @@ fun PuzzleScreen(
             -> haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             PuzzleMoveStatus.NONE -> Unit
         }
+    }
+    // A revealed hint raises the level; a correct move resets it, so only an increase is a new hint.
+    var lastHintLevel by remember { mutableIntStateOf(0) }
+    LaunchedEffect(state.hintLevel) {
+        if (settings.soundsEnabled && state.hintLevel > lastHintLevel) sounds.play(SoundCue.HINT)
+        lastHintLevel = state.hintLevel
     }
     val hintAvailable = state.hintAvailability == HintAvailability.AVAILABLE
     // Premium hints need neither a network nor a loaded ad.

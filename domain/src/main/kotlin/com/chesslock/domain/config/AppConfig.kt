@@ -57,6 +57,8 @@ data class AppConfig(
     // --- Feedback (SPEC 6) ---
     /** Haptic ticks on correct and wrong moves are on by default. */
     val hapticsEnabledByDefault: Boolean = true,
+    /** Short CC0 feedback sounds mirror the haptics and are on by default. */
+    val soundsEnabledByDefault: Boolean = true,
 
     // --- Rewards (SPEC 3) ---
     val baseRewardMinutes: Int = 3,

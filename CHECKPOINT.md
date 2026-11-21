@@ -624,17 +624,32 @@ Resume file. Update after every meaningful step and before any likely credit cut
   re-checked Home, Ranking (`1 player`) and the Privacy and ads screen on the tablet. Reverted the temporary
   `svc power stayon usb` (`stay_on_while_plugged_in=0`).
 
+- 2026-11-21: bundled puzzle feedback sounds. Searched YouTube with `C:\Users\detid\Downloads\yt-dlp.exe`
+  (2026.10.26) for chess/CC0 sound packs; most chess packs were paid or unclear, so selected four SFXMint CC0 clips
+  whose descriptions explicitly allow commercial use without attribution. Direct `sfxmint.com/dl/*.ogg` downloads were
+  rate-limited (HTTP 429), so extracted the YouTube compilation audio with yt-dlp and trimmed/normalized it with the
+  local ffmpeg (`C:\Program Files\ChessBase\CBase26\ffmpeg`). Added `res/raw/sfx_move.ogg`, `sfx_wrong.ogg`,
+  `sfx_solved.ogg` and `sfx_hint.ogg`, an `AppConfig.soundsEnabledByDefault` constant and an independent
+  `soundsEnabled` setting (DataStore key `sounds_enabled`) with an EN/SK "Puzzle sounds" switch. `GameSounds` plays the
+  clips through a two-stream `SoundPool` with `USAGE_ASSISTANCE_SONIFICATION`; `SoundCues` maps correct/wrong/solved
+  move status and new hint reveals, with a pure unit test. Gate: **250 tests** (167 domain + 83 app), lint
+  `No issues found`, debug + release green. Signed test APK `3AEC3FB00513...` (13 523 100 bytes, v2/v3) installed on
+  `R9TX902F92W` with data intact: the switch appeared checked, toggled off/on, persisted after reopening Settings, and
+  a puzzle screen opened with no `SoundPool`/`AudioTrack`/FATAL logcat errors. Subjective sound quality remains a
+  user-side check. README and `THIRD_PARTY_NOTICES.md` record the CC0 provenance and modifications.
+
 ## Next step
-1. **All earlier bundles, both Firebase ranking bundles and the privacy-copy follow-up are complete and device-verified.
-   Wait for user feedback before the next bundle.** Remaining gaps, all
+1. **All earlier bundles, both Firebase ranking bundles, the privacy-copy follow-up and the sounds bundle are complete
+   and device-verified. Wait for user feedback before the next bundle.** Remaining gaps, all
    documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
-   detection is the known limitation), the subjective feel of the haptic ticks is unverified (the switch and the
-   settings key were checked; no audio feedback exists yet), the themed-icon rendering path was not toggled on the test
+   detection is the known limitation), the subjective feel of the haptic ticks and the four sound clips is unverified
+   (the switches, settings keys and audio initialization were checked; no audible/feel judgement was made), the
+   themed-icon rendering path was not toggled on the test
    tablet, widget/shortcut picker labels follow the system locale rather than the in-app language. The
    `Entitlements` bundle and the reward-chip update are fully device-verified.
 2. Next (only after user feedback): the remaining Phase 4 candidates are a UMP consent SDK (new dependency + real
-   privacy-policy URL), production ad unit IDs, Play Data safety prep, Play Billing behind
-   `EntitlementsRepository.update(...)` and sounds (needs audio assets). Editable nicknames and cloud sync of
+   privacy-policy URL), production ad unit IDs, Play Data safety prep and Play Billing behind
+   `EntitlementsRepository.update(...)`. Editable nicknames and cloud sync of
    attempts/settings/streaks stay deferred at the user's request; payments stay unimplemented.
 3. Optional pending Phase 1 device check: reconnect/unlock the old phone `CIYDDIMV5D5XNFUS`, launch the app once,
    reboot, unlock, and confirm `BlockingService` starts automatically. Also exercise the block-screen buttons and

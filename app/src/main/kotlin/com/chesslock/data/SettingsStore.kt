@@ -36,6 +36,7 @@ class SettingsStore @Inject constructor(
     private val neverBlockedKey = stringSetPreferencesKey("never_blocked_packages")
     private val warningNotificationsKey = booleanPreferencesKey("warning_notifications")
     private val hapticsKey = booleanPreferencesKey("haptics_enabled")
+    private val soundsKey = booleanPreferencesKey("sounds_enabled")
     private val permissionsOnboardingSeenKey = booleanPreferencesKey("permissions_onboarding_seen")
 
     val settings: Flow<AppSettings> = context.settingsDataStore.data.map { preferences ->
@@ -64,6 +65,7 @@ class SettingsStore @Inject constructor(
             warningNotificationsEnabled = preferences[warningNotificationsKey]
                 ?: config.warningNotificationsEnabledByDefault,
             hapticsEnabled = preferences[hapticsKey] ?: config.hapticsEnabledByDefault,
+            soundsEnabled = preferences[soundsKey] ?: config.soundsEnabledByDefault,
             permissionsOnboardingSeen = preferences[permissionsOnboardingSeenKey] ?: false,
         )
     }
@@ -144,6 +146,12 @@ class SettingsStore @Inject constructor(
     suspend fun setHapticsEnabled(enabled: Boolean) {
         context.settingsDataStore.edit { preferences ->
             preferences[hapticsKey] = enabled
+        }
+    }
+
+    suspend fun setSoundsEnabled(enabled: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[soundsKey] = enabled
         }
     }
 
