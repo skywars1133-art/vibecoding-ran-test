@@ -647,8 +647,9 @@ Resume file. Update after every meaningful step and before any likely credit cut
   `sfx_solved.ogg` from Kenney `confirmation_002`, all normalized to a common peak. README and
   `THIRD_PARTY_NOTICES.md` now document the new provenance and explicitly exclude AGPL/proprietary sounds. Gate:
   **250 tests** (167 domain + 83 app), lint `No issues found`, debug + release green. Signed test APK
-  `45EB7B895D15...` (13 510 812 bytes, v2/v3). No adb device was attached at signing time, so this iteration is not
-  yet installed or device-verified; audible quality remains a user-side check after reconnecting the tablet.
+  `45EB7B895D15...` (13 510 812 bytes, v2/v3). The tablet was reconnected after signing and the APK installed
+  successfully on `R9TX902F92W` (`versionName=0.1.0`, `versionCode=1`, data preserved); the puzzle screen opened with
+  no `SoundPool`/`AudioTrack`/FATAL logcat errors. Audible quality remains a user-side check.
 
 ## Next step
 1. **Earlier bundles, both Firebase ranking bundles, the privacy-copy follow-up and the first sounds bundle are complete
@@ -656,8 +657,7 @@ Resume file. Update after every meaningful step and before any likely credit cut
    bundle.** Remaining gaps, all documented: split-screen behaviour could not be exercised (adb cannot form a split on
    this firmware; foreground-only detection is the known limitation), the subjective feel of the haptic ticks and the
    four sound clips is unverified (the switches, settings keys and audio initialization were checked; no audible/feel
-   judgement was made and the redesigned clips are not installed because no device was connected), the
-   themed-icon rendering path was not toggled on the test
+   judgement was made), the themed-icon rendering path was not toggled on the test
    tablet, widget/shortcut picker labels follow the system locale rather than the in-app language. The
    `Entitlements` bundle and the reward-chip update are fully device-verified.
 2. Next (only after user feedback): the remaining Phase 4 candidates are a UMP consent SDK (new dependency + real
