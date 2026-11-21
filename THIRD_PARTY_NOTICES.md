@@ -119,18 +119,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## SFXMint puzzle feedback sounds
+## Puzzle feedback sounds (Lichess-style wooden cues)
 
-- **Source:** SFXMint (<https://sfxmint.com>), whose descriptions publish every sound as AI-generated and CC0. The
-  clips were located through these YouTube compilations (yt-dlp 2026.10.26 was used to extract their audio):
-  - Wooden User Interface Click 51 — <https://www.youtube.com/watch?v=_UDZUmK4ydw>
-  - Short UI Error 05 — <https://www.youtube.com/watch?v=6Vvmr88FLgQ>
-  - Bright Ascending Success Chime 10 — <https://www.youtube.com/watch?v=takSCGgXAV8>
-  - Soft Bell-Like Notification Chime 31 — <https://www.youtube.com/watch?v=Sj9Ei3dzFWs>
-- **License:** CC0 1.0 Universal (<https://creativecommons.org/publicdomain/zero/1.0/>), public-domain dedication.
-  Commercial use, modification and redistribution are allowed and attribution is not required; this notice records
-  provenance anyway.
-- **Files used:** `app/src/main/res/raw/sfx_move.ogg`, `sfx_wrong.ogg`, `sfx_solved.ogg` and `sfx_hint.ogg`.
-- **Modifications:** each cue was trimmed from its compilation with ffmpeg, given a 5 ms fade-in / 20 ms fade-out,
-  level-adjusted, converted to mono 44.1 kHz Vorbis (q4) and stored as an OGG resource. No other audio is bundled.
+The first iteration used UI-click/error clips that did not fit a chess board. These were replaced with the same CC0
+source families credited by Lichess's "wood" sound set. No audio from Lichess's AGPL-licensed `public/sound` files or
+from Chess.com is bundled; YouTube was used only to search/extract reference material with yt-dlp 2026.10.26.
+
+- **Wooden moves:** el_boss, *Chess Puzzle Blitz SFX*, Freesound (<https://freesound.org/people/el_boss/sounds/546119/>).
+  "A light snap indicating a chess piece placed in our game Chess Puzzle Blitz. We recorded this ourselves on a wood
+  board." License: CC0 1.0. Used for `sfx_move.ogg`.
+- **Muted mistake:** the matching Kenney *Impact Sounds* wooden impact
+  (<https://kenney.nl/assets/impact-sounds>, `impactWood_medium_000.ogg`, CC0 1.0) was low-passed, pitched down and
+  struck twice to make a soft, non-electronic "no". Used for `sfx_wrong.ogg`. The el_boss capture and slide clips
+  (<https://freesound.org/people/el_boss/sounds/546120/>, <https://freesound.org/people/el_boss/sounds/546118/>,
+  both CC0) were also inspected as references.
+- **Hint and solved:** Kenney *Interface Sounds* (<https://kenney.nl/assets/interface-sounds>, CC0 1.0), the same
+  pack Lichess credits for check/promote/game-end: `glass_001.ogg` for `sfx_hint.ogg` and `confirmation_002.ogg` for
+  `sfx_solved.ogg`.
+- **License:** all sources above are CC0 1.0 Universal
+  (<https://creativecommons.org/publicdomain/zero/1.0/>), so commercial use, modification and redistribution are
+  allowed without attribution; this notice records provenance anyway.
+- **Tools:** `C:\Users\detid\Downloads\yt-dlp.exe` (2026.10.26) searched YouTube and extracted the Freesound HQ
+  previews and Kenney archives; ffmpeg (`C:\Program Files\ChessBase\CBase26\ffmpeg\ffmpeg.exe`) trimmed, filtered,
+  normalized to a common peak, converted to mono 44.1 kHz Vorbis (q5) and wrote the four `res/raw/sfx_*.ogg` files.
 

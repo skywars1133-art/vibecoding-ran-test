@@ -638,12 +638,25 @@ Resume file. Update after every meaningful step and before any likely credit cut
   a puzzle screen opened with no `SoundPool`/`AudioTrack`/FATAL logcat errors. Subjective sound quality remains a
   user-side check. README and `THIRD_PARTY_NOTICES.md` record the CC0 provenance and modifications.
 
+- 2026-11-21: sounds redesign after the user rejected the first clips as "horrible". Re-searched YouTube with
+  `C:\Users\detid\Downloads\yt-dlp.exe` (2026.10.26) and checked Lichess's own sound credits. Lichess's `public/sound`
+  sets are AGPL, so none of those files (and no Chess.com audio) were bundled; instead the CC0 sources that Lichess's
+  "wood" set credits were adopted. yt-dlp downloaded the el_boss Freesound HQ previews (piece placement, capture,
+  slide) and the Kenney Impact/Interface archives; ffmpeg rebuilt `res/raw/sfx_move.ogg` as the real wooden placement,
+  `sfx_wrong.ogg` as a low-passed, pitched-down double wooden knock, `sfx_hint.ogg` from Kenney `glass_001` and
+  `sfx_solved.ogg` from Kenney `confirmation_002`, all normalized to a common peak. README and
+  `THIRD_PARTY_NOTICES.md` now document the new provenance and explicitly exclude AGPL/proprietary sounds. Gate:
+  **250 tests** (167 domain + 83 app), lint `No issues found`, debug + release green. Signed test APK
+  `45EB7B895D15...` (13 510 812 bytes, v2/v3). No adb device was attached at signing time, so this iteration is not
+  yet installed or device-verified; audible quality remains a user-side check after reconnecting the tablet.
+
 ## Next step
-1. **All earlier bundles, both Firebase ranking bundles, the privacy-copy follow-up and the sounds bundle are complete
-   and device-verified. Wait for user feedback before the next bundle.** Remaining gaps, all
-   documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
-   detection is the known limitation), the subjective feel of the haptic ticks and the four sound clips is unverified
-   (the switches, settings keys and audio initialization were checked; no audible/feel judgement was made), the
+1. **Earlier bundles, both Firebase ranking bundles, the privacy-copy follow-up and the first sounds bundle are complete
+   and device-verified; the sounds redesign is code-complete and gate-green. Wait for user feedback before the next
+   bundle.** Remaining gaps, all documented: split-screen behaviour could not be exercised (adb cannot form a split on
+   this firmware; foreground-only detection is the known limitation), the subjective feel of the haptic ticks and the
+   four sound clips is unverified (the switches, settings keys and audio initialization were checked; no audible/feel
+   judgement was made and the redesigned clips are not installed because no device was connected), the
    themed-icon rendering path was not toggled on the test
    tablet, widget/shortcut picker labels follow the system locale rather than the in-app language. The
    `Entitlements` bundle and the reward-chip update are fully device-verified.
