@@ -171,7 +171,7 @@
     <!-- Hints (rewarded ads) -->
     <string name="hint_button">Hint</string>
     <string name="hint_dialog_title">Use a hint?</string>
-    <string name="hint_dialog_body">Watch a short ad to reveal this move. Using any hint halves the time reward, and a win after a hint gives no ELO gain.</string>
+    <string name="hint_dialog_body">Watch a short ad to reveal this move. Using any hint halves the time reward and gives only partial ELO credit for a win.</string>
     <string name="hint_watch_ad">Watch ad</string>
     <string name="hint_cancel">Cancel</string>
     <string name="hint_offline">Hints need an internet connection.</string>

@@ -69,13 +69,24 @@ class PlayerStore @Inject constructor(
 
     suspend fun currentState(): PlayerState = state.first()
 
-    suspend fun recordResult(puzzleRating: Int, result: EloResult): EloUpdate {
+    suspend fun recordResult(
+        puzzleRating: Int,
+        result: EloResult,
+        puzzleRatingDeviation: Int? = null,
+    ): EloUpdate {
         var oldElo = config.eloStart
         var newElo = oldElo
         context.playerDataStore.edit { preferences ->
             oldElo = preferences[eloKey] ?: config.eloStart
             val played = preferences[ratedCountKey] ?: 0
-            newElo = EloCalculator.newElo(oldElo, puzzleRating, played, result, config)
+            newElo = EloCalculator.newElo(
+                oldElo,
+                puzzleRating,
+                played,
+                result,
+                puzzleRatingDeviation,
+                config,
+            )
             preferences[eloKey] = newElo
             preferences[ratedCountKey] = played + 1
         }
@@ -86,7 +97,7 @@ class PlayerStore @Inject constructor(
     /** Stores the ELO found by the placement test and stops asking for it on launch. */
     suspend fun completePlacement(elo: Int) {
         context.playerDataStore.edit { preferences ->
-            preferences[eloKey] = elo.coerceIn(config.eloFloor, config.placementMaxRating)
+            preferences[eloKey] = elo.coerceIn(config.eloFloor, config.eloCeiling)
             preferences[placementCompletedKey] = true
         }
         BudgetWidgetUpdater.requestUpdate(context)

@@ -55,7 +55,7 @@ class LeaderboardFirestoreMapperTest {
             document.keys,
         )
         assertEquals("Ada Lovelace", document[LeaderboardFirestoreMapper.FIELD_NICKNAME])
-        assertEquals(config.placementMaxRating, document[LeaderboardFirestoreMapper.FIELD_ELO])
+        assertEquals(config.eloCeiling, document[LeaderboardFirestoreMapper.FIELD_ELO])
         assertEquals(0, document[LeaderboardFirestoreMapper.FIELD_RATED])
     }
 }

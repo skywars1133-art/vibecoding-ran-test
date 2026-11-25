@@ -287,7 +287,11 @@ class PuzzleViewModel @Inject constructor(
                     var elo = mutableState.value.playerElo
                     var eloDelta = mutableState.value.eloDelta
                     if (outcome is WrongMoveOutcome.LifeLost && outcome.eloLossApplied) {
-                        val update = playerStore.recordResult(currentSession.puzzleRating, EloResult.LOSS)
+                        val update = playerStore.recordResult(
+                            puzzleRating = currentSession.puzzleRating,
+                            result = EloResult.LOSS,
+                            puzzleRatingDeviation = currentProgress.puzzle.ratingDeviation,
+                        )
                         elo = update.newElo
                         eloDelta = update.delta
                         // The third lost life is when ELO changes, so the attempt is logged here.
@@ -326,7 +330,11 @@ class PuzzleViewModel @Inject constructor(
                         var statsEloBefore = elo
                         var statsEloAfter = elo
                         if (!outcome.eloAlreadyApplied) {
-                            val update = playerStore.recordResult(currentSession.puzzleRating, outcome.eloResult)
+                            val update = playerStore.recordResult(
+                                puzzleRating = currentSession.puzzleRating,
+                                result = outcome.eloResult,
+                                puzzleRatingDeviation = currentProgress.puzzle.ratingDeviation,
+                            )
                             elo = update.newElo
                             eloDelta = update.delta
                             statsEloBefore = update.oldElo

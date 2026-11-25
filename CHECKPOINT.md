@@ -7,7 +7,11 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - Current phase: Phase 4 (hardening and release prep) - lint/Play-readiness cleanup and monetization groundwork
   (`Entitlements`) are complete; awaiting user feedback
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: expanded the built-in offline stock from 50 to 300 real Lichess CC0 puzzles, 30 in each 200-point
+- Last completed: improved ELO counting. Placement now updates its estimate with each puzzle's real rating instead of
+  a fixed staircase; regular updates damp unreliable Lichess puzzle ratings, give hint wins partial credit, and clamp
+  to the shared 400..2800 range. The gate passed 264 tests with clean lint, and the signed APK was installed on the
+  tablet with ELO and puzzle stock preserved.
+- Earlier milestone: expanded the built-in offline stock from 50 to 300 real Lichess CC0 puzzles, 30 in each 200-point
   rating band from 600 to under 2600. `BuiltinPuzzlesTest` checks count, uniqueness, band spread and every UCI
   solution with chesslib; the gate passed 260 tests with clean lint, and the signed APK was installed on the tablet
   with data preserved and the enlarged stock visible.
@@ -678,8 +682,19 @@ Resume file. Update after every meaningful step and before any likely credit cut
   preserved (ELO **2247**); Settings reported **2779** unsolved puzzles in the offline stock, last download
   `25 Nov 2026, 16:30` and puzzle band `2200`. `INSERT IGNORE` keeps already-solved rows intact.
 
+- 2026-11-25: improved ELO counting. `PlacementTest` now records the actual puzzle rating and updates its estimate with
+  a placement ELO calculation, so a 1400-rated solve moves it far more than a 600-rated solve; the estimate is also the
+  next puzzle target. Normal results use the stored Lichess rating deviation to damp unreliable puzzle ratings, give
+  hint-assisted wins half-score at half K instead of zero, and clamp every result to a shared `eloFloor..eloCeiling`
+  (400..2800) used by local play, placement and leaderboard upload. All new numbers live in `AppConfig`; EN/SK hint
+  copy, README, SPEC and PHASES were updated. Gate: **264 tests** (171 domain + 93 app), lint `No issues found`, debug
+  and release green. Signed APK `dist/ChessLock-0.1.0-elo.apk` (also copied over `dist/ChessLock-0.1.0-final.apk`),
+  13 543 580 bytes, SHA-256 `E8F7219E692B3A17ED440CCD30E52C1BC755A5FF3DCC9C5C33446C675753818E`, v2/v3. Installed on
+  `R9TX902F92W` with ELO **2247**, budget and puzzle stock preserved; the home screen opened with no FATAL logcat.
+  Existing ELO values are not retroactively recalculated — only future results use the improved rules.
+
 ## Next step
-1. **All bundles through the 300-puzzle expansion are complete and device-verified. Wait for user feedback before the
+1. **All bundles through the improved ELO counting are complete and device-verified. Wait for user feedback before the
    next bundle.** The redesigned sounds and the smooth piece animation were accepted by the user. Remaining gaps, all
    documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
    detection is the known limitation), the themed-icon rendering path was not toggled on the test tablet,

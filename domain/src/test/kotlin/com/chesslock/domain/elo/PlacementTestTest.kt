@@ -9,8 +9,10 @@ import org.junit.Test
 class PlacementTestTest {
     private val config = AppConfig.DEFAULT
 
-    private fun run(results: List<Boolean>): PlacementTest =
-        PlacementTest(config).also { t -> results.forEach { t.record(it) } }
+    private fun run(results: List<Pair<Int, Boolean>>, placementConfig: AppConfig = config): PlacementTest =
+        PlacementTest(placementConfig).also { test ->
+            results.forEach { (rating, solved) -> test.record(solved, rating) }
+        }
 
     @Test
     fun startsAtConfiguredStartingElo() {
@@ -21,61 +23,62 @@ class PlacementTestTest {
     }
 
     @Test
-    fun firstStepsShrinkByDecay() {
+    fun eachAnswerUpdatesTheEstimateFromTheActualPuzzleRating() {
         val t = PlacementTest(config)
-        t.record(true)
-        assertEquals(1300.0, t.targetRating, 1e-9)
-        t.record(false)
-        assertEquals(1300.0 - 225.0, t.targetRating, 1e-9)
-        t.record(true)
-        assertEquals(1075.0 + 168.75, t.targetRating, 1e-9)
+        t.record(solved = true, puzzleRating = 1400)
+        assertEquals(1081.81818181818, t.targetRating, 1e-9)
+        t.record(solved = false, puzzleRating = 1400)
+        assertEquals(1069.38268810037, t.targetRating, 1e-9)
     }
 
     @Test
-    fun stepNeverDropsBelowMinimum() {
-        val t = run(List(8) { true })
-        val before = t.targetRating
-        t.record(true)
-        assertEquals(before + config.placementStepMin, t.targetRating, 1e-9)
+    fun theSameResultOnAHarderPuzzleMovesTheEstimateMuchMore() {
+        val hard = run(listOf(1400 to true))
+        val easy = run(listOf(600 to true))
+        assertTrue("hard=${hard.estimatedElo()} easy=${easy.estimatedElo()}", hard.estimatedElo() > easy.estimatedElo())
     }
 
     @Test
     fun completesAfterConfiguredNumberOfPuzzles() {
-        val t = run(List(9) { true })
+        val t = run(List(9) { 1000 to true })
         assertFalse(t.isComplete)
-        t.record(true)
+        t.record(solved = true, puzzleRating = 1000)
         assertTrue(t.isComplete)
         assertEquals(10, t.answered)
     }
 
     @Test(expected = IllegalStateException::class)
     fun recordingAfterCompletionFails() {
-        run(List(10) { true }).record(true)
+        run(List(10) { 1000 to true }).record(solved = true, puzzleRating = 1000)
     }
 
     @Test
-    fun solvingEverythingGivesAHighElo() {
-        // 1000 + 300 + 225 + 168.75 + 126.5625 + 94.921875 + 5 * 75 = 2290.23
-        assertEquals(2290, run(List(10) { true }).estimatedElo())
+    fun solvingHardPuzzlesRaisesTheEstimate() {
+        // 10 wins against 1400-rated puzzles converge near 1552, not the old staircase's 2290.
+        assertEquals(1552, run(List(10) { 1400 to true }).estimatedElo())
+    }
+
+    @Test
+    fun solvingEasyPuzzlesOnlyRaisesTheEstimateSlightly() {
+        assertEquals(1069, run(List(10) { 600 to true }).estimatedElo())
     }
 
     @Test
     fun failingEverythingIsClampedToTheFloor() {
-        assertEquals(config.eloFloor, run(List(10) { false }).estimatedElo())
+        assertEquals(config.eloFloor, run(List(10) { 400 to false }).estimatedElo())
     }
 
     @Test
-    fun alternatingResultsSettleNearTheStart() {
-        val results = List(10) { it % 2 == 0 }
+    fun alternatingAroundTheTrueRatingSettlesNearIt() {
+        val results = List(10) { index -> (if (index % 2 == 0) 1300 else 1100) to (index % 2 == 0) }
         val elo = run(results).estimatedElo()
-        assertTrue("elo=$elo", elo in 1100..1250)
+        assertTrue("elo=$elo", elo in 1050..1200)
     }
 
     @Test
     fun ratingIsCappedAtMaximum() {
-        val custom = config.copy(placementMaxRating = 1500)
-        val t = PlacementTest(custom)
-        repeat(custom.placementPuzzleCount) { t.record(true) }
+        val custom = config.copy(eloCeiling = 1500)
+        val t = run(List(10) { 2000 to true }, custom)
         assertEquals(1500, t.estimatedElo())
         assertEquals(1500.0, t.targetRating, 1e-9)
     }
@@ -84,7 +87,7 @@ class PlacementTestTest {
     fun targetNeverGoesBelowFloorDuringTheTest() {
         val t = PlacementTest(config)
         repeat(10) {
-            t.record(false)
+            t.record(solved = false, puzzleRating = 400)
             assertTrue(t.targetRating >= config.eloFloor)
         }
     }
@@ -92,7 +95,7 @@ class PlacementTestTest {
     @Test
     fun lengthComesFromConfig() {
         val short = PlacementTest(config.copy(placementPuzzleCount = 3))
-        repeat(3) { short.record(true) }
+        repeat(3) { short.record(solved = true, puzzleRating = 1000) }
         assertTrue(short.isComplete)
     }
 }

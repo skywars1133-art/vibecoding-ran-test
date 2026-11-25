@@ -1,7 +1,7 @@
 rules_version = '2';
 
 // ChessLock ranking only. A signed-in player may read the board and write exactly their own row.
-// No other collection is accessible. Bounds mirror AppConfig (eloFloor, placementMaxRating,
+// No other collection is accessible. Bounds mirror AppConfig (eloFloor, eloCeiling,
 // leaderboardNicknameMinLength/MaxLength); update both together if those defaults change.
 service cloud.firestore {
   match /databases/{database}/documents {

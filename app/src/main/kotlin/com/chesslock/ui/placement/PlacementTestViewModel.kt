@@ -86,7 +86,7 @@ class PlacementTestViewModel @Inject constructor(
             try {
                 val target = test.targetRating
                     .roundToInt()
-                    .coerceIn(config.eloFloor, config.placementMaxRating)
+                    .coerceIn(config.eloFloor, config.eloCeiling)
                 val puzzle = repository.nextPuzzle(target, usedPuzzleIds)
                 if (puzzle == null) {
                     showResult(endedEarly = true)
@@ -143,7 +143,10 @@ class PlacementTestViewModel @Inject constructor(
                     MoveResult.Wrong -> {
                         val outcome = currentSession.wrongMove()
                         if (outcome is WrongMoveOutcome.LifeLost && outcome.livesLeft == 0) {
-                            test.record(solved = false)
+                            test.record(
+                                solved = false,
+                                puzzleRating = currentProgress.puzzle.rating,
+                            )
                             mutableState.value = mutableState.value.copy(
                                 livesLeft = currentSession.livesLeft,
                                 moveStatus = PuzzleMoveStatus.NONE,
@@ -173,7 +176,10 @@ class PlacementTestViewModel @Inject constructor(
                         }
                         currentSession.correctMove()
                         if (result.solved) {
-                            test.record(solved = true)
+                            test.record(
+                                solved = true,
+                                puzzleRating = currentProgress.puzzle.rating,
+                            )
                             mutableState.value = mutableState.value.copy(
                                 pieces = currentPosition.pieces,
                                 legalMoves = emptyList(),

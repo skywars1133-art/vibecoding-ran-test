@@ -29,5 +29,5 @@ Work one phase at a time. After each phase: project builds, logic is unit-tested
 - Blocking really works on a physical device, including after reboot
 - Puzzles can be solved without internet
 - A hint is granted only after a completed rewarded ad; offline or ad failure never gives a free hint
-- Unit tests cover hint rules: reduced reward, no ELO gain on a win with a hint, no effect on lives
+- Unit tests cover hint rules: reduced reward, partial ELO credit on a win with a hint, no effect on lives
 - No hardcoded constants and no unusable licenses

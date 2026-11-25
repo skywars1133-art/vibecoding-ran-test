@@ -181,8 +181,11 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
 - **Domain module is plain Kotlin/JVM.** Rules are testable without an emulator and stay independent of Android.
 - **Reward order:** gross (base + difficulty bonus) -> hint multiplier (x0.5 if any hint used) -> minus 20 s per wrong
   move after all lives are lost -> never below 0. The flat penalty is not halved.
-- **ELO K-factor counts every puzzle that has an ELO result**, including hint wins (delta 0) and losses.
-  K = 40 while fewer than 20 such puzzles have been played, else 20. Rounded to nearest integer, floor 400.
+- **ELO K-factor counts every puzzle that has an ELO result**, including hint wins and losses.
+  K = 40 while fewer than 20 such puzzles have been played, else 20. Expected score comes from the puzzle's real
+  rating, damped toward the player's rating when its Lichess rating deviation is high. An unaided win scores 1, a
+  hint-assisted win scores a draw with half K (so hard puzzles still give a small gain), and a loss scores 0.
+  Results are rounded to the nearest integer and clamped to 400..2800, the same range used by the leaderboard.
 - **ELO loss is applied when the third life is lost**; solving afterwards pays the reduced reward but does not
   touch ELO again (`SolveOutcome.eloAlreadyApplied`). Skipping after the loss keeps that loss.
 - **Skip kinds:** the 20-minute skip is preferred over the free skip when both are possible, so the free skip is kept.
@@ -195,9 +198,10 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
 - **Puzzle validation:** a puzzle needs an even number of moves, at least 2 (opponent's automatic first move, then
   player/opponent pairs ending on the player's move). Malformed CSV rows are skipped and reported, never fatal.
 - **No invented puzzle data.** The built-in set is generated from the real dump by `scripts/build-builtin-puzzles.py`.
-- **Placement test is a staircase:** the target puzzle rating starts at the default ELO, goes up after a solve and
-  down after a failure, with steps 300, 225, 169, ... shrinking to a 75 minimum. The estimate is the target the next
-  puzzle would have had (clamped to 400..2800). No hints or skips are offered during placement.
+- **Placement test uses ELO, not a fixed staircase:** the estimate starts at the default ELO and each answer applies
+  a placement K-factor to the puzzle's actual rating. A 1400-rated solve therefore moves it far more than a 600-rated
+  solve, and the updated estimate becomes the next puzzle target (clamped to 400..2800). No hints or skips are offered
+  during placement.
 - **Placement test flow:** onboarding shows it until `placement_completed` is stored. It uses the built-in stock only,
   keeps each puzzle unique within one run (repository `excludeIds`), grants no rewards, records no ELO changes and does
   not mark puzzles solved. Losing all three lives records a failure immediately. If the stock runs out early the test
@@ -317,7 +321,7 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
 - **Puzzle rewards feed the budget:** a solved puzzle's reward is written to `BudgetStore` immediately, so the block
   screen disappears on the next poll without restarting the service.
 - **Hints are rewarded ads only.** Tapping Hint first shows a dialog that explains the cost (half the time reward and
-  no ELO gain on a win). The hint is granted only from AdMob's `onUserEarnedReward` callback; an ad that fails, is
+  only partial ELO credit on a win). The hint is granted only from AdMob's `onUserEarnedReward` callback; an ad that fails, is
   skipped or is closed early grants nothing. Level 1 highlights the piece to move, level 2 also highlights the target;
   the counter resets after each correct move. A hint never costs a life. The daily hint limit is unlimited by default
   (`AppConfig.dailyHintLimit`); offline devices show an explanatory note and disable the button. The next ad is

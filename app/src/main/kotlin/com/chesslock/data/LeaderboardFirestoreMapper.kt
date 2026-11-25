@@ -16,7 +16,7 @@ object LeaderboardFirestoreMapper {
 
     fun toDocument(entry: LeaderboardEntry, config: AppConfig): Map<String, Any> = mapOf(
         FIELD_NICKNAME to LeaderboardRanks.normalizeNickname(entry.nickname, config),
-        FIELD_ELO to entry.elo.coerceIn(config.eloFloor, config.placementMaxRating),
+        FIELD_ELO to entry.elo.coerceIn(config.eloFloor, config.eloCeiling),
         FIELD_RATED to entry.ratedPuzzlesPlayed.coerceAtLeast(0),
     )
 
@@ -27,7 +27,7 @@ object LeaderboardFirestoreMapper {
         val elo = (values[FIELD_ELO] as? Number)?.toLong()?.toInt() ?: return null
         val played = (values[FIELD_RATED] as? Number)?.toLong()?.toInt() ?: return null
         if (!LeaderboardRanks.isValidNickname(nickname, config)) return null
-        if (elo !in config.eloFloor..config.placementMaxRating || played < 0) return null
+        if (elo !in config.eloFloor..config.eloCeiling || played < 0) return null
         return LeaderboardEntry(id, nickname, elo, played)
     }
 }

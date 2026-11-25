@@ -39,43 +39,65 @@ class EloCalculatorTest {
 
     @Test
     fun beatingMuchHarderPuzzleGivesBigGain() {
-        // expected = 1/11, K = 40: 40 * (1 - 1/11) = 36.36 -> 1036
         assertEquals(1036, EloCalculator.newElo(1000, 1400, 0, EloResult.WIN, config))
     }
 
     @Test
     fun losingToMuchHarderPuzzleCostsLittle() {
-        // 40 * (0 - 1/11) = -3.63 -> 996.36 -> 996
         assertEquals(996, EloCalculator.newElo(1000, 1400, 0, EloResult.LOSS, config))
     }
 
     @Test
     fun losingToMuchEasierPuzzleCostsALot() {
-        // expected = 10/11, K = 40: 40 * (0 - 10/11) = -36.36 -> 963.63 -> 964
         assertEquals(964, EloCalculator.newElo(1000, 600, 0, EloResult.LOSS, config))
     }
 
     @Test
-    fun winWithHintNeverChangesElo() {
-        assertEquals(0, EloCalculator.delta(1000, 1400, 0, EloResult.WIN_WITH_HINT, config))
-        assertEquals(0, EloCalculator.delta(1500, 800, 50, EloResult.WIN_WITH_HINT, config))
+    fun ratingDeviationPullsUnreliablePuzzleRatingTowardThePlayer() {
+        // Deviation 200 of scale 200 halves the 400-point gap: 1000 vs 1200 -> 0.24025.
+        assertEquals(0.240253073352042, EloCalculator.expectedScore(1000, 1400, 200, config), 1e-9)
+        assertEquals(1030, EloCalculator.newElo(1000, 1400, 0, EloResult.WIN, 200, config))
+        assertEquals(990, EloCalculator.newElo(1000, 1400, 0, EloResult.LOSS, 200, config))
+        assertEquals(970, EloCalculator.newElo(1000, 600, 0, EloResult.LOSS, 200, config))
     }
 
     @Test
-    fun lossWithHintStillDeductsElo() {
-        // A hint does not protect against a loss: the LOSS result is deducted normally.
+    fun zeroDeviationIsTreatedAsAnExactPuzzleRating() {
+        assertEquals(1036, EloCalculator.newElo(1000, 1400, 0, EloResult.WIN, 0, config))
+        assertEquals(1036, EloCalculator.newElo(1000, 1400, 0, EloResult.WIN, config))
+    }
+
+    @Test
+    fun uncertaintyWeightCanBeTurnedOffFromConfig() {
+        val exact = config.copy(puzzleRatingUncertaintyWeight = 0.0)
+        assertEquals(1036, EloCalculator.newElo(1000, 1400, 0, EloResult.WIN, 200, exact))
+    }
+
+    @Test
+    fun hintWinOnEvenPuzzleStaysUnchangedButHarderPuzzlesGivePartialCredit() {
+        assertEquals(0, EloCalculator.delta(1000, 1000, 0, EloResult.WIN_WITH_HINT, config))
+        assertEquals(0, EloCalculator.delta(1500, 1500, 50, EloResult.WIN_WITH_HINT, config))
+        // Half K * (0.5 - 1/11) = +8.18; a normal win would gain 36.
+        assertEquals(1008, EloCalculator.newElo(1000, 1400, 0, EloResult.WIN_WITH_HINT, config))
+        assertEquals(992, EloCalculator.newElo(1000, 600, 0, EloResult.WIN_WITH_HINT, config))
+    }
+
+    @Test
+    fun lossStillDeductsNormally() {
         assertEquals(-20, EloCalculator.delta(1000, 1000, 0, EloResult.LOSS, config))
     }
 
     @Test
-    fun eloNeverDropsBelowFloor() {
+    fun eloStaysBetweenFloorAndCeiling() {
         assertEquals(400, EloCalculator.newElo(400, 400, 0, EloResult.LOSS, config))
         assertEquals(400, EloCalculator.newElo(410, 400, 0, EloResult.LOSS, config))
+        assertEquals(2800, EloCalculator.newElo(2790, 3000, 0, EloResult.WIN, config))
     }
 
     @Test
-    fun floorIsReadFromConfig() {
-        val custom = config.copy(eloFloor = 500)
+    fun floorAndCeilingAreReadFromConfig() {
+        val custom = config.copy(eloFloor = 500, eloCeiling = 1500)
         assertEquals(500, EloCalculator.newElo(505, 500, 0, EloResult.LOSS, custom))
+        assertEquals(1500, EloCalculator.newElo(1490, 1800, 0, EloResult.WIN, custom))
     }
 }

@@ -97,19 +97,30 @@ data class AppConfig(
     // --- ELO (SPEC 4) ---
     val eloStart: Int = 1000,
     val eloFloor: Int = 400,
+    /** Shared local, placement and leaderboard ceiling. */
+    val eloCeiling: Int = 2800,
     val eloScale: Double = 400.0,
     val kFactorEarly: Int = 40,
     val kFactorLater: Int = 20,
     /** Number of rated puzzles that use [kFactorEarly]. */
     val kFactorEarlyPuzzleCount: Int = 20,
+    /**
+     * A win after a hint is scored as a draw with half the usual K-factor: harder puzzles still
+     * give a small gain, easier ones cost a little, and an even contest stays unchanged.
+     */
+    val hintWinScore: Double = 0.5,
+    val hintWinKMultiplier: Double = 0.5,
+    /**
+     * Lichess rating deviation above this scale makes a puzzle fully unreliable; the rating gap
+     * used by the ELO expectation is shrunk by [puzzleRatingUncertaintyWeight] at that point.
+     */
+    val puzzleRatingDeviationScale: Int = 200,
+    val puzzleRatingUncertaintyWeight: Double = 0.5,
     val placementPuzzleCount: Int = 10,
 
-    // --- Placement test: adaptive staircase (SPEC 4) ---
-    /** First step up/down in puzzle rating; shrinks by [placementStepDecay] per puzzle. */
-    val placementStepInitial: Int = 300,
-    val placementStepMin: Int = 75,
-    val placementStepDecay: Double = 0.75,
-    val placementMaxRating: Int = 2800,
+    // --- Placement test: ELO estimates from the actual puzzle ratings (SPEC 4) ---
+    /** K-factor used for each placement answer; higher than normal play so 10 puzzles can settle the estimate. */
+    val placementKFactor: Int = 90,
 
     // --- Leaderboard (cloud ranking, SPEC 5) ---
     /** Number of top rows shown on the ranking screen. */

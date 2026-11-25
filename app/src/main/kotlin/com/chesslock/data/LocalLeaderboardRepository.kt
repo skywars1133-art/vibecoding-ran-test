@@ -24,7 +24,7 @@ class LocalLeaderboardRepository @Inject constructor(
     override suspend fun publish(entry: LeaderboardEntry) {
         val safeEntry = entry.copy(
             nickname = LeaderboardRanks.normalizeNickname(entry.nickname, config),
-            elo = entry.elo.coerceIn(config.eloFloor, config.placementMaxRating),
+            elo = entry.elo.coerceIn(config.eloFloor, config.eloCeiling),
             ratedPuzzlesPlayed = entry.ratedPuzzlesPlayed.coerceAtLeast(0),
         )
         published[safeEntry.playerId] = safeEntry

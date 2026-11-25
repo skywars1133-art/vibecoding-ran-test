@@ -35,13 +35,13 @@ The user blocks distracting app categories behind a shared daily time budget. Ex
 - A hint is obtained only by voluntarily watching a **rewarded video ad**. No other ad formats (no interstitials, no banners during puzzles).
 - Two hint levels per move: level 1 highlights the piece to move, level 2 also highlights the target square. Each hint = one watched ad. Hints apply to the player's current move; in a multi-move puzzle the level counter resets after each correct move.
 - A hint does NOT cost a life.
-- If at least one hint was used in a puzzle: the time reward is reduced by **50%** (configurable), and on a win the ELO does **not** increase (change = 0). On a loss, ELO is deducted normally.
+- If at least one hint was used in a puzzle: the time reward is reduced by **50%** (configurable), and a win receives only partial ELO credit (scored as a draw with half K, so an even puzzle neither gains nor loses). On a loss, ELO is deducted normally.
 - Grant the hint ONLY in the `onUserEarnedReward` callback. If the ad fails to load, fails, or is closed early, no hint is given and a clear message is shown. Never give a free hint as a fallback.
 - Preload the next rewarded ad in the background; load another after each show.
 - Offline: the Hint button is disabled with the note "Hints require internet". Puzzle solving itself still works offline.
 - Ads are never shown on the block screen or outside the puzzle screen, and never without the user tapping Hint.
 - Daily hint limit: default unlimited, configurable.
-- Before the ad, show a dialog: "Watch an ad to get a hint. The reward for this puzzle will be reduced by 50% and your ELO will not increase."
+- Before the ad, show a dialog explaining that the time reward is halved and a win gives only partial ELO credit.
 
 ## 4. ELO system
 - **Placement test** during onboarding: about 10 adaptive puzzles (difficulty rises or falls with results) to set the starting ELO. Must work offline (built-in set).

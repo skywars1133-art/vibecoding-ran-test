@@ -22,7 +22,7 @@ class StatisticsStore @Inject constructor(
     fun observeUsageSince(from: LocalDate): Flow<List<UsageDayEntity>> =
         dao.observeUsageSince(from.toString())
 
-    /** A win (including a hint win, which changes ELO by 0). */
+    /** A win (including a hint win, which receives partial ELO credit). */
     suspend fun recordSolved(
         puzzle: Puzzle,
         hintsUsed: Int,
