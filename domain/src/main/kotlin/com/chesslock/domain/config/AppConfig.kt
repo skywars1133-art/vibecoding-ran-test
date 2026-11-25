@@ -59,6 +59,8 @@ data class AppConfig(
     val hapticsEnabledByDefault: Boolean = true,
     /** Short CC0 feedback sounds mirror the haptics and are on by default. */
     val soundsEnabledByDefault: Boolean = true,
+    /** Smooth glide for one board ply, including capture, castling and promotion. */
+    val boardMoveAnimationDurationMs: Int = 240,
 
     // --- Rewards (SPEC 3) ---
     val baseRewardMinutes: Int = 3,

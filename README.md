@@ -46,7 +46,9 @@ scripts/test-domain.sh
 4. Long-press the ChessLock icon in the launcher for shortcuts to **Solve a puzzle**, **View statistics** and **Open
    settings**. Each opens its own screen directly, even when the app was not running.
 5. Open **Settings** to choose the app language (System default / English / Slovak), the theme (System default / Light /
-   Dark), the daily limit, blocked categories, individual app overrides and piece style.
+   Dark), the daily limit, blocked categories, individual app overrides and piece style. Pieces now glide between squares
+   with an eased transition (`AppConfig.boardMoveAnimationDurationMs`); captures stay under the mover until it lands and
+   castling/promotion animate correctly.
 6. Under **App blocking**, tap **Choose individual apps** to search installed apps and set **Use categories**, **Always
    block** or **Never block** per app. Phone, launcher and system settings stay allowed regardless.
 7. The **Puzzle downloads** section shows the offline stock, the last download and the Wi-Fi-only switch. Tap

@@ -32,6 +32,8 @@ data class PlacementUiState(
     val pieces: List<ChessPiece> = emptyList(),
     val legalMoves: List<String> = emptyList(),
     val lastMove: String? = null,
+    /** UCI plies played in this state update, consumed by the board as one animation batch. */
+    val moveTimeline: List<String> = emptyList(),
     val livesLeft: Int = 0,
     val answered: Int = 0,
     val total: Int = 0,
@@ -108,6 +110,7 @@ class PlacementTestViewModel @Inject constructor(
                     pieces = nextPosition.pieces,
                     legalMoves = nextPosition.legalMoves,
                     lastMove = openingMove,
+                    moveTimeline = emptyList(),
                     livesLeft = nextSession.livesLeft,
                     answered = test.answered,
                     total = config.placementPuzzleCount,
@@ -144,6 +147,7 @@ class PlacementTestViewModel @Inject constructor(
                             mutableState.value = mutableState.value.copy(
                                 livesLeft = currentSession.livesLeft,
                                 moveStatus = PuzzleMoveStatus.NONE,
+                                moveTimeline = emptyList(),
                                 puzzleFailed = true,
                                 answered = test.answered,
                                 testComplete = test.isComplete,
@@ -153,6 +157,7 @@ class PlacementTestViewModel @Inject constructor(
                             mutableState.value = mutableState.value.copy(
                                 livesLeft = currentSession.livesLeft,
                                 moveStatus = PuzzleMoveStatus.WRONG,
+                                moveTimeline = emptyList(),
                             )
                         }
                     }
@@ -173,6 +178,10 @@ class PlacementTestViewModel @Inject constructor(
                                 pieces = currentPosition.pieces,
                                 legalMoves = emptyList(),
                                 lastMove = currentProgress.movesPlayed.lastOrNull(),
+                                moveTimeline = buildList {
+                                    add(uci)
+                                    result.reply?.let { add(it) }
+                                },
                                 livesLeft = currentSession.livesLeft,
                                 moveStatus = PuzzleMoveStatus.SOLVED,
                                 puzzleSolved = true,
@@ -185,6 +194,10 @@ class PlacementTestViewModel @Inject constructor(
                                 pieces = currentPosition.pieces,
                                 legalMoves = currentPosition.legalMoves,
                                 lastMove = currentProgress.movesPlayed.lastOrNull(),
+                                moveTimeline = buildList {
+                                    add(uci)
+                                    result.reply?.let { add(it) }
+                                },
                                 moveStatus = PuzzleMoveStatus.CORRECT,
                             )
                         }

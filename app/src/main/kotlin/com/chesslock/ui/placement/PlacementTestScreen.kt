@@ -94,6 +94,7 @@ fun PlacementTestScreen(
                     pieces = state.pieces,
                     legalMoves = state.legalMoves,
                     lastMove = state.lastMove,
+                    moveTimeline = state.moveTimeline,
                     playerIsWhite = state.playerIsWhite,
                     solved = state.puzzleSolved,
                     onMove = viewModel::onMove,

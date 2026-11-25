@@ -52,6 +52,8 @@ data class PuzzleUiState(
     val pieces: List<ChessPiece> = emptyList(),
     val legalMoves: List<String> = emptyList(),
     val lastMove: String? = null,
+    /** UCI plies played in this state update, consumed by the board as one animation batch. */
+    val moveTimeline: List<String> = emptyList(),
     val livesLeft: Int = 0,
     /** Lives a fresh puzzle starts with, so the UI can draw lost lives. */
     val maxLives: Int = 0,
@@ -139,6 +141,7 @@ class PuzzleViewModel @Inject constructor(
                     pieces = nextPosition.pieces,
                     legalMoves = nextPosition.legalMoves,
                     lastMove = openingMove,
+                    moveTimeline = emptyList(),
                     livesLeft = nextSession.livesLeft,
                     maxLives = config.livesPerPuzzle,
                     rewardSeconds = nextSession.currentRewardSeconds(),
@@ -303,6 +306,7 @@ class PuzzleViewModel @Inject constructor(
                         playerElo = elo,
                         eloDelta = eloDelta,
                         moveStatus = PuzzleMoveStatus.WRONG,
+                        moveTimeline = emptyList(),
                     )
                 }
 
@@ -369,6 +373,10 @@ class PuzzleViewModel @Inject constructor(
                         pieces = currentPosition.pieces,
                         legalMoves = if (result.solved) emptyList() else currentPosition.legalMoves,
                         lastMove = currentProgress.movesPlayed.lastOrNull(),
+                        moveTimeline = buildList {
+                            add(uci)
+                            result.reply?.let { add(it) }
+                        },
                         livesLeft = currentSession.livesLeft,
                         rewardSeconds = reward,
                         playerElo = elo,

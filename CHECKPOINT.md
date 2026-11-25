@@ -651,10 +651,22 @@ Resume file. Update after every meaningful step and before any likely credit cut
   successfully on `R9TX902F92W` (`versionName=0.1.0`, `versionCode=1`, data preserved); the puzzle screen opened with
   no `SoundPool`/`AudioTrack`/FATAL logcat errors. Audible quality remains a user-side check.
 
+- 2026-11-25: smooth piece movement animation. `ChessBoard` now tracks the displayed position separately from the
+  published position and glides a transparent moving-piece overlay between square centers with `FastOutSlowInEasing`
+  and `AppConfig.boardMoveAnimationDurationMs` (240 ms per ply). Both ViewModels publish `moveTimeline`, so a player
+  move and the puzzle reply animate as two sequential steps; captures keep the captured piece visible under the mover
+  until landing, castling moves king and rook together, promotion animates the promoted piece, and board orientation is
+  respected via a pure `squareDisplayIndex` helper. New `PieceMoveAnimationTest` covers all of those cases plus
+  malformed/uppercase UCI. Gate: **259 tests** (167 domain + 92 app), lint `No issues found`, debug + release green.
+  Signed APK `dist/ChessLock-0.1.0-animation.apk` (also copied over `dist/ChessLock-0.1.0-final.apk`),
+  13 527 196 bytes, SHA-256 `6A82C57FD9C33BB653D190BCB17436A40B9E32786B91C45FF8226D579C427177`, v2/v3. Installed on
+  `R9TX902F92W` with data preserved (`versionName=0.1.0`, `versionCode=1`); the puzzle screen opened with no
+  FATAL/animation logcat errors. Visual smoothness remains a user-side check.
+
 ## Next step
-1. **Earlier bundles, both Firebase ranking bundles, the privacy-copy follow-up and the first sounds bundle are complete
-   and device-verified; the sounds redesign is code-complete and gate-green. Wait for user feedback before the next
-   bundle.** Remaining gaps, all documented: split-screen behaviour could not be exercised (adb cannot form a split on
+1. **Earlier bundles, both Firebase ranking bundles, the privacy-copy follow-up, the sounds redesign and the piece
+   animation bundle are complete and device-verified. Wait for user feedback before the next bundle.** Remaining gaps,
+   all documented: split-screen behaviour could not be exercised (adb cannot form a split on
    this firmware; foreground-only detection is the known limitation), the subjective feel of the haptic ticks and the
    four sound clips is unverified (the switches, settings keys and audio initialization were checked; no audible/feel
    judgement was made), the themed-icon rendering path was not toggled on the test
