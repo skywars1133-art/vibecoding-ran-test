@@ -3,11 +3,15 @@
 Resume file. Update after every meaningful step and before any likely credit cutoff. A new session reads this first, then CLAUDE.md, SPEC.md, PHASES.md and the README "Decisions".
 
 ## Status
-- Date: 2026-11-16
+- Date: 2026-11-25
 - Current phase: Phase 4 (hardening and release prep) - lint/Play-readiness cleanup and monetization groundwork
   (`Entitlements`) are complete; awaiting user feedback
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: visual-polish bundle - fixed ChessLock brand palette (no Material You dynamic colours), typography
+- Last completed: expanded the built-in offline stock from 50 to 300 real Lichess CC0 puzzles, 30 in each 200-point
+  rating band from 600 to under 2600. `BuiltinPuzzlesTest` checks count, uniqueness, band spread and every UCI
+  solution with chesslib; the gate passed 260 tests with clean lint, and the signed APK was installed on the tablet
+  with data preserved and the enlarged stock visible.
+- Earlier milestone: visual-polish bundle - fixed ChessLock brand palette (no Material You dynamic colours), typography
   and shapes, an animated Home budget ring with an urgency chip driven by pure `BudgetUrgency` (comfortable / warning /
   critical / empty), a richer puzzle header (info chips, hearts for the lives, framed board, animated solved card), a
   gradient ELO chart and a redesigned block screen. The overlay now also honours the saved theme and in-app language.
@@ -401,7 +405,7 @@ Resume file. Update after every meaningful step and before any likely credit cut
 
 ## Environment notes
 - Dependencies resolve from Google Maven, Maven Central and JitPack (chesslib).
-- The committed built-in set contains 50 real Lichess CC0 puzzles, five in each rating band from 600 through 2600. Every FEN and complete UCI sequence was validated with `python-chess`.
+- The committed built-in set contains 300 real Lichess CC0 puzzles, 30 in each rating band from 600 through 2600. Every FEN and complete UCI sequence is validated by `BuiltinPuzzlesTest` with chesslib.
 - The generator streams the large Lichess dump while retaining only the best candidates per rating band.
 - Pushing needs the Claude GitHub App installed on the repo owner (already done; push works).
 - Do NOT invent puzzle data.
@@ -663,15 +667,25 @@ Resume file. Update after every meaningful step and before any likely credit cut
   `R9TX902F92W` with data preserved (`versionName=0.1.0`, `versionCode=1`); the puzzle screen opened with no
   FATAL/animation logcat errors. Visual smoothness remains a user-side check.
 
+- 2026-11-25: expanded the built-in puzzle stock from 50 to **300 real Lichess CC0 puzzles**. The offline asset was
+  rebuilt from the published `puzzle-packs` release CSVs, with unique IDs, 30 puzzles in each 200-point band from 600
+  to under 2600, and the original sorted rows retained. New `BuiltinPuzzlesTest` validates the 300 rows, uniqueness,
+  exact band counts and every FEN/UCI solution with chesslib; `scripts/build-builtin-puzzles.py` now defaults to 30 per
+  band, and README plus this checkpoint document the larger stock. Gate: **260 tests** (167 domain + 93 app), lint
+  `No issues found`, debug and release green. Signed APK `dist/ChessLock-0.1.0-puzzles.apk` (also copied over
+  `dist/ChessLock-0.1.0-final.apk`), 13 543 580 bytes, SHA-256
+  `F8A5445A06F73CD971412C7B0CE3FE1FCFBC1CC2B4CE2CC9377FBD9027EC08E5`, v2/v3. Installed on `R9TX902F92W` with data
+  preserved (ELO **2247**); Settings reported **2779** unsolved puzzles in the offline stock, last download
+  `25 Nov 2026, 16:30` and puzzle band `2200`. `INSERT IGNORE` keeps already-solved rows intact.
+
 ## Next step
-1. **Earlier bundles, both Firebase ranking bundles, the privacy-copy follow-up, the sounds redesign and the piece
-   animation bundle are complete and device-verified. Wait for user feedback before the next bundle.** Remaining gaps,
-   all documented: split-screen behaviour could not be exercised (adb cannot form a split on
-   this firmware; foreground-only detection is the known limitation), the subjective feel of the haptic ticks and the
-   four sound clips is unverified (the switches, settings keys and audio initialization were checked; no audible/feel
-   judgement was made), the themed-icon rendering path was not toggled on the test
-   tablet, widget/shortcut picker labels follow the system locale rather than the in-app language. The
-   `Entitlements` bundle and the reward-chip update are fully device-verified.
+1. **All bundles through the 300-puzzle expansion are complete and device-verified. Wait for user feedback before the
+   next bundle.** The redesigned sounds and the smooth piece animation were accepted by the user. Remaining gaps, all
+   documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
+   detection is the known limitation), the themed-icon rendering path was not toggled on the test tablet,
+   widget/shortcut picker labels follow the system locale rather than the in-app language, and the old-phone reboot
+   check is still pending. The `Entitlements` bundle, reward-chip update and Firebase ranking bundles are
+   device-verified.
 2. Next (only after user feedback): the remaining Phase 4 candidates are a UMP consent SDK (new dependency + real
    privacy-policy URL), production ad unit IDs, Play Data safety prep and Play Billing behind
    `EntitlementsRepository.update(...)`. Editable nicknames and cloud sync of

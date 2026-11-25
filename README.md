@@ -113,14 +113,14 @@ This is a **test key only** (anyone with the standard debug keystore could sign 
 belongs to Phase 4; never commit a keystore. `dist/` is gitignored.
 
 ### Built-in puzzle set
-The committed `app/src/main/assets/builtin_puzzles.csv` contains 50 real Lichess puzzles (CC0). To regenerate it on a machine with internet:
+The committed `app/src/main/assets/builtin_puzzles.csv` contains 300 real Lichess puzzles (CC0). To regenerate it on a machine with internet:
 
 ```
 curl -O https://database.lichess.org/lichess_db_puzzle.csv.zst
 zstdcat lichess_db_puzzle.csv.zst | python3 scripts/build-builtin-puzzles.py > app/src/main/assets/builtin_puzzles.csv
 ```
 
-It picks 5 puzzles per 200-point rating band from 600 to 2600 (most reliable, most popular first) and prints a
+It picks 30 puzzles per 200-point rating band from 600 to 2600 (most reliable, most popular first) and prints a
 warning if a band has fewer. Only the best candidates per band are retained while streaming, so memory use stays bounded.
 Commit the resulting file after validating it.
 
@@ -216,7 +216,7 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   default constraint is `UNMETERED` (Wi-Fi-only), relaxed to `CONNECTED` when the user allows mobile data. Failures
   retry with exponential backoff and are surfaced in Settings; the next daily run (or the next launch) gets another
   chance. A pack download is idempotent: `INSERT IGNORE` keeps the original row, so solved IDs never return.
-- **Built-in stock remains the offline baseline.** The 50-puzzle asset supports first launch and the placement test
+- **Built-in stock remains the offline baseline.** The 300-puzzle asset supports first launch and the placement test
   without a network, while daily packs accumulate in the same Room stock. The puzzle screen's empty-stock message
   explains that no unsolved puzzles are left and offers a shortcut to Settings.
 - **Starting ELO before the placement test:** 1000 (`AppConfig.eloStart`).

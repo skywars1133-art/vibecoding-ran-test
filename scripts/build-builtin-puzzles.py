@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the app's built-in puzzle set (SPEC 2: about 50 puzzles across ratings) from the real Lichess dump.
+"""Build the app's built-in puzzle set (SPEC 2: 300 puzzles across ratings) from the real Lichess dump.
 
 The Lichess puzzle database is CC0: https://database.lichess.org/#puzzles
 
@@ -26,7 +26,7 @@ def main() -> int:
     ap.add_argument("--min-rating", type=int, default=600)
     ap.add_argument("--max-rating", type=int, default=2600)
     ap.add_argument("--bucket", type=int, default=200, help="rating band width")
-    ap.add_argument("--per-bucket", type=int, default=5)
+    ap.add_argument("--per-bucket", type=int, default=30)
     ap.add_argument("--max-deviation", type=int, default=100, help="skip puzzles with an unreliable rating")
     ap.add_argument("--min-popularity", type=int, default=90)
     ap.add_argument("--min-plays", type=int, default=2000)
