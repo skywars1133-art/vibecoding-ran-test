@@ -7,7 +7,11 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - Current phase: Phase 4 (hardening and release prep) - lint/Play-readiness cleanup and monetization groundwork
   (`Entitlements`) are complete; awaiting user feedback
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: placement practice retake. Settings now opens the tuned 10-puzzle placement flow from a fresh keyed
+- Last completed: placement practice UI polish. The header now shows `Puzzle n of total` with a `Completed: x%` counter
+  beside the puzzle rating, and the life count uses the same filled/outlined hearts as normal puzzles. Gate: 269 tests,
+  lint clean, debug and release green. Signed APK installed on `R9TX902F92W`; the practice screen showed three red
+  hearts, `Completed: 0%`, and ELO remained **2253**.
+- Earlier milestone: placement practice retake. Settings now opens the tuned 10-puzzle placement flow from a fresh keyed
   ViewModel; the result/back actions only return to Settings and never call `confirmResult()`, so ELO, rated count and
   leaderboard data stay untouched. Gate: 266 tests, lint clean, debug and release green. Signed APK installed on
   `R9TX902F92W`; the practice screen opened and ELO stayed **2253** before and after exiting.
@@ -726,10 +730,21 @@ Resume file. Update after every meaningful step and before any likely credit cut
   preserved; home ELO was **2253** before and after entering/exiting practice, the practice screen showed
   "Puzzle 1 of 10" and the rating-unchanged notice, and there was no FATAL logcat.
 
+- 2026-11-26: polished the placement header. `PlacementUiState` gained `currentPuzzleNumber` and `completionPercent`,
+  the header now shows `Puzzle n of total` plus `Completed: x%` beside the puzzle rating, and the life row reuses the
+  public `LivesIndicator` from the normal puzzle screen with filled/outlined hearts. `PlacementTestViewModel` stores
+  `maxLives` from `AppConfig.livesPerPuzzle`; EN/SK strings and README were updated. New `PlacementUiStateTest` covers
+  the one-based puzzle number, 0/30/100% progress, clamping and an empty total. Gate: **269 tests** (171 domain + 98
+  app), lint `No issues found`, debug and release green. Signed APK
+  `dist/ChessLock-0.1.0-practice-ui.apk` (also copied over `dist/ChessLock-0.1.0-final.apk`), 13 547 676 bytes,
+  SHA-256 `8D30AA2DA67C4EE47E556B7B50A0A81B56EF5861AD4081FFAA8E788291B3603D`, v2/v3. Installed on `R9TX902F92W`
+  with ELO still **2253**; the practice screen showed `Puzzle 1 of 10`, `Completed: 0%`, three red heart glyphs and no
+  FATAL logcat.
+
 ## Next step
-1. **All bundles through the placement practice retake are complete, gate-green and device-installed; wait for user
-   feedback before the next bundle.** The redesigned sounds, smooth piece animation and placement tuning were accepted
-   by the user. Remaining gaps, all
+1. **All bundles through the placement practice UI polish are complete, gate-green and device-installed; wait for user
+   feedback before the next bundle.** The redesigned sounds, smooth piece animation, placement tuning and practice
+   retake were accepted by the user. Remaining gaps, all
    documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
    detection is the known limitation), the themed-icon rendering path was not toggled on the test tablet,
    widget/shortcut picker labels follow the system locale rather than the in-app language, and the old-phone reboot

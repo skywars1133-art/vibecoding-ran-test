@@ -35,6 +35,7 @@ data class PlacementUiState(
     /** UCI plies played in this state update, consumed by the board as one animation batch. */
     val moveTimeline: List<String> = emptyList(),
     val livesLeft: Int = 0,
+    val maxLives: Int = 0,
     val answered: Int = 0,
     val total: Int = 0,
     val moveStatus: PuzzleMoveStatus = PuzzleMoveStatus.NONE,
@@ -46,7 +47,13 @@ data class PlacementUiState(
     val finalElo: Int = 0,
     val saving: Boolean = false,
     val saveError: Boolean = false,
-)
+) {
+    /** One-based number of the puzzle currently on screen. */
+    val currentPuzzleNumber: Int get() = if (total <= 0) 0 else (answered + 1).coerceAtMost(total)
+
+    /** Percentage of puzzles already answered, so 0% shows on puzzle 1 and 100% on the last answer. */
+    val completionPercent: Int get() = if (total <= 0) 0 else (answered * 100 / total).coerceIn(0, 100)
+}
 
 /**
  * Onboarding placement test (SPEC 4). Plays [AppConfig.placementPuzzleCount] adaptive puzzles from the
@@ -112,6 +119,7 @@ class PlacementTestViewModel @Inject constructor(
                     lastMove = openingMove,
                     moveTimeline = emptyList(),
                     livesLeft = nextSession.livesLeft,
+                    maxLives = config.livesPerPuzzle,
                     answered = test.answered,
                     total = config.placementPuzzleCount,
                     finalElo = test.estimatedElo(),

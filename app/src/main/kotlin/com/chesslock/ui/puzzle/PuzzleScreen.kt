@@ -433,7 +433,7 @@ private fun InfoChip(
 
 /** Filled hearts for the lives still available, outlined hearts for the ones already lost. */
 @Composable
-private fun LivesIndicator(livesLeft: Int, maxLives: Int) {
+fun LivesIndicator(livesLeft: Int, maxLives: Int) {
     val total = maxLives.coerceAtLeast(livesLeft).coerceAtLeast(1)
     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
         repeat(total) { index ->

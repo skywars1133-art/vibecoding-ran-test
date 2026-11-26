@@ -212,6 +212,9 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
 - **Placement practice:** Settings -> **Placement practice** replays the same flow from a fresh, keyed ViewModel, but
   the result button only exits to Settings. `PlacementTestViewModel.confirmResult()` is never called in practice mode,
   so `PlayerStore.completePlacement(...)`, the stored ELO, rated-puzzle count and leaderboard entry stay untouched.
+- **Placement progress UI:** the header next to the puzzle rating shows `Puzzle n of total` plus `Completed: x%`
+  (0% on the first puzzle, 100% after the last answer). The same filled/outlined heart indicator used by normal puzzles
+  shows the lives left; `PlacementUiStateTest` guards the derived counters.
 - **Next-puzzle choice:** desired rating = ELO + Gaussian offset (sigma 100), then a random pick among the 3 closest
   unsolved puzzles. Returns "no puzzle" only when the whole stock is solved.
 - **Daily packs are pre-processed outside the app.** A GitHub Action streams the CC0 Lichess dump into 13 rating-band

@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.chesslock.R
 import com.chesslock.ui.puzzle.ChessBoard
+import com.chesslock.ui.puzzle.LivesIndicator
 import com.chesslock.ui.puzzle.MoveStatusText
 import com.chesslock.ui.settings.SettingsViewModel
 
@@ -89,13 +90,22 @@ fun PlacementTestScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(
-                        stringResource(
-                            R.string.placement_progress,
-                            (state.answered + 1).coerceAtMost(state.total),
-                            state.total,
-                        ),
-                    )
+                    Column {
+                        Text(
+                            text = stringResource(
+                                R.string.placement_progress,
+                                state.currentPuzzleNumber,
+                                state.total,
+                            ),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            text = stringResource(R.string.placement_progress_percent, state.completionPercent),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                     Text(stringResource(R.string.puzzle_rating, state.puzzleRating))
                 }
                 if (practice) {
@@ -124,7 +134,17 @@ fun PlacementTestScreen(
                     resetKey = state.puzzleId,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Text(stringResource(R.string.lives, state.livesLeft))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    LivesIndicator(livesLeft = state.livesLeft, maxLives = state.maxLives)
+                    Text(
+                        text = stringResource(R.string.lives, state.livesLeft),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 MoveStatusText(state.moveStatus)
                 if (state.puzzleFailed) {
                     Text(

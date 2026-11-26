@@ -64,6 +64,7 @@
     <string name="piece_style_preview">Náhľad</string>
     <string name="placement_title">Zaraďovací test</string>
     <string name="placement_progress">Úloha %1$d z %2$d</string>
+    <string name="placement_progress_percent">Dokončené: %1$d%%</string>
     <string name="placement_failed">Došli životy — úloha zlyhala.</string>
     <string name="placement_next">Pokračovať</string>
     <string name="placement_see_result">Zobraziť výsledok</string>
