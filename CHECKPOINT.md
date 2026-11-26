@@ -20,7 +20,7 @@ Resume file. Update after every meaningful step and before any likely credit cut
   green icon pixels became palette purple (`#8F84E3`, green count 2522 -> 0) with the knight preserved, proving the
   `<monochrome>` asset renders. The original icon setting was restored (standard green icon back, `themed_icons_enabled`
   removed and `colortheme_app_icon=0`). The old-phone reboot check is **cancelled**: the user confirmed `CIYDDIMV5D5XNFUS`
-  will never be used again.
+  will never be used again. User accepted this bundle with "okay cool".
 - Earlier milestone (superseded): normal saving restored for the placement retake. Settings -> **Placement retake** replays the tuned
   10-puzzle flow from a fresh keyed ViewModel; the result button calls
   `PlacementTestViewModel.confirmResult(onDone = exit)`, so `completePlacement(...)` runs before returning to Settings
@@ -799,8 +799,8 @@ Resume file. Update after every meaningful step and before any likely credit cut
     data preserved (home ELO **2253**, English UI).
 
 ## Next step
-1. **All bundles through the launcher-label bundle are complete, gate-green and device-installed; wait for user feedback
-   before the next bundle.** The redesigned sounds, smooth piece animation, placement tuning, practice retake UI,
+1. **All bundles through the launcher-label bundle are complete, gate-green, device-installed and accepted by the user;
+   stop until a new instruction is given.** The redesigned sounds, smooth piece animation, placement tuning, practice retake UI,
    restored saving behavior and launcher labels were accepted or completed. Item-4 checks are closed: themed-icon
    rendering was verified and restored, dynamic shortcuts follow the in-app language, the widget picker is intentionally
    brand-neutral because the launcher resolves metadata with system locale, and the old-phone check was cancelled at the
