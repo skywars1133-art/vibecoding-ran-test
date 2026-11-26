@@ -19,7 +19,8 @@ Resume file. Update after every meaningful step and before any likely credit cut
   through Settings -> **Wallpaper and style -> Color palette -> Apply palette to app icons**; after a launcher reload the
   green icon pixels became palette purple (`#8F84E3`, green count 2522 -> 0) with the knight preserved, proving the
   `<monochrome>` asset renders. The original icon setting was restored (standard green icon back, `themed_icons_enabled`
-  removed and `colortheme_app_icon=0`). Old-phone reboot check remains blocked: `CIYDDIMV5D5XNFUS` is not attached.
+  removed and `colortheme_app_icon=0`). The old-phone reboot check is **cancelled**: the user confirmed `CIYDDIMV5D5XNFUS`
+  will never be used again.
 - Earlier milestone (superseded): normal saving restored for the placement retake. Settings -> **Placement retake** replays the tuned
   10-puzzle flow from a fresh keyed ViewModel; the result button calls
   `PlacementTestViewModel.confirmResult(onDone = exit)`, so `completePlacement(...)` runs before returning to Settings
@@ -791,8 +792,8 @@ Resume file. Update after every meaningful step and before any likely credit cut
     ~2460, confirming the `<monochrome>` variant renders. Both switches were turned off, Apply pressed, original settings
     restored (`themed_icons_enabled=null`, `colortheme_app_icon=0`), and the green icon returned (`green=2522`,
     `purple=0`).
-  - **Old phone:** `adb devices -l` listed only `R9TX902F92W`; `CIYDDIMV5D5XNFUS` was not attached, so the old-phone
-    reboot/start check could not be run in this pass.
+  - **Old phone:** `adb devices -l` listed only `R9TX902F92W`; `CIYDDIMV5D5XNFUS` was not attached. The user later
+    confirmed that phone will never be used again, so this check is closed as cancelled rather than pending.
   - Signed APK `dist/ChessLock-0.1.0-launcher-labels.apk` (also copied over `dist/ChessLock-0.1.0-final.apk`), 13 543 524
     bytes, SHA-256 `557AFFCBA823C35E550D2F403F3645F7F3534EDF159EA37C0B48EA96AEA58456`, v2/v3 verified, installed with
     data preserved (home ELO **2253**, English UI).
@@ -800,15 +801,14 @@ Resume file. Update after every meaningful step and before any likely credit cut
 ## Next step
 1. **All bundles through the launcher-label bundle are complete, gate-green and device-installed; wait for user feedback
    before the next bundle.** The redesigned sounds, smooth piece animation, placement tuning, practice retake UI,
-   restored saving behavior and launcher labels were accepted or completed; only the old-phone reboot cannot be run while
-   that device is unplugged. Item-4 gaps now: themed-icon rendering was verified and restored, dynamic shortcuts follow
-   the in-app language, and the widget picker is intentionally brand-neutral because the launcher resolves metadata with
-   system locale. Split-screen behaviour remains the known foreground-only limitation. The `Entitlements` bundle,
+   restored saving behavior and launcher labels were accepted or completed. Item-4 checks are closed: themed-icon
+   rendering was verified and restored, dynamic shortcuts follow the in-app language, the widget picker is intentionally
+   brand-neutral because the launcher resolves metadata with system locale, and the old-phone check was cancelled at the
+   user's request. Split-screen behaviour remains the known foreground-only limitation. The `Entitlements` bundle,
    reward-chip update and Firebase ranking bundles are device-verified.
 2. Next (only after user feedback): the remaining Phase 4 candidates are a UMP consent SDK (new dependency + real
    privacy-policy URL), production ad unit IDs, Play Data safety prep and Play Billing behind
    `EntitlementsRepository.update(...)`. Editable nicknames and cloud sync of
    attempts/settings/streaks stay deferred at the user's request; payments stay unimplemented.
-3. Optional pending Phase 1 device check: reconnect/unlock the old phone `CIYDDIMV5D5XNFUS`, launch the app once,
-   reboot, unlock, and confirm `BlockingService` starts automatically. Also exercise the block-screen buttons and
-   permission dialogs manually (adb input injection is blocked on that device).
+3. Cancelled: the old-phone check (`CIYDDIMV5D5XNFUS`, launch/reboot/BlockingService and manual permission dialogs) is
+   removed from the pending list because the user confirmed that phone will never be used again.
