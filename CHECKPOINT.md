@@ -3,13 +3,17 @@
 Resume file. Update after every meaningful step and before any likely credit cutoff. A new session reads this first, then CLAUDE.md, SPEC.md, PHASES.md and the README "Decisions".
 
 ## Status
-- Date: 2026-11-25
+- Date: 2026-11-26
 - Current phase: Phase 4 (hardening and release prep) - lint/Play-readiness cleanup and monetization groundwork
   (`Entitlements`) are complete; awaiting user feedback
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: improved ELO counting. Placement now updates its estimate with each puzzle's real rating instead of
-  a fixed staircase; regular updates damp unreliable Lichess puzzle ratings, give hint wins partial credit, and clamp
-  to the shared 400..2800 range. The gate passed 264 tests with clean lint, and the signed APK was installed on the
+- Last completed: placement tuning check. The placement K-factor was raised from 90 to 300 after simulating the real
+  300-puzzle stock across five skill levels; K=90 placed a true-2000 player near 1440, while K=300 tracked players
+  from 800 to 2400 much more closely. `PlacementTuningTest` now guards those ranges. Gate: 266 tests, lint clean,
+  debug and release green. Signed APK built; device install is pending reconnection of the tablet.
+- Earlier milestone: improved ELO counting. Placement now updates its estimate with each puzzle's real rating instead
+  of a fixed staircase; regular updates damp unreliable Lichess puzzle ratings, give hint wins partial credit, and
+  clamp to the shared 400..2800 range. 264 tests passed with clean lint, and the signed APK was installed on the
   tablet with ELO and puzzle stock preserved.
 - Earlier milestone: expanded the built-in offline stock from 50 to 300 real Lichess CC0 puzzles, 30 in each 200-point
   rating band from 600 to under 2600. `BuiltinPuzzlesTest` checks count, uniqueness, band spread and every UCI
@@ -693,9 +697,22 @@ Resume file. Update after every meaningful step and before any likely credit cut
   `R9TX902F92W` with ELO **2247**, budget and puzzle stock preserved; the home screen opened with no FATAL logcat.
   Existing ELO values are not retroactively recalculated — only future results use the improved rules.
 
+- 2026-11-26: placement tuning check and fix. Simulated the adaptive flow against the real 300-puzzle stock with the
+  existing `PuzzleSelector`, sampling answers from each player's true-rating expectation. K=90 was too conservative:
+  over 300 seeds per level, true ratings 1200/1600/2000/2400 ended near 1140/1356/1436/1449. K=300 tracks them much
+  more closely (100-seed run: 1209/1586/1992/2270; beginner 800 ended near 809), so `AppConfig.placementKFactor` is
+  now 300. Added `PlacementTuningTest` to replay five skill levels with deterministic seeds and guard both the mean
+  ranges and the 400..2800 bounds. `PlacementTestTest` exact cases were updated. Gate: **266 tests** (171 domain +
+  95 app), lint `No issues found`, debug and release green. Signed APK
+  `dist/ChessLock-0.1.0-placement.apk` (also copied over `dist/ChessLock-0.1.0-final.apk`), 13 543 580 bytes,
+  SHA-256 `9381C96D6DD6D916843F144B8C42685347603A80361380BDC6EEC495C46B8539`, v2/v3. The tablet `R9TX902F92W`
+  disconnected before installation, so this build is signed and ready but still needs a device install/data-preservation
+  check.
+
 ## Next step
-1. **All bundles through the improved ELO counting are complete and device-verified. Wait for user feedback before the
-   next bundle.** The redesigned sounds and the smooth piece animation were accepted by the user. Remaining gaps, all
+1. **All bundles through the placement tuning are code-complete and gate-green; wait for user feedback before the next
+   bundle.** The redesigned sounds and the smooth piece animation were accepted by the user. The tablet disconnected
+   before installing the placement APK, so reconnect and install it when the device is available. Remaining gaps, all
    documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
    detection is the known limitation), the themed-icon rendering path was not toggled on the test tablet,
    widget/shortcut picker labels follow the system locale rather than the in-app language, and the old-phone reboot

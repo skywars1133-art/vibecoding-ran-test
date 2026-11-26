@@ -199,9 +199,11 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   player/opponent pairs ending on the player's move). Malformed CSV rows are skipped and reported, never fatal.
 - **No invented puzzle data.** The built-in set is generated from the real dump by `scripts/build-builtin-puzzles.py`.
 - **Placement test uses ELO, not a fixed staircase:** the estimate starts at the default ELO and each answer applies
-  a placement K-factor to the puzzle's actual rating. A 1400-rated solve therefore moves it far more than a 600-rated
-  solve, and the updated estimate becomes the next puzzle target (clamped to 400..2800). No hints or skips are offered
-  during placement.
+  a placement K-factor of 300 (`AppConfig.placementKFactor`) to the puzzle's actual rating. A 1400-rated solve
+  therefore moves it far more than a 600-rated solve, and the updated estimate becomes the next puzzle target
+  (clamped to 400..2800). The value was tuned with `PlacementTuningTest` against the 300-puzzle stock, because a
+  smaller K let the adaptive pool follow a lagging estimate and placed strong players far too low. No hints or skips
+  are offered during placement.
 - **Placement test flow:** onboarding shows it until `placement_completed` is stored. It uses the built-in stock only,
   keeps each puzzle unique within one run (repository `excludeIds`), grants no rewards, records no ELO changes and does
   not mark puzzles solved. Losing all three lives records a failure immediately. If the stock runs out early the test

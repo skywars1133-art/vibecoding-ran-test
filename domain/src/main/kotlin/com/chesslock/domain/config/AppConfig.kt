@@ -119,8 +119,12 @@ data class AppConfig(
     val placementPuzzleCount: Int = 10,
 
     // --- Placement test: ELO estimates from the actual puzzle ratings (SPEC 4) ---
-    /** K-factor used for each placement answer; higher than normal play so 10 puzzles can settle the estimate. */
-    val placementKFactor: Int = 90,
+    /**
+     * K-factor used for each placement answer. Tuned against the 300-puzzle stock: 90 made strong
+     * players start far too low because the adaptive pool follows the lagging estimate; 300 tracks
+     * beginners through advanced players without excessive dispersion.
+     */
+    val placementKFactor: Int = 300,
 
     // --- Leaderboard (cloud ranking, SPEC 5) ---
     /** Number of top rows shown on the ranking screen. */

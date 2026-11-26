@@ -26,9 +26,9 @@ class PlacementTestTest {
     fun eachAnswerUpdatesTheEstimateFromTheActualPuzzleRating() {
         val t = PlacementTest(config)
         t.record(solved = true, puzzleRating = 1400)
-        assertEquals(1081.81818181818, t.targetRating, 1e-9)
+        assertEquals(1272.72727272727, t.targetRating, 1e-9)
         t.record(solved = false, puzzleRating = 1400)
-        assertEquals(1069.38268810037, t.targetRating, 1e-9)
+        assertEquals(1175.23933303936, t.targetRating, 1e-9)
     }
 
     @Test
@@ -54,13 +54,13 @@ class PlacementTestTest {
 
     @Test
     fun solvingHardPuzzlesRaisesTheEstimate() {
-        // 10 wins against 1400-rated puzzles converge near 1552, not the old staircase's 2290.
-        assertEquals(1552, run(List(10) { 1400 to true }).estimatedElo())
+        // 10 wins against 1400-rated puzzles converge near 1868 with the tuned placement K-factor.
+        assertEquals(1868, run(List(10) { 1400 to true }).estimatedElo())
     }
 
     @Test
     fun solvingEasyPuzzlesOnlyRaisesTheEstimateSlightly() {
-        assertEquals(1069, run(List(10) { 600 to true }).estimatedElo())
+        assertEquals(1173, run(List(10) { 600 to true }).estimatedElo())
     }
 
     @Test
