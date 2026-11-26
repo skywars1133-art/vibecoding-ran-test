@@ -73,6 +73,15 @@
     <string name="placement_start">Start solving</string>
     <string name="placement_saving">Saving…</string>
     <string name="placement_save_error">Could not save your rating. Try again.</string>
+    <string name="settings_placement_practice_section">Placement practice</string>
+    <string name="settings_placement_practice_description">Replay the 10-puzzle adaptive test. Practice never changes your saved ELO, rated-puzzle count or leaderboard entry.</string>
+    <string name="settings_placement_practice_button">Retake placement test (practice)</string>
+    <string name="placement_practice_title">Placement practice</string>
+    <string name="placement_practice_notice">Practice only — your saved ELO will not change.</string>
+    <string name="placement_practice_result_title">Practice result</string>
+    <string name="placement_practice_result_body">Practice estimate: %1$d. Your saved ELO stays unchanged.</string>
+    <string name="placement_practice_result_early">The offline puzzle stock ran out early. Practice estimate: %1$d. Your saved ELO stays unchanged.</string>
+    <string name="placement_practice_done">Back to settings</string>
 
     <!-- App blocking -->
     <string name="block_screen_title">Time\'s up</string>

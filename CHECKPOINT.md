@@ -7,7 +7,11 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - Current phase: Phase 4 (hardening and release prep) - lint/Play-readiness cleanup and monetization groundwork
   (`Entitlements`) are complete; awaiting user feedback
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: placement tuning check. The placement K-factor was raised from 90 to 300 after simulating the real
+- Last completed: placement practice retake. Settings now opens the tuned 10-puzzle placement flow from a fresh keyed
+  ViewModel; the result/back actions only return to Settings and never call `confirmResult()`, so ELO, rated count and
+  leaderboard data stay untouched. Gate: 266 tests, lint clean, debug and release green. Signed APK installed on
+  `R9TX902F92W`; the practice screen opened and ELO stayed **2253** before and after exiting.
+- Earlier milestone: placement tuning check. The placement K-factor was raised from 90 to 300 after simulating the real
   300-puzzle stock across five skill levels; K=90 placed a true-2000 player near 1440, while K=300 tracked players
   from 800 to 2400 much more closely. `PlacementTuningTest` now guards those ranges. Gate: 266 tests, lint clean,
   debug and release green. Signed APK installed on `R9TX902F92W` with app data preserved and no FATAL logcat.
@@ -710,9 +714,22 @@ Resume file. Update after every meaningful step and before any likely credit cut
   rolled over to `40:00`, stock grew to **2874** after the 26 Nov daily pack), home screen opened with no FATAL logcat.
   The placement screen itself was not replayed because `placement_completed` remains set on this install.
 
+- 2026-11-26: added **placement practice retake** so the tuned test can be replayed without changing the stored rating.
+  `SettingsScreen` has a Placement practice section; `MainActivity` tracks a `practiceRun` key and creates a fresh
+  `PlacementTestViewModel` via `hiltViewModel(key = "placement-practice-$practiceRun")`. `PlacementTestScreen` now takes
+  optional `onBack`/`practice` parameters, shows a back button and practice notice, and routes result confirmation to the
+  exit callback instead of `viewModel::confirmResult`; `PlayerStore.completePlacement(...)` is therefore never reached
+  in practice mode. EN/SK strings and README were updated. Gate: **266 tests** (171 domain + 95 app), lint `No issues
+  found`, debug and release green. Signed APK `dist/ChessLock-0.1.0-practice.apk` (also copied over
+  `dist/ChessLock-0.1.0-final.apk`), 13 547 676 bytes, SHA-256
+  `58BBF3AB390540F2CEC82925F4B7DE3E73041089B49C3E0E25DC703074F4B3DB`, v2/v3. Installed on `R9TX902F92W` with data
+  preserved; home ELO was **2253** before and after entering/exiting practice, the practice screen showed
+  "Puzzle 1 of 10" and the rating-unchanged notice, and there was no FATAL logcat.
+
 ## Next step
-1. **All bundles through the placement tuning are complete, gate-green and device-installed; wait for user feedback
-   before the next bundle.** The redesigned sounds and the smooth piece animation were accepted by the user. Remaining gaps, all
+1. **All bundles through the placement practice retake are complete, gate-green and device-installed; wait for user
+   feedback before the next bundle.** The redesigned sounds, smooth piece animation and placement tuning were accepted
+   by the user. Remaining gaps, all
    documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
    detection is the known limitation), the themed-icon rendering path was not toggled on the test tablet,
    widget/shortcut picker labels follow the system locale rather than the in-app language, and the old-phone reboot

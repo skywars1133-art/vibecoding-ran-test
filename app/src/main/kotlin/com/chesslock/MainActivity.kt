@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -102,6 +103,8 @@ class MainActivity : ComponentActivity() {
                                     mutableStateOf(pendingShortcut == ShortcutDestination.PUZZLE)
                                 }
                                 var showPrivacy by rememberSaveable { mutableStateOf(false) }
+                                var showPlacementPractice by rememberSaveable { mutableStateOf(false) }
+                                var practiceRun by rememberSaveable { mutableIntStateOf(0) }
                                 LaunchedEffect(pendingShortcut) {
                                     val target = pendingShortcut ?: return@LaunchedEffect
                                     // A shortcut always lands on its own top-level screen.
@@ -112,9 +115,19 @@ class MainActivity : ComponentActivity() {
                                     showPermissions = false
                                     showBlockedApps = false
                                     showPrivacy = false
+                                    showPlacementPractice = false
                                     pendingShortcut = null
                                 }
                                 when {
+                                    showPlacementPractice -> PlacementTestScreen(
+                                        onBack = {
+                                            showPlacementPractice = false
+                                            showSettings = true
+                                        },
+                                        practice = true,
+                                        viewModel = hiltViewModel(key = "placement-practice-$practiceRun"),
+                                    )
+
                                     showLeaderboard -> LeaderboardScreen(
                                         onBack = { showLeaderboard = false },
                                     )
@@ -135,6 +148,10 @@ class MainActivity : ComponentActivity() {
                                         onBack = { showSettings = false },
                                         onOpenApps = { showBlockedApps = true },
                                         onOpenPrivacy = { showPrivacy = true },
+                                        onPracticePlacement = {
+                                            practiceRun += 1
+                                            showPlacementPractice = true
+                                        },
                                     )
 
                                     showPermissions -> PermissionsScreen(

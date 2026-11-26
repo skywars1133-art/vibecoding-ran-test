@@ -1,5 +1,6 @@
 package com.chesslock.ui.placement
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -39,19 +41,32 @@ import com.chesslock.ui.settings.SettingsViewModel
 fun PlacementTestScreen(
     viewModel: PlacementTestViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel(),
+    onBack: (() -> Unit)? = null,
+    practice: Boolean = false,
 ) {
     val state by viewModel.state.collectAsState()
     val settings by settingsViewModel.settings.collectAsState()
+    val exit = onBack
+    if (exit != null) BackHandler(onBack = exit)
+    val title: @Composable () -> Unit = {
+        Text(
+            stringResource(
+                if (practice) R.string.placement_practice_title else R.string.placement_title,
+            ),
+        )
+    }
+    val navigationIcon: @Composable () -> Unit = exit?.let {
+        { TextButton(onClick = it) { Text(stringResource(R.string.back)) } }
+    } ?: {}
     Scaffold(
-        topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.placement_title)) })
-        },
+        topBar = { TopAppBar(title = title, navigationIcon = navigationIcon) },
     ) { padding ->
         when {
             state.showResult -> PlacementResult(
                 state = state,
                 padding = padding,
-                onConfirm = viewModel::confirmResult,
+                practice = practice,
+                onConfirm = if (practice) exit ?: {} else viewModel::confirmResult,
             )
 
             state.isLoading -> Box(
@@ -82,6 +97,13 @@ fun PlacementTestScreen(
                         ),
                     )
                     Text(stringResource(R.string.puzzle_rating, state.puzzleRating))
+                }
+                if (practice) {
+                    Text(
+                        text = stringResource(R.string.placement_practice_notice),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
                 Text(
                     text = stringResource(
@@ -131,6 +153,7 @@ fun PlacementTestScreen(
 private fun PlacementResult(
     state: PlacementUiState,
     padding: PaddingValues,
+    practice: Boolean,
     onConfirm: () -> Unit,
 ) {
     Column(
@@ -142,7 +165,9 @@ private fun PlacementResult(
             .padding(24.dp),
     ) {
         Text(
-            text = stringResource(R.string.placement_result_title),
+            text = stringResource(
+                if (practice) R.string.placement_practice_result_title else R.string.placement_result_title,
+            ),
             style = MaterialTheme.typography.titleLarge,
         )
         Spacer(Modifier.height(8.dp))
@@ -154,7 +179,12 @@ private fun PlacementResult(
         Spacer(Modifier.height(16.dp))
         Text(
             text = stringResource(
-                if (state.endedEarly) R.string.placement_result_early else R.string.placement_result_body,
+                when {
+                    practice && state.endedEarly -> R.string.placement_practice_result_early
+                    practice -> R.string.placement_practice_result_body
+                    state.endedEarly -> R.string.placement_result_early
+                    else -> R.string.placement_result_body
+                },
                 state.finalElo,
             ),
             textAlign = TextAlign.Center,
@@ -170,7 +200,11 @@ private fun PlacementResult(
         Button(enabled = !state.saving, onClick = onConfirm) {
             Text(
                 stringResource(
-                    if (state.saving) R.string.placement_saving else R.string.placement_start,
+                    when {
+                        practice -> R.string.placement_practice_done
+                        state.saving -> R.string.placement_saving
+                        else -> R.string.placement_start
+                    },
                 ),
             )
         }
