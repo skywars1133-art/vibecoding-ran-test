@@ -39,7 +39,8 @@ scripts/test-domain.sh
    Or open the project in Android Studio and press Run.
 2. The app opens on **Home** with today's remaining time, a daily-limit/earned/used breakdown, your ELO and the
    **Solve a puzzle** button. A protection banner above the card shows whether blocking is actually active. To replay
-   the adaptive placement test without touching your stored ELO, open **Settings -> Placement practice**.
+   the adaptive placement test and save a new ELO, open **Settings -> Placement retake** and tap **Save and return**
+   on the result screen.
 3. Add the **Time budget** widget (long-press an empty area on the home screen -> **Widgets** -> **ChessLock**). The
    3x2 card shows today's remaining time in whole minutes (`29 min`, `1 h 12 min`), the urgency caption (amber at
    5 minutes, red at 1 minute), a progress bar and your ELO. It repaints on every budget/ELO/limit change and once a
@@ -206,15 +207,17 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   smaller K let the adaptive pool follow a lagging estimate and placed strong players far too low. No hints or skips
   are offered during placement.
 - **Placement test flow:** onboarding shows it until `placement_completed` is stored. It uses the built-in stock only,
-  keeps each puzzle unique within one run (repository `excludeIds`), grants no rewards, records no ELO changes and does
-  not mark puzzles solved. Losing all three lives records a failure immediately. If the stock runs out early the test
-  ends with the current estimate. Confirming the result stores the ELO and opens normal puzzle play.
-- **Placement practice:** Settings -> **Placement practice** replays the same flow from a fresh, keyed ViewModel, but
-  the result button only exits to Settings. `PlacementTestViewModel.confirmResult()` is never called in practice mode,
-  so `PlayerStore.completePlacement(...)`, the stored ELO, rated-puzzle count and leaderboard entry stay untouched.
+  keeps each puzzle unique within one run (repository `excludeIds`), grants no rewards, records no per-puzzle ELO
+  changes and does not mark puzzles solved. Losing all three lives records a failure immediately. If the stock runs out
+  early the test ends with the current estimate. Confirming the result stores the ELO and opens normal puzzle play.
+- **Placement retake:** Settings -> **Placement retake** replays the same flow from a fresh, keyed ViewModel. The
+  result button calls `PlacementTestViewModel.confirmResult(onDone = exit)`, so `PlayerStore.completePlacement(...)`
+  runs before returning to Settings and replaces the saved ELO and leaderboard rating. A failed write keeps the result
+  screen open with a retry message; backing out before saving leaves the stored rating untouched.
 - **Placement progress UI:** the header next to the puzzle rating shows `Puzzle n of total` plus `Completed: x%`
   (0% on the first puzzle, 100% after the last answer). The same filled/outlined heart indicator used by normal puzzles
-  shows the lives left; `PlacementUiStateTest` guards the derived counters.
+  shows the lives left. `PlacementUiStateTest` guards the derived counters and `PlacementRetakeSaveTest` guards the
+  save routing plus EN/SK wording.
 - **Next-puzzle choice:** desired rating = ELO + Gaussian offset (sigma 100), then a random pick among the 3 closest
   unsolved puzzles. Returns "no puzzle" only when the whole stock is solved.
 - **Daily packs are pre-processed outside the app.** A GitHub Action streams the CC0 Lichess dump into 13 rating-band

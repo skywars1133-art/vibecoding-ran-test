@@ -74,15 +74,15 @@
     <string name="placement_start">Start solving</string>
     <string name="placement_saving">Saving…</string>
     <string name="placement_save_error">Could not save your rating. Try again.</string>
-    <string name="settings_placement_practice_section">Placement practice</string>
-    <string name="settings_placement_practice_description">Replay the 10-puzzle adaptive test. Practice never changes your saved ELO, rated-puzzle count or leaderboard entry.</string>
-    <string name="settings_placement_practice_button">Retake placement test (practice)</string>
-    <string name="placement_practice_title">Placement practice</string>
-    <string name="placement_practice_notice">Practice only — your saved ELO will not change.</string>
-    <string name="placement_practice_result_title">Practice result</string>
-    <string name="placement_practice_result_body">Practice estimate: %1$d. Your saved ELO stays unchanged.</string>
-    <string name="placement_practice_result_early">The offline puzzle stock ran out early. Practice estimate: %1$d. Your saved ELO stays unchanged.</string>
-    <string name="placement_practice_done">Back to settings</string>
+    <string name="settings_placement_retake_section">Placement retake</string>
+    <string name="settings_placement_retake_description">Replay the 10-puzzle adaptive test. Tapping Save replaces your saved ELO and leaderboard rating.</string>
+    <string name="settings_placement_retake_button">Retake placement test</string>
+    <string name="placement_retake_title">Placement retake</string>
+    <string name="placement_retake_notice">This retake saves a new ELO when you tap Save.</string>
+    <string name="placement_retake_result_title">Placement retake result</string>
+    <string name="placement_retake_result_body">New rating: %1$d. Tap Save to replace your saved ELO.</string>
+    <string name="placement_retake_result_early">The offline puzzle stock ran out early. Provisional rating: %1$d. Tap Save to replace your saved ELO.</string>
+    <string name="placement_retake_save">Save and return</string>
 
     <!-- App blocking -->
     <string name="block_screen_title">Time\'s up</string>

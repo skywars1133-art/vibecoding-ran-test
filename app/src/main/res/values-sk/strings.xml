@@ -74,15 +74,15 @@
     <string name="placement_start">Začať riešiť</string>
     <string name="placement_saving">Ukladá sa…</string>
     <string name="placement_save_error">Hodnotenie sa nepodarilo uložiť. Skús to znova.</string>
-    <string name="settings_placement_practice_section">Nácvik zaraďovacieho testu</string>
-    <string name="settings_placement_practice_description">Zahraj si znova adaptívny test o 10 úlohách. Nácvik nikdy nezmení uložené ELO, počet hodnotených úloh ani záznam v rebríčku.</string>
-    <string name="settings_placement_practice_button">Zopakovať zaraďovací test (nácvik)</string>
-    <string name="placement_practice_title">Nácvik zaraďovacieho testu</string>
-    <string name="placement_practice_notice">Iba nácvik — uložené ELO sa nezmení.</string>
-    <string name="placement_practice_result_title">Výsledok nácviku</string>
-    <string name="placement_practice_result_body">Odhad pri nácviku: %1$d. Uložené ELO zostáva nezmenené.</string>
-    <string name="placement_practice_result_early">Lokálna zásoba úloh sa minula predčasne. Odhad pri nácviku: %1$d. Uložené ELO zostáva nezmenené.</string>
-    <string name="placement_practice_done">Späť do nastavení</string>
+    <string name="settings_placement_retake_section">Opakovaný zaraďovací test</string>
+    <string name="settings_placement_retake_description">Zahraj si znova adaptívny test o 10 úlohách. Po ťuknutí na Uložiť sa nahradí tvoje uložené ELO a hodnotenie v rebríčku.</string>
+    <string name="settings_placement_retake_button">Zopakovať zaraďovací test</string>
+    <string name="placement_retake_title">Opakovaný zaraďovací test</string>
+    <string name="placement_retake_notice">Tento test uloží nové ELO po ťuknutí na Uložiť.</string>
+    <string name="placement_retake_result_title">Výsledok opakovaného testu</string>
+    <string name="placement_retake_result_body">Nové hodnotenie: %1$d. Ťukni na Uložiť a nahradíš uložené ELO.</string>
+    <string name="placement_retake_result_early">Lokálna zásoba úloh sa minula predčasne. Predbežné hodnotenie: %1$d. Ťukni na Uložiť a nahradíš uložené ELO.</string>
+    <string name="placement_retake_save">Uložiť a vrátiť sa</string>
 
     <!-- App blocking -->
     <string name="block_screen_title">Čas vypršal</string>

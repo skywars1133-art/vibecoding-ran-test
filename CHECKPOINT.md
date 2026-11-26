@@ -7,14 +7,18 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - Current phase: Phase 4 (hardening and release prep) - lint/Play-readiness cleanup and monetization groundwork
   (`Entitlements`) are complete; awaiting user feedback
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: placement practice UI polish. The header now shows `Puzzle n of total` with a `Completed: x%` counter
-  beside the puzzle rating, and the life count uses the same filled/outlined hearts as normal puzzles. Gate: 269 tests,
-  lint clean, debug and release green. Signed APK installed on `R9TX902F92W`; the practice screen showed three red
-  hearts, `Completed: 0%`, and ELO remained **2253**.
-- Earlier milestone: placement practice retake. Settings now opens the tuned 10-puzzle placement flow from a fresh keyed
-  ViewModel; the result/back actions only return to Settings and never call `confirmResult()`, so ELO, rated count and
-  leaderboard data stay untouched. Gate: 266 tests, lint clean, debug and release green. Signed APK installed on
-  `R9TX902F92W`; the practice screen opened and ELO stayed **2253** before and after exiting.
+- Last completed: normal saving restored for the placement retake. Settings -> **Placement retake** replays the tuned
+  10-puzzle flow from a fresh keyed ViewModel; the result button calls
+  `PlacementTestViewModel.confirmResult(onDone = exit)`, so `completePlacement(...)` runs before returning to Settings
+  and the saved ELO/leaderboard rating are replaced only after a successful write. EN/SK strings and README now say the
+  retake saves; `PlacementRetakeSaveTest` guards the routing and wording. Gate: 273 tests, lint clean, debug and release
+  green. Signed APK installed on `R9TX902F92W`; ELO remained **2253** until Save is tapped.
+- Earlier milestone (superseded): placement practice UI polish. The header now shows `Puzzle n of total` with a
+  `Completed: x%` counter beside the puzzle rating, and the life count uses the same filled/outlined hearts as normal
+  puzzles. Gate: 269 tests, lint clean, debug and release green.
+- Earlier milestone (superseded): non-saving placement practice retake. The result/back actions only returned to
+  Settings and never called `confirmResult()`, so ELO, rated count and leaderboard data stayed untouched. Gate: 266
+  tests, lint clean, debug and release green.
 - Earlier milestone: placement tuning check. The placement K-factor was raised from 90 to 300 after simulating the real
   300-puzzle stock across five skill levels; K=90 placed a true-2000 player near 1440, while K=300 tracked players
   from 800 to 2400 much more closely. `PlacementTuningTest` now guards those ranges. Gate: 266 tests, lint clean,
@@ -741,10 +745,25 @@ Resume file. Update after every meaningful step and before any likely credit cut
   with ELO still **2253**; the practice screen showed `Puzzle 1 of 10`, `Completed: 0%`, three red heart glyphs and no
   FATAL logcat.
 
+- 2026-11-26: restored normal saving for the placement retake after the user chose **Restore saving behavior**.
+  `MainActivity` now tracks `showPlacementRetake`/`retakeRun` and keys the fresh ViewModel as
+  `placement-retake-$retakeRun`; `SettingsScreen` exposes **Placement retake**. `PlacementTestScreen` routes the result
+  button through `placementResultOnDone(retake, exit)` into `PlacementTestViewModel.confirmResult(onDone = ...)`, which
+  invokes the callback only after `PlayerStore.completePlacement(...)` succeeds and clears `saving`; a failed write keeps
+  the result screen open with the retry message. Result button now shows `Saving…` while the write runs and
+  `Save and return` otherwise. EN/SK resources were renamed from `placement_practice_*` to `placement_retake_*` and no
+  longer claim the ELO is unchanged. `PlacementRetakeSaveTest` covers callback routing, null exit, and both locales'
+  saving wording. Gate: **273 tests** (171 domain + 102 app), lint `No issues found`, debug and release green. Signed
+  APK `dist/ChessLock-0.1.0-retake-save.apk` (also copied over `dist/ChessLock-0.1.0-final.apk`), 13 547 676 bytes,
+  SHA-256 `D5DC754369832D9E447971576E60D0E801F2DAD42F53E67D59CBD82EB870C8F9`, v2/v3. Installed on `R9TX902F92W`
+  with data preserved; home ELO remained **2253**, Settings showed **Placement retake**, and the retake screen showed
+  `Puzzle 1 of 10`, `Completed: 0%`, three red hearts and `This retake saves a new ELO when you tap Save.` The test was
+  not completed, so no ELO was changed during verification.
+
 ## Next step
-1. **All bundles through the placement practice UI polish are complete, gate-green and device-installed; wait for user
-   feedback before the next bundle.** The redesigned sounds, smooth piece animation, placement tuning and practice
-   retake were accepted by the user. Remaining gaps, all
+1. **All bundles through the placement retake saving restore are complete, gate-green and device-installed; wait for
+   user feedback before the next bundle.** The redesigned sounds, smooth piece animation, placement tuning, practice
+   retake UI and restored saving behavior were accepted by the user. Remaining gaps, all
    documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
    detection is the known limitation), the themed-icon rendering path was not toggled on the test tablet,
    widget/shortcut picker labels follow the system locale rather than the in-app language, and the old-phone reboot

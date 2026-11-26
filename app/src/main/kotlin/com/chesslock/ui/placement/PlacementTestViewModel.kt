@@ -56,9 +56,10 @@ data class PlacementUiState(
 }
 
 /**
- * Onboarding placement test (SPEC 4). Plays [AppConfig.placementPuzzleCount] adaptive puzzles from the
- * built-in stock. Rewards and ELO changes are deliberately not recorded, puzzles are not marked solved,
- * and each puzzle is used at most once per run.
+ * Placement test (SPEC 4). Plays [AppConfig.placementPuzzleCount] adaptive puzzles from the built-in
+ * stock. Per-puzzle rewards and ELO changes are deliberately not recorded and puzzles are not marked
+ * solved; the final estimate is saved only when the result is confirmed. Each puzzle is used at most
+ * once per run.
  */
 @HiltViewModel
 class PlacementTestViewModel @Inject constructor(
@@ -239,18 +240,27 @@ class PlacementTestViewModel @Inject constructor(
 
     fun retry() = loadNextPuzzle()
 
-    /** Stores the estimated starting ELO; the main screen then switches to normal play. */
-    fun confirmResult() {
+    /**
+     * Stores the estimated ELO. [onDone] runs only after the save succeeds, so a placement retake can
+     * return to Settings without navigating away on a failed write.
+     */
+    fun confirmResult(onDone: () -> Unit = {}) {
         val current = mutableState.value
         if (current.saving) return
         mutableState.value = current.copy(saving = true, saveError = false)
         viewModelScope.launch {
-            try {
+            val saved = try {
                 playerStore.completePlacement(current.finalElo)
+                true
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
                 mutableState.value = mutableState.value.copy(saving = false, saveError = true)
+                false
+            }
+            if (saved) {
+                mutableState.value = mutableState.value.copy(saving = false, saveError = false)
+                onDone()
             }
         }
     }

@@ -37,13 +37,18 @@ import com.chesslock.ui.puzzle.LivesIndicator
 import com.chesslock.ui.puzzle.MoveStatusText
 import com.chesslock.ui.settings.SettingsViewModel
 
+/** A retake returns to Settings only after the save succeeds; onboarding stays on its own flow. */
+internal fun placementResultOnDone(retake: Boolean, exit: (() -> Unit)?): () -> Unit {
+    return if (retake && exit != null) exit else ({})
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlacementTestScreen(
     viewModel: PlacementTestViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     onBack: (() -> Unit)? = null,
-    practice: Boolean = false,
+    retake: Boolean = false,
 ) {
     val state by viewModel.state.collectAsState()
     val settings by settingsViewModel.settings.collectAsState()
@@ -52,7 +57,7 @@ fun PlacementTestScreen(
     val title: @Composable () -> Unit = {
         Text(
             stringResource(
-                if (practice) R.string.placement_practice_title else R.string.placement_title,
+                if (retake) R.string.placement_retake_title else R.string.placement_title,
             ),
         )
     }
@@ -66,8 +71,10 @@ fun PlacementTestScreen(
             state.showResult -> PlacementResult(
                 state = state,
                 padding = padding,
-                practice = practice,
-                onConfirm = if (practice) exit ?: {} else viewModel::confirmResult,
+                retake = retake,
+                onConfirm = {
+                    viewModel.confirmResult(onDone = placementResultOnDone(retake, exit))
+                },
             )
 
             state.isLoading -> Box(
@@ -108,9 +115,9 @@ fun PlacementTestScreen(
                     }
                     Text(stringResource(R.string.puzzle_rating, state.puzzleRating))
                 }
-                if (practice) {
+                if (retake) {
                     Text(
-                        text = stringResource(R.string.placement_practice_notice),
+                        text = stringResource(R.string.placement_retake_notice),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -173,7 +180,7 @@ fun PlacementTestScreen(
 private fun PlacementResult(
     state: PlacementUiState,
     padding: PaddingValues,
-    practice: Boolean,
+    retake: Boolean,
     onConfirm: () -> Unit,
 ) {
     Column(
@@ -186,7 +193,7 @@ private fun PlacementResult(
     ) {
         Text(
             text = stringResource(
-                if (practice) R.string.placement_practice_result_title else R.string.placement_result_title,
+                if (retake) R.string.placement_retake_result_title else R.string.placement_result_title,
             ),
             style = MaterialTheme.typography.titleLarge,
         )
@@ -200,8 +207,8 @@ private fun PlacementResult(
         Text(
             text = stringResource(
                 when {
-                    practice && state.endedEarly -> R.string.placement_practice_result_early
-                    practice -> R.string.placement_practice_result_body
+                    retake && state.endedEarly -> R.string.placement_retake_result_early
+                    retake -> R.string.placement_retake_result_body
                     state.endedEarly -> R.string.placement_result_early
                     else -> R.string.placement_result_body
                 },
@@ -221,8 +228,8 @@ private fun PlacementResult(
             Text(
                 stringResource(
                     when {
-                        practice -> R.string.placement_practice_done
                         state.saving -> R.string.placement_saving
+                        retake -> R.string.placement_retake_save
                         else -> R.string.placement_start
                     },
                 ),

@@ -73,7 +73,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onOpenApps: () -> Unit,
     onOpenPrivacy: () -> Unit,
-    onPracticePlacement: () -> Unit,
+    onRetakePlacement: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.settings.collectAsState()
@@ -257,16 +257,16 @@ fun SettingsScreen(
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             Text(
-                text = stringResource(R.string.settings_placement_practice_section),
+                text = stringResource(R.string.settings_placement_retake_section),
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
-                text = stringResource(R.string.settings_placement_practice_description),
+                text = stringResource(R.string.settings_placement_retake_description),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Button(onClick = onPracticePlacement) {
-                Text(stringResource(R.string.settings_placement_practice_button))
+            Button(onClick = onRetakePlacement) {
+                Text(stringResource(R.string.settings_placement_retake_button))
             }
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp))

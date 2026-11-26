@@ -103,8 +103,8 @@ class MainActivity : ComponentActivity() {
                                     mutableStateOf(pendingShortcut == ShortcutDestination.PUZZLE)
                                 }
                                 var showPrivacy by rememberSaveable { mutableStateOf(false) }
-                                var showPlacementPractice by rememberSaveable { mutableStateOf(false) }
-                                var practiceRun by rememberSaveable { mutableIntStateOf(0) }
+                                var showPlacementRetake by rememberSaveable { mutableStateOf(false) }
+                                var retakeRun by rememberSaveable { mutableIntStateOf(0) }
                                 LaunchedEffect(pendingShortcut) {
                                     val target = pendingShortcut ?: return@LaunchedEffect
                                     // A shortcut always lands on its own top-level screen.
@@ -115,17 +115,17 @@ class MainActivity : ComponentActivity() {
                                     showPermissions = false
                                     showBlockedApps = false
                                     showPrivacy = false
-                                    showPlacementPractice = false
+                                    showPlacementRetake = false
                                     pendingShortcut = null
                                 }
                                 when {
-                                    showPlacementPractice -> PlacementTestScreen(
+                                    showPlacementRetake -> PlacementTestScreen(
                                         onBack = {
-                                            showPlacementPractice = false
+                                            showPlacementRetake = false
                                             showSettings = true
                                         },
-                                        practice = true,
-                                        viewModel = hiltViewModel(key = "placement-practice-$practiceRun"),
+                                        retake = true,
+                                        viewModel = hiltViewModel(key = "placement-retake-$retakeRun"),
                                     )
 
                                     showLeaderboard -> LeaderboardScreen(
@@ -148,9 +148,9 @@ class MainActivity : ComponentActivity() {
                                         onBack = { showSettings = false },
                                         onOpenApps = { showBlockedApps = true },
                                         onOpenPrivacy = { showPrivacy = true },
-                                        onPracticePlacement = {
-                                            practiceRun += 1
-                                            showPlacementPractice = true
+                                        onRetakePlacement = {
+                                            retakeRun += 1
+                                            showPlacementRetake = true
                                         },
                                     )
 
