@@ -1,7 +1,7 @@
 package com.chesslock
 
 /**
- * Launcher shortcut targets. The action strings must stay in sync with `res/xml/shortcuts.xml`;
+ * Launcher shortcut targets. The action strings must stay in sync with `AppShortcutPublisher`;
  * [fromAction] is unit-tested so an unknown or missing action never opens a random screen.
  */
 enum class ShortcutDestination(val action: String) {

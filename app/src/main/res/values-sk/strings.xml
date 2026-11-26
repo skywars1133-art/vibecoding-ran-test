@@ -266,8 +266,8 @@
     <string name="shortcut_settings_long">Otvoriť nastavenia</string>
 
     <!-- Home-screen widget -->
-    <string name="widget_name">Časový rozpočet</string>
-    <string name="widget_description">Zostávajúci dnešný čas ChessLocku na jednom mieste.</string>
+    <string name="widget_name">ChessLock</string>
+    <string name="widget_description">ChessLock time budget</string>
     <string name="widget_elo_label">ELO</string>
     <string name="widget_elo_value">ELO %1$d</string>
     <string name="widget_preview_time">-- min</string>

@@ -260,8 +260,8 @@
     <string name="shortcut_settings_long">Open settings</string>
 
     <!-- Home-screen widget -->
-    <string name="widget_name">Time budget</string>
-    <string name="widget_description">Today\'s remaining ChessLock time at a glance.</string>
+    <string name="widget_name">ChessLock</string>
+    <string name="widget_description">ChessLock time budget</string>
     <string name="widget_elo_label">ELO</string>
     <string name="widget_elo_value">ELO %1$d</string>
     <string name="widget_preview_time">-- min</string>

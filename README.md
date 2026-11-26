@@ -259,9 +259,11 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   Android icon. The knight artwork comes from the BSD-licensed set already used on the board; no new asset licence is
   involved.
 - **Launcher shortcuts go straight to the job.** Long-pressing the icon offers **Solve a puzzle**, **View statistics**
-  and **Open settings**. The three static shortcuts in `res/xml/shortcuts.xml` send a package-specific action, and
-  `MainActivity` maps it through the pure `ShortcutDestination` enum on both `onCreate` and `onNewIntent`, so a shortcut
-  opens its own top-level screen whether the app was cold or already running. Unknown actions fall back to Home.
+  and **Open settings**. The three dynamic shortcuts from `AppShortcutPublisher` send a package-specific action and
+  use localized labels, and `MainActivity` maps it through the pure `ShortcutDestination` enum on both `onCreate` and
+  `onNewIntent`, so a shortcut opens its own top-level screen whether the app was cold or already running. On Android
+  13+ the saved in-app language is also written to the per-app locale, so system-resolved labels follow it after a
+  reboot. Unknown actions fall back to Home.
 - **The budget is also on the home screen.** A 3x2 RemoteViews widget (`BudgetWidgetProvider`) shows the knight mark,
   today's remaining time, a caption from the same urgency mapping as Home (green/amber/red), a thin progress bar and
   the ELO. Its snapshot comes from the same pure budget arithmetic (`buildWidgetSnapshot`), so it can never disagree
@@ -273,7 +275,9 @@ failed sync and retries; it keeps working from the built-in set plus any stock a
   alarm was rejected because it gets a batching window of up to 45 s; the chained one-shot measured about 21 s. The
   clock is deliberately minute-granular (`29 min`, `1 h 12 min`): `widgetTimeOf` floors to whole minutes, counts a
   partial final minute as one so it never reads `0 min` while time is left, and drops the minutes part at a whole
-  hour. The card follows the in-app language through a non-Compose localized context, and tapping it opens Home.
+  hour. The card follows the in-app language through a non-Compose localized context. The launcher resolves the picker
+  name/description with the system locale, so those two strings are deliberately brand-neutral and tapping the card
+  opens Home.
 - **One budget story across screens.** Pure `BudgetUrgency` (domain) classifies the remaining time against the same
   `warnAtSeconds` thresholds as the notifications: comfortable, warning (5 minutes), critical (1 minute) or empty. Home
   maps that to an animated ring, an urgency chip and an amber/red gradient; the ring, chip and percentages come from

@@ -64,10 +64,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.ChessLock">
-            <!-- Static long-press shortcuts; actions are mapped by ShortcutDestination. -->
-            <meta-data
-                android:name="android.app.shortcuts"
-                android:resource="@xml/shortcuts" />
+            <!-- Long-press shortcuts are published at runtime so their labels follow the in-app language. -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

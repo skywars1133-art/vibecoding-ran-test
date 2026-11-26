@@ -14,6 +14,7 @@ import com.chesslock.data.SettingsStore
 import com.chesslock.data.ThemeMode
 import com.chesslock.domain.blocking.BlockCategory
 import com.chesslock.domain.config.AppConfig
+import com.chesslock.ui.common.AppPresentationController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +30,7 @@ class SettingsViewModel @Inject constructor(
     private val repository: PuzzleRepository,
     private val syncStore: PuzzleSyncStore,
     private val packScheduler: PuzzlePackScheduler,
+    private val presentationController: AppPresentationController,
 ) : ViewModel() {
     val settings: StateFlow<AppSettings> = store.settings.stateIn(
         scope = viewModelScope,
@@ -69,6 +71,7 @@ class SettingsViewModel @Inject constructor(
     fun setLanguage(language: AppLanguage) {
         viewModelScope.launch {
             store.setLanguage(language)
+            presentationController.apply(language)
         }
     }
 

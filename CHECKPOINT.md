@@ -7,7 +7,20 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - Current phase: Phase 4 (hardening and release prep) - lint/Play-readiness cleanup and monetization groundwork
   (`Entitlements`) are complete; awaiting user feedback
 - Plan: **approved by the user** (2026-11-02)
-- Last completed: normal saving restored for the placement retake. Settings -> **Placement retake** replays the tuned
+- Last completed: launcher/shortcut label bundle and item-4 device checks. Static `res/xml/shortcuts.xml` was replaced by
+  `AppShortcutPublisher` dynamic shortcuts with stable IDs and localized EN/SK labels; Android 13+ per-app locale is
+  restored on startup and applied on language change through `AppPresentationController`, and the two widget-picker
+  metadata strings are deliberately brand-neutral because the launcher resolves them with system locale. Gate: **276
+  tests** (171 domain + 105 app), lint `0 errors, 0 warnings`, debug and release green. Signed APK
+  `dist/ChessLock-0.1.0-launcher-labels.apk` (also copied over `dist/ChessLock-0.1.0-final.apk`), 13 543 524 bytes,
+  SHA-256 `557AFFCBA823C35E550D2F403F3645F7F3534EDF159EA37C0B48EA96AEA58456`, v2/v3, installed on `R9TX902F92W`.
+  Device: system locale `sk-SK`, app locale `[en]`, long-press shortcuts **Puzzle / Stats / Settings**, widget picker
+  **ChessLock / ChessLock time budget**, all still correct after reboot, home ELO **2253**. Themed icons were enabled
+  through Settings -> **Wallpaper and style -> Color palette -> Apply palette to app icons**; after a launcher reload the
+  green icon pixels became palette purple (`#8F84E3`, green count 2522 -> 0) with the knight preserved, proving the
+  `<monochrome>` asset renders. The original icon setting was restored (standard green icon back, `themed_icons_enabled`
+  removed and `colortheme_app_icon=0`). Old-phone reboot check remains blocked: `CIYDDIMV5D5XNFUS` is not attached.
+- Earlier milestone (superseded): normal saving restored for the placement retake. Settings -> **Placement retake** replays the tuned
   10-puzzle flow from a fresh keyed ViewModel; the result button calls
   `PlacementTestViewModel.confirmResult(onDone = exit)`, so `completePlacement(...)` runs before returning to Settings
   and the saved ELO/leaderboard rating are replaced only after a successful write. EN/SK strings and README now say the
@@ -760,15 +773,38 @@ Resume file. Update after every meaningful step and before any likely credit cut
   `Puzzle 1 of 10`, `Completed: 0%`, three red hearts and `This retake saves a new ELO when you tap Save.` The test was
   not completed, so no ELO was changed during verification.
 
+- 2026-11-26: launcher labels / item-4 device checks. `:domain:test :app:testDebugUnitTest :app:lintDebug
+  :app:assembleDebug :app:assembleRelease` with JDK 21.0.11 gave **171 domain + 105 app tests (276 total); 0 failures,
+  errors or skips**; lint reported `0 errors, 0 warnings`. New `LauncherLabelTest` checks stable shortcut IDs, all three
+  destinations, locale tags and the localized/neutral resource split.
+  - **Shortcuts:** the static manifest shortcuts were removed. `AppShortcutPublisher` now publishes `puzzle`,
+    `statistics` and `settings` dynamically from the saved in-app language; `AppLocaleController` sets the Android 13+
+    per-app locale on startup and when Settings changes language, and `AppPresentationController` also requests a widget
+    repaint. `cmd locale get-app-locales com.chesslock` returned `[en]` with the tablet on `sk-SK`, and a real long-press
+    showed **Puzzle / Stats / Settings** instead of the previous Slovak labels. The labels survived a full reboot.
+  - **Widget picker:** the launcher resolved picker metadata using system locale even with app locale `[en]` and after
+    reboot, so `widget_name`/`widget_description` are now identical brand-neutral strings in EN/SK (`ChessLock`,
+    `ChessLock time budget`); the rendered card still follows the in-app language. Verified in the picker after reboot.
+  - **Themed icons:** Android Settings search -> **Tapeta a štýl -> Paleta farieb** exposed **Použiť paletu na ikony
+    aplikácií**. With both palette switches enabled and **Aplikovať** pressed, a launcher reload changed the sampled
+    ChessLock icon from green `2522` / purple `0` to green `0` / purple `2154` (`#8F84E3`) while white knight pixels stayed
+    ~2460, confirming the `<monochrome>` variant renders. Both switches were turned off, Apply pressed, original settings
+    restored (`themed_icons_enabled=null`, `colortheme_app_icon=0`), and the green icon returned (`green=2522`,
+    `purple=0`).
+  - **Old phone:** `adb devices -l` listed only `R9TX902F92W`; `CIYDDIMV5D5XNFUS` was not attached, so the old-phone
+    reboot/start check could not be run in this pass.
+  - Signed APK `dist/ChessLock-0.1.0-launcher-labels.apk` (also copied over `dist/ChessLock-0.1.0-final.apk`), 13 543 524
+    bytes, SHA-256 `557AFFCBA823C35E550D2F403F3645F7F3534EDF159EA37C0B48EA96AEA58456`, v2/v3 verified, installed with
+    data preserved (home ELO **2253**, English UI).
+
 ## Next step
-1. **All bundles through the placement retake saving restore are complete, gate-green and device-installed; wait for
-   user feedback before the next bundle.** The redesigned sounds, smooth piece animation, placement tuning, practice
-   retake UI and restored saving behavior were accepted by the user. Remaining gaps, all
-   documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
-   detection is the known limitation), the themed-icon rendering path was not toggled on the test tablet,
-   widget/shortcut picker labels follow the system locale rather than the in-app language, and the old-phone reboot
-   check is still pending. The `Entitlements` bundle, reward-chip update and Firebase ranking bundles are
-   device-verified.
+1. **All bundles through the launcher-label bundle are complete, gate-green and device-installed; wait for user feedback
+   before the next bundle.** The redesigned sounds, smooth piece animation, placement tuning, practice retake UI,
+   restored saving behavior and launcher labels were accepted or completed; only the old-phone reboot cannot be run while
+   that device is unplugged. Item-4 gaps now: themed-icon rendering was verified and restored, dynamic shortcuts follow
+   the in-app language, and the widget picker is intentionally brand-neutral because the launcher resolves metadata with
+   system locale. Split-screen behaviour remains the known foreground-only limitation. The `Entitlements` bundle,
+   reward-chip update and Firebase ranking bundles are device-verified.
 2. Next (only after user feedback): the remaining Phase 4 candidates are a UMP consent SDK (new dependency + real
    privacy-policy URL), production ad unit IDs, Play Data safety prep and Play Billing behind
    `EntitlementsRepository.update(...)`. Editable nicknames and cloud sync of
