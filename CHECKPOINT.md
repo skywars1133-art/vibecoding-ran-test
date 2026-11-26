@@ -10,7 +10,7 @@ Resume file. Update after every meaningful step and before any likely credit cut
 - Last completed: placement tuning check. The placement K-factor was raised from 90 to 300 after simulating the real
   300-puzzle stock across five skill levels; K=90 placed a true-2000 player near 1440, while K=300 tracked players
   from 800 to 2400 much more closely. `PlacementTuningTest` now guards those ranges. Gate: 266 tests, lint clean,
-  debug and release green. Signed APK built; device install is pending reconnection of the tablet.
+  debug and release green. Signed APK installed on `R9TX902F92W` with app data preserved and no FATAL logcat.
 - Earlier milestone: improved ELO counting. Placement now updates its estimate with each puzzle's real rating instead
   of a fixed staircase; regular updates damp unreliable Lichess puzzle ratings, give hint wins partial credit, and
   clamp to the shared 400..2800 range. 264 tests passed with clean lint, and the signed APK was installed on the
@@ -705,14 +705,14 @@ Resume file. Update after every meaningful step and before any likely credit cut
   ranges and the 400..2800 bounds. `PlacementTestTest` exact cases were updated. Gate: **266 tests** (171 domain +
   95 app), lint `No issues found`, debug and release green. Signed APK
   `dist/ChessLock-0.1.0-placement.apk` (also copied over `dist/ChessLock-0.1.0-final.apk`), 13 543 580 bytes,
-  SHA-256 `9381C96D6DD6D916843F144B8C42685347603A80361380BDC6EEC495C46B8539`, v2/v3. The tablet `R9TX902F92W`
-  disconnected before installation, so this build is signed and ready but still needs a device install/data-preservation
-  check.
+  SHA-256 `9381C96D6DD6D916843F144B8C42685347603A80361380BDC6EEC495C46B8539`, v2/v3. Installed on `R9TX902F92W`
+  after reconnecting: `versionName=0.1.0`, `versionCode=1`, data preserved (ELO now **2253** from later play, budget
+  rolled over to `40:00`, stock grew to **2874** after the 26 Nov daily pack), home screen opened with no FATAL logcat.
+  The placement screen itself was not replayed because `placement_completed` remains set on this install.
 
 ## Next step
-1. **All bundles through the placement tuning are code-complete and gate-green; wait for user feedback before the next
-   bundle.** The redesigned sounds and the smooth piece animation were accepted by the user. The tablet disconnected
-   before installing the placement APK, so reconnect and install it when the device is available. Remaining gaps, all
+1. **All bundles through the placement tuning are complete, gate-green and device-installed; wait for user feedback
+   before the next bundle.** The redesigned sounds and the smooth piece animation were accepted by the user. Remaining gaps, all
    documented: split-screen behaviour could not be exercised (adb cannot form a split on this firmware; foreground-only
    detection is the known limitation), the themed-icon rendering path was not toggled on the test tablet,
    widget/shortcut picker labels follow the system locale rather than the in-app language, and the old-phone reboot
